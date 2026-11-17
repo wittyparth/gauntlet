@@ -1,0 +1,31 @@
+[project]
+name = "gauntlet-workspace"
+version = "0.0.0"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+gauntlet-core = { workspace = true }
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=0.24", "hypothesis>=6.100", "ruff>=0.6", "pyright>=1.1.380", "gauntlet-core"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["RUF012"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["packages", "tests"]
+addopts = "--import-mode=importlib"
+
+[tool.pyright]
+pythonVersion = "3.12"
+include = ["packages"]
+typeCheckingMode = "standard"
