@@ -18,11 +18,13 @@ line-length = 100
 target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
-ignore = ["RUF012"]
+ignore = ["RUF012", "UP047"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["packages", "tests"]
+markers = ["slow: slow statistical simulations"]
+asyncio_default_fixture_loop_scope = "function"
 addopts = "--import-mode=importlib"
 
 [tool.pyright]
