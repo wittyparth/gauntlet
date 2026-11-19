@@ -2,10 +2,22 @@
 name = "gauntlet-server"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = ["gauntlet-core"]
+dependencies = [
+    "gauntlet-core",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy[asyncio]>=2.0.30",
+    "asyncpg>=0.29",
+    "alembic>=1.13",
+    "cryptography>=43",
+    "redis>=5",
+]
 
 [tool.uv.sources]
 gauntlet-core = { workspace = true }
+
+[dependency-groups]
+dev = ["httpx>=0.27", "fakeredis>=2.23"]
 
 [build-system]
 requires = ["hatchling"]
