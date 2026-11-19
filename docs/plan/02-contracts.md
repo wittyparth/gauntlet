@@ -366,3 +366,12 @@ These override any conflicting text in `phases/*.md`.
 | CQ-B16 / W13 | Accepted: `agent_versions.world_id` column. |
 | CQ-B17 | Accepted: `apps/dva` joins the uv workspace. |
 | Roadmap deps | Accepted: P1-8 after P0-3; P1-9 after P1-10; P3-6 after P3-5; P2-5 after P2-4; P2-7 after P2-2; P0-3 absorbs P0-1 leftovers. |
+
+### L4/L5 review rulings (2026-11-19)
+
+| Question | Ruling |
+|---|---|
+| PrefixView / ProposedAction | Accepted as implemented in `gauntlet_core.checks.context` and exported from `gauntlet_core.checks`. They are the prefix-evaluation contract for L8 and the gateway. |
+| Regex engine | Standard `re` with the implemented limits (1000-char pattern, 200k-char input, invalid pattern = no match), `re2` used if importable. Revisit at L8 (gateway latency, user-authored regex). |
+| Prefix semantics | Accepted as conservative: `"violates"` only when the check holds on prefix+proposed and is stable; `not(...)` is `"undetermined"` unless the inner check holds for good; bounded counts are `"undetermined"`. Policy authors express violations positively. Soundness property (prefix violates implies final holds) is a required test. |
+| Public APIs | `gauntlet_core.stats.__all__` and `gauntlet_core.checks.__all__` as committed in f0c010a..66ed535 are the consumer API. |
