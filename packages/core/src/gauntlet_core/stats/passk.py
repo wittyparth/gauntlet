@@ -10,7 +10,7 @@ import random
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 
-from .intervals import Estimate, percentile
+from .intervals import Estimate, percentile, wilson_interval
 
 DEFAULT_RESAMPLES = 2000
 MAX_K = 8
@@ -69,7 +69,18 @@ def bootstrap_counts(
 
 
 def _estimate(counts: Counts, stat: Callable[[Counts], float], boot: list[float]) -> Estimate:
+    """Percentile interval of the bootstrap, widened to contain the point estimate.
+
+    Degenerate case: when every outcome is identical (for example 0 of 4 passes) all
+    resamples coincide and the percentile interval collapses to a single point, which
+    claims certainty the data cannot support. Whenever the bootstrap interval has zero
+    width we fall back to the Wilson score interval on the pooled counts (sum of
+    successes over sum of trials). The reported interval is therefore never zero-width
+    for a non-empty sample (0 of 4 gives roughly 0% to 49%).
+    """
     low, high = percentile(boot, 0.025), percentile(boot, 0.975)
+    if high - low <= 1e-12:
+        low, high = wilson_interval(sum(c for c, _ in counts), sum(n for _, n in counts))
     value = stat(counts)
     return Estimate(value, min(low, value), max(high, value), len(counts))
 

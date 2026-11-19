@@ -105,7 +105,8 @@ def test_reliability_curve_is_monotone_and_seeded():
 
 def test_bootstrap_degenerate_suite():
     est = suite_pass_rate({"a": [True] * 4, "b": [True] * 4}, resamples=100)
-    assert (est.value, est.low, est.high) == (1.0, 1.0, 1.0)
+    assert (est.value, est.high) == (1.0, 1.0)
+    assert est.low == pytest.approx(0.6756, abs=1e-3)  # Wilson 8/8, not a zero-width interval
 
 
 @pytest.mark.slow
@@ -254,3 +255,21 @@ def test_kappa_bounds_and_symmetry(pairs):
     k = cohens_kappa(a, b)
     assert -1.0 - 1e-9 <= k <= 1.0 + 1e-9
     assert k == pytest.approx(cohens_kappa(b, a))
+
+
+def test_degenerate_bootstrap_falls_back_to_wilson():
+    est = suite_pass_rate({"a": [False] * 2, "b": [False] * 2}, resamples=100)
+    assert est.value == 0.0 and est.low == 0.0
+    assert 0.45 < est.high < 0.55  # Wilson 0/4 is about 0.49
+    est = suite_pass_rate({"a": [True] * 4}, resamples=100)
+    assert est.high == 1.0 and 0.5 < est.low < 0.55
+
+
+@given(suites)
+@settings(max_examples=60, deadline=None)
+def test_interval_never_zero_width_for_nonempty(data):
+    est = suite_pass_rate(data, resamples=50)
+    if est.n > 0:
+        assert est.high > est.low
+    for point in reliability_curve(data, resamples=50):
+        assert point.estimate.high > point.estimate.low
