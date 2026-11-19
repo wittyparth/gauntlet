@@ -1,0 +1,6 @@
+scenario: scn_ecom_25
+turns:
+- I need to change the email on my account. ord_1001, ana.rivera@example.test
+flawed_reasons:
+  F13:
+  - success

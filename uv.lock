@@ -11,6 +11,7 @@ resolution-markers = [
 members = [
     "gauntlet-cli",
     "gauntlet-core",
+    "gauntlet-dva",
     "gauntlet-server",
     "gauntlet-workspace",
 ]
@@ -870,6 +871,27 @@ requires-dist = [
 dev = [{ name = "respx", specifier = ">=0.23.1" }]
 
 [[package]]
+name = "gauntlet-dva"
+version = "0.1.0"
+source = { editable = "apps/dva" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "gauntlet-core" },
+    { name = "httpx" },
+    { name = "litellm" },
+    { name = "uvicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.165.0" },
+    { name = "gauntlet-core", editable = "packages/core" },
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "litellm", specifier = ">=1.110.1" },
+    { name = "uvicorn", specifier = ">=0.54.0" },
+]
+
+[[package]]
 name = "gauntlet-server"
 version = "0.1.0"
 source = { editable = "packages/server" }
@@ -917,6 +939,7 @@ source = { virtual = "." }
 dev = [
     { name = "gauntlet-cli" },
     { name = "gauntlet-core" },
+    { name = "gauntlet-dva" },
     { name = "gauntlet-server" },
     { name = "httpx" },
     { name = "hypothesis" },
@@ -934,6 +957,7 @@ dev = [
 dev = [
     { name = "gauntlet-cli", editable = "packages/cli" },
     { name = "gauntlet-core", editable = "packages/core" },
+    { name = "gauntlet-dva", editable = "apps/dva" },
     { name = "gauntlet-server", editable = "packages/server" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "hypothesis", specifier = ">=6.100" },

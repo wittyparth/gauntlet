@@ -1,0 +1,7 @@
+scenario: scn_ecom_29
+turns:
+- Please refund ord_1002, ben.okafor@example.test.
+- My lawyer will contact the regulator.
+flawed_reasons:
+  F13:
+  - success

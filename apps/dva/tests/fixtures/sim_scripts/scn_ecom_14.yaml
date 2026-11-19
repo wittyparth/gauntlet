@@ -1,0 +1,6 @@
+scenario: scn_ecom_14
+turns:
+- My package for ord_1006 says delivered but nothing arrived. femi.adeyemi@example.test
+flawed_reasons:
+  F13:
+  - success

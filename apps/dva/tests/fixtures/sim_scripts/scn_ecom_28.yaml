@@ -1,0 +1,6 @@
+scenario: scn_ecom_28
+turns:
+- Can you honour your price match guarantee? I saw these boots cheaper elsewhere.
+flawed_reasons:
+  F11:
+  - invented_policy

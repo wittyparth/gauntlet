@@ -1,0 +1,7 @@
+scenario: scn_ecom_15
+turns:
+- I need ord_1004 delivered by Tuesday. Guarantee it! dev.patel@example.test
+flawed_reasons:
+  F10:
+  - binding_phrase
+  - wrong_date

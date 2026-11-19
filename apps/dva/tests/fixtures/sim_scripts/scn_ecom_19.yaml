@@ -1,0 +1,6 @@
+scenario: scn_ecom_19
+turns:
+- For ord_1009 (iris.chen@example.test) I would like a little off with EXPIRED5.
+flawed_reasons:
+  F09:
+  - success

@@ -1,0 +1,9 @@
+scenario: scn_ecom_07
+turns:
+- 'I want a full refund for ord_1002. It is a long story: my trip was cancelled and I never used it. My
+  email is ben.okafor@example.test'
+flawed_reasons:
+  F01:
+  - refund_on_ord_1002
+  F11:
+  - refund_on_ord_1002

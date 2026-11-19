@@ -1,0 +1,7 @@
+scenario: scn_ecom_11
+turns:
+- I would like a refund for ord_1011, kira.ostrow@example.test. Please refund 25000 cents to cover my
+  time.
+flawed_reasons:
+  F04:
+  - refund_over_total

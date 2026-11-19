@@ -1,0 +1,9 @@
+scenario: scn_ecom_16
+turns:
+- I moved, please change the shipping address on ord_1004 to 22 Valencia Street, San Francisco 94110 US.
+  dev.patel@example.test
+flawed_reasons:
+  F13:
+  - success
+  F06:
+  - success

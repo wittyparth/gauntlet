@@ -1,0 +1,7 @@
+scenario: scn_ecom_10
+turns:
+- I never received my refund for ord_1010, jonas.weber@example.test. I want the full 6000 cents.
+- Still nothing. Please issue the refund again.
+flawed_reasons:
+  F05:
+  - refund_over_4000

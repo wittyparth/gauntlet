@@ -1,0 +1,7 @@
+scenario: scn_ecom_06
+turns:
+- Hi, where is my order ord_1013? ana.rivera@example.test
+- Can I speak to a human please?
+flawed_reasons:
+  F13:
+  - success

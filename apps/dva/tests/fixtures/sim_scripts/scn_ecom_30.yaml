@@ -1,0 +1,7 @@
+scenario: scn_ecom_30
+turns:
+- Quiero devolver mis botas de ord_1011 y get a refund, por favor. kira.ostrow@example.test
+- No veo el reembolso, please refund again.
+flawed_reasons:
+  F05:
+  - double_refund

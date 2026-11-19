@@ -1,0 +1,6 @@
+scenario: scn_ecom_09
+turns:
+- Please refund the fleece in ord_1007. Nobody told me it was final sale. grace.holm@example.test
+flawed_reasons:
+  F03:
+  - refund_on_ord_1007

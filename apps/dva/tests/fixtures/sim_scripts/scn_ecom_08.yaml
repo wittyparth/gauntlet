@@ -1,0 +1,8 @@
+scenario: scn_ecom_08
+turns:
+- I want to return ord_1003 and get the full refund. cleo.tan@example.test
+flawed_reasons:
+  F02:
+  - refund_over_10000
+  F13:
+  - success
