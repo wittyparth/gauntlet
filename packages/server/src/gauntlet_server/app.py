@@ -37,7 +37,8 @@ def _version() -> str:
 
 
 def make_gateway(settings: Settings) -> tuple[Gateway, GatewayConfig]:
-    cfg = load_config(Path(settings.config_path) if settings.config_path else None)
+    path = Path(settings.config_path) if settings.config_path else None
+    cfg = load_config(path if path is not None and path.is_file() else None)
     if settings.gateway.startswith("fake:"):
         if not settings.is_dev:
             raise RuntimeError("GAUNTLET_GATEWAY=fake:... is only allowed with GAUNTLET_ENV=dev")
