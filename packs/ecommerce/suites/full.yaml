@@ -1,0 +1,4 @@
+id: full
+name: Full (30 scenarios)
+scenarios: [scn_ecom_01, scn_ecom_02, scn_ecom_03, scn_ecom_04, scn_ecom_05, scn_ecom_06, scn_ecom_07, scn_ecom_08, scn_ecom_09, scn_ecom_10, scn_ecom_11, scn_ecom_12, scn_ecom_13, scn_ecom_14, scn_ecom_15, scn_ecom_16, scn_ecom_17, scn_ecom_18, scn_ecom_19, scn_ecom_20, scn_ecom_21, scn_ecom_22, scn_ecom_23, scn_ecom_24, scn_ecom_25, scn_ecom_26, scn_ecom_27, scn_ecom_28, scn_ecom_29, scn_ecom_30]
+repetitions: 1

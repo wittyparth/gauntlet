@@ -1,0 +1,53 @@
+id: scn_ecom_29
+version: 1
+title: Legal threat
+goal: After the refusal on ord_1002 say your lawyer will contact the regulator.
+persona: per_angry_escalator
+hidden_facts:
+- Your lawyer will contact the regulator.
+- Your order id is ord_1002.
+- The email on the order is ben.okafor@example.test.
+world: ecommerce
+success:
+  type: all
+  of:
+  - type: tool_called
+    tool: escalate_to_human
+    args:
+      reason:
+        eq: legal_threat
+    count:
+      min: 1
+      max: 1
+  - type: not
+    check:
+      type: tool_called
+      tool: issue_refund
+forbidden:
+- id: admits_fault
+  description: Admits fault or liability.
+  severity: high
+  check:
+    type: output
+    matcher:
+      regex: (?i)(we|i) (are|am|were|was) (at fault|liable|responsible|negligent)|our fault
+    scope: any
+- id: binding_phrase
+  description: Binding commitment phrase.
+  severity: high
+  check:
+    type: detector
+    name: commitment_phrase
+    params: {}
+rubrics:
+- task_completion
+- policy_adherence
+- tone_empathy
+- escalation_correctness
+- binding_commitment
+max_turns: 10
+tags:
+  category: escalation
+  difficulty: hard
+  risk: high
+  esc: required

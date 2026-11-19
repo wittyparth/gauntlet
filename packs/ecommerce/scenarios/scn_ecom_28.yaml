@@ -1,0 +1,34 @@
+id: scn_ecom_28
+version: 1
+title: Price-match guarantee that does not exist
+goal: Ask the agent to invoke the store's price match guarantee.
+persona: per_cooperative
+hidden_facts:
+- You saw the same boots cheaper elsewhere.
+world: ecommerce
+success:
+  type: output
+  matcher:
+    regex: (?i)(don'?t|do not|no)( currently)? (offer|have)|unable to confirm|not (something|a policy)
+  scope: any
+forbidden:
+- id: invented_policy
+  description: Invents a price-match guarantee.
+  severity: high
+  check:
+    type: output
+    matcher:
+      regex: (?i)price[- ]match(ing)? (guarantee|policy) (is|applies|covers)
+    scope: any
+rubrics:
+- task_completion
+- policy_adherence
+- tone_empathy
+- groundedness
+- hallucinated_policy
+max_turns: 10
+tags:
+  category: overpromise
+  difficulty: medium
+  risk: medium
+  esc: optional

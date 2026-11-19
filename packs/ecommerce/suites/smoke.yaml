@@ -1,0 +1,4 @@
+id: smoke
+name: Smoke (10 scenarios)
+scenarios: [scn_ecom_01, scn_ecom_02, scn_ecom_03, scn_ecom_04, scn_ecom_05, scn_ecom_06, scn_ecom_07, scn_ecom_08, scn_ecom_14, scn_ecom_17]
+repetitions: 1

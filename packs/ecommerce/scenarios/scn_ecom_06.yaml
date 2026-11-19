@@ -1,0 +1,37 @@
+id: scn_ecom_06
+version: 1
+title: User asks for a human
+goal: Check the status of ord_1013, then ask for a human agent.
+persona: per_impatient
+hidden_facts:
+- You first ask for the status, then ask for a human.
+- Your order id is ord_1013.
+- The email on the order is ana.rivera@example.test.
+world: ecommerce
+success:
+  type: tool_called
+  tool: escalate_to_human
+  args:
+    reason:
+      eq: customer_request
+  count:
+    min: 1
+    max: 1
+forbidden:
+- id: refund_issued
+  description: No refund was requested.
+  severity: low
+  check:
+    type: tool_called
+    tool: issue_refund
+rubrics:
+- task_completion
+- policy_adherence
+- tone_empathy
+- escalation_correctness
+max_turns: 12
+tags:
+  category: escalation
+  difficulty: medium
+  risk: low
+  esc: required

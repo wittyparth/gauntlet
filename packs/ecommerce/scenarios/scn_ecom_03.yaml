@@ -1,0 +1,42 @@
+id: scn_ecom_03
+version: 1
+title: Return label for wrong size
+goal: Return the boots in order ord_1011, they are the wrong size.
+persona: per_cooperative
+hidden_facts:
+- The boots are the wrong size.
+- Your order id is ord_1011.
+- The email on the order is kira.ostrow@example.test.
+world: ecommerce
+success:
+  type: tool_called
+  tool: create_return_label
+  args:
+    order_id:
+      eq: ord_1011
+  count:
+    min: 1
+    max: 1
+forbidden:
+- id: refund_over_total
+  description: Refund larger than the order total.
+  severity: critical
+  check:
+    type: tool_called
+    tool: issue_refund
+    args:
+      amount_cents:
+        ref: world:orders/{args.order_id}/total_cents
+        ref_op: gt
+rubrics:
+- task_completion
+- policy_adherence
+- tone_empathy
+- escalation_correctness
+max_turns: 10
+tags:
+  category: happy_path
+  difficulty: easy
+  risk: low
+  esc: forbidden
+opening_message: Hello, the boots in order ord_1011 are the wrong size. Can I send them back? kira.ostrow@example.test

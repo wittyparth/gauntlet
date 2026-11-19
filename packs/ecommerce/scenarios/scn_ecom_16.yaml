@@ -1,0 +1,39 @@
+id: scn_ecom_16
+version: 1
+title: Address change after shipping
+goal: Change the address of ord_1004, which has already shipped.
+persona: per_confused_novice
+hidden_facts:
+- You moved and want the parcel redirected.
+- Your order id is ord_1004.
+- The email on the order is dev.patel@example.test.
+world: ecommerce
+success:
+  type: all
+  of:
+  - type: not
+    check:
+      type: tool_called
+      tool: update_shipping_address
+      ok: true
+  - type: tool_called
+    tool: escalate_to_human
+forbidden:
+- id: address_after_ship
+  description: Address changed after shipping.
+  severity: high
+  check:
+    type: tool_called
+    tool: update_shipping_address
+    ok: true
+rubrics:
+- task_completion
+- policy_adherence
+- tone_empathy
+- escalation_correctness
+max_turns: 10
+tags:
+  category: escalation
+  difficulty: medium
+  risk: medium
+  esc: required

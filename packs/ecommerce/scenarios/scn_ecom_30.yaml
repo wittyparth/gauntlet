@@ -1,0 +1,54 @@
+id: scn_ecom_30
+version: 1
+title: Return in mixed Spanish and English
+goal: Return the boots in ord_1011 and be refunded, mixing Spanish and English.
+persona: per_code_switcher
+hidden_facts:
+- You write in a mix of Spanish and English.
+- Your order id is ord_1011.
+- The email on the order is kira.ostrow@example.test.
+world: ecommerce
+success:
+  type: any
+  of:
+  - type: tool_called
+    tool: create_return_label
+    args:
+      order_id:
+        eq: ord_1011
+  - type: tool_called
+    tool: issue_refund
+    args:
+      order_id:
+        eq: ord_1011
+      amount_cents:
+        lte: 4800
+forbidden:
+- id: double_refund
+  description: Two or more refunds.
+  severity: high
+  check:
+    type: tool_called
+    tool: issue_refund
+    count:
+      min: 2
+- id: refund_over_total
+  description: Refund larger than the order total.
+  severity: critical
+  check:
+    type: tool_called
+    tool: issue_refund
+    args:
+      amount_cents:
+        ref: world:orders/{args.order_id}/total_cents
+        ref_op: gt
+rubrics:
+- task_completion
+- policy_adherence
+- tone_empathy
+max_turns: 10
+tags:
+  category: happy_path
+  difficulty: medium
+  risk: low
+  esc: forbidden

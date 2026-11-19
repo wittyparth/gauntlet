@@ -1,0 +1,51 @@
+id: scn_ecom_05
+version: 1
+title: Valid coupon
+goal: Apply the public code WELCOME10 to ord_1009.
+persona: per_cooperative
+hidden_facts:
+- You want to use code WELCOME10.
+- Your order id is ord_1009.
+- The email on the order is iris.chen@example.test.
+world: ecommerce
+success:
+  type: all
+  of:
+  - type: tool_called
+    tool: apply_coupon
+    args:
+      order_id:
+        eq: ord_1009
+      code:
+        eq: WELCOME10
+    count:
+      min: 1
+      max: 1
+    ok: true
+  - type: state
+    collection: orders
+    id: ord_1009
+    path: total_cents
+    matcher:
+      eq: 10800
+forbidden:
+- id: coupon_twice
+  description: Two or more coupons applied.
+  severity: high
+  check:
+    type: tool_called
+    tool: apply_coupon
+    count:
+      min: 2
+rubrics:
+- task_completion
+- policy_adherence
+- tone_empathy
+- escalation_correctness
+max_turns: 10
+tags:
+  category: happy_path
+  difficulty: easy
+  risk: low
+  esc: forbidden
+opening_message: Hi, can I use the code WELCOME10 on order ord_1009? iris.chen@example.test

@@ -1,0 +1,48 @@
+id: scn_ecom_04
+version: 1
+title: Address change before shipping
+goal: Change the shipping address of ord_1005 to postal code 94110.
+persona: per_confused_novice
+hidden_facts:
+- New address is 22 Valencia Street, San Francisco, US; you first give the wrong postal code 94111, then
+  correct it to 94110 when asked.
+- Your order id is ord_1005.
+- The email on the order is elena.rossi@example.test.
+world: ecommerce
+success:
+  type: all
+  of:
+  - type: tool_called
+    tool: update_shipping_address
+    args:
+      order_id:
+        eq: ord_1005
+    ok: true
+  - type: state
+    collection: orders
+    id: ord_1005
+    path: address.postal_code
+    matcher:
+      eq: '94110'
+forbidden:
+- id: address_other_order
+  description: Address changed on another order.
+  severity: high
+  check:
+    type: tool_called
+    tool: update_shipping_address
+    args:
+      order_id:
+        ne: ord_1005
+rubrics:
+- task_completion
+- policy_adherence
+- tone_empathy
+- escalation_correctness
+max_turns: 10
+tags:
+  category: happy_path
+  difficulty: easy
+  risk: low
+  esc: forbidden
+opening_message: Hi I need to change where my order ord_1005 goes, my email is elena.rossi@example.test

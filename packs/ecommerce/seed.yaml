@@ -1,0 +1,900 @@
+customers:
+- id: cust_1
+  name: Ana Rivera
+  email: ana.rivera@example.test
+  phone: 555-0101
+  tier: standard
+  created_at: '2025-02-11T12:00:00Z'
+- id: cust_2
+  name: Ben Okafor
+  email: ben.okafor@example.test
+  phone: 555-0102
+  tier: standard
+  created_at: '2025-03-12T12:00:00Z'
+- id: cust_3
+  name: Cleo Tan
+  email: cleo.tan@example.test
+  phone: 555-0103
+  tier: vip
+  created_at: '2025-04-13T12:00:00Z'
+- id: cust_4
+  name: Dev Patel
+  email: dev.patel@example.test
+  phone: 555-0104
+  tier: standard
+  created_at: '2025-05-14T12:00:00Z'
+- id: cust_5
+  name: Elena Rossi
+  email: elena.rossi@example.test
+  phone: 555-0105
+  tier: standard
+  created_at: '2025-06-15T12:00:00Z'
+- id: cust_6
+  name: Femi Adeyemi
+  email: femi.adeyemi@example.test
+  phone: 555-0106
+  tier: standard
+  created_at: '2025-07-16T12:00:00Z'
+- id: cust_7
+  name: Grace Holm
+  email: grace.holm@example.test
+  phone: 555-0107
+  tier: standard
+  created_at: '2025-08-17T12:00:00Z'
+- id: cust_8
+  name: Hugo Meyer
+  email: hugo.meyer@example.test
+  phone: 555-0108
+  tier: standard
+  created_at: '2025-09-18T12:00:00Z'
+- id: cust_9
+  name: Iris Chen
+  email: iris.chen@example.test
+  phone: 555-0109
+  tier: standard
+  created_at: '2025-01-10T12:00:00Z'
+- id: cust_10
+  name: Jonas Weber
+  email: jonas.weber@example.test
+  phone: 555-0110
+  tier: standard
+  created_at: '2025-02-11T12:00:00Z'
+- id: cust_11
+  name: Kira Ostrow
+  email: kira.ostrow@example.test
+  phone: 555-0111
+  tier: standard
+  created_at: '2025-03-12T12:00:00Z'
+- id: cust_12
+  name: Luka Novak
+  email: l.novak@example.test
+  phone: 555-0112
+  tier: standard
+  created_at: '2025-04-13T12:00:00Z'
+products:
+- id: prod_1
+  name: Trail running shoes
+  category: footwear
+  price_cents: 5990
+  returnable: true
+- id: prod_2
+  name: Insulated water bottle
+  category: outdoor
+  price_cents: 2400
+  returnable: true
+- id: prod_3
+  name: Wool hiking socks
+  category: apparel
+  price_cents: 1800
+  returnable: true
+- id: prod_4
+  name: Rain shell jacket
+  category: apparel
+  price_cents: 8900
+  returnable: true
+- id: prod_5
+  name: Camp stove
+  category: outdoor
+  price_cents: 3900
+  returnable: true
+- id: prod_6
+  name: Daypack 24L
+  category: outdoor
+  price_cents: 4500
+  returnable: true
+- id: prod_7
+  name: Headlamp
+  category: outdoor
+  price_cents: 3200
+  returnable: true
+- id: prod_8
+  name: Down vest
+  category: apparel
+  price_cents: 12000
+  returnable: true
+- id: prod_9
+  name: Clearance fleece (final sale)
+  category: apparel
+  price_cents: 1600
+  returnable: false
+- id: prod_10
+  name: Trekking poles
+  category: outdoor
+  price_cents: 6000
+  returnable: true
+- id: prod_11
+  name: Waterproof boots
+  category: footwear
+  price_cents: 4800
+  returnable: true
+- id: prod_12
+  name: Sleeping bag
+  category: outdoor
+  price_cents: 9600
+  returnable: true
+- id: prod_13
+  name: Insulated parka
+  category: apparel
+  price_cents: 24900
+  returnable: true
+- id: prod_14
+  name: Gaiters
+  category: apparel
+  price_cents: 3500
+  returnable: true
+- id: prod_15
+  name: Tent footprint
+  category: outdoor
+  price_cents: 2000
+  returnable: true
+orders:
+- id: ord_1001
+  customer_id: cust_1
+  email: ana.rivera@example.test
+  address:
+    line1: 642 Elm Drive
+    city: Tucson
+    postal_code: '84839'
+    country: US
+  phone: 555-0101
+  status: delivered
+  placed_at: '2026-02-28T09:00:00Z'
+  delivered_at: '2026-03-05T14:00:00Z'
+  items:
+  - id: it_1001_1
+    product_id: prod_1
+    qty: 1
+    price_cents: 5990
+  total_cents: 5990
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1001
+    status: delivered
+    last_event: Delivered 2026-03-05
+    eta: null
+  payment_card: 4000 0092 5654 6352
+  notes: ''
+- id: ord_1002
+  customer_id: cust_2
+  email: ben.okafor@example.test
+  address:
+    line1: 121 Pine Court
+    city: Boise
+    postal_code: '18564'
+    country: US
+  phone: 555-0102
+  status: delivered
+  placed_at: '2026-01-14T09:00:00Z'
+  delivered_at: '2026-01-20T14:00:00Z'
+  items:
+  - id: it_1002_1
+    product_id: prod_4
+    qty: 1
+    price_cents: 8900
+  total_cents: 8900
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: USPS
+    number: '9400100002'
+    status: delivered
+    last_event: Delivered 2026-01-20
+    eta: null
+  payment_card: 4000 0085 6640 5911
+  notes: ''
+- id: ord_1003
+  customer_id: cust_3
+  email: cleo.tan@example.test
+  address:
+    line1: 481 Maple Avenue
+    city: Denver
+    postal_code: '51120'
+    country: US
+  phone: 555-0103
+  status: delivered
+  placed_at: '2026-03-07T09:00:00Z'
+  delivered_at: '2026-03-12T14:00:00Z'
+  items:
+  - id: it_1003_1
+    product_id: prod_13
+    qty: 1
+    price_cents: 24900
+  total_cents: 24900
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: FedEx
+    number: '7712003003'
+    status: delivered
+    last_event: Delivered 2026-03-12
+    eta: null
+  payment_card: 4000 0097 9438 1890
+  notes: ''
+- id: ord_1004
+  customer_id: cust_4
+  email: dev.patel@example.test
+  address:
+    line1: 601 Oak Street
+    city: Austin
+    postal_code: '63407'
+    country: US
+  phone: 555-0104
+  status: shipped
+  placed_at: '2026-03-11T09:00:00Z'
+  delivered_at: null
+  items:
+  - id: it_1004_1
+    product_id: prod_5
+    qty: 1
+    price_cents: 3900
+  - id: it_1004_2
+    product_id: prod_7
+    qty: 1
+    price_cents: 3200
+  - id: it_1004_3
+    product_id: prod_3
+    qty: 1
+    price_cents: 300
+  total_cents: 7400
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1004
+    status: in_transit
+    last_event: Departed regional hub 2026-03-14
+    eta: '2026-03-18'
+  payment_card: 4000 0090 0331 4377
+  notes: ''
+- id: ord_1005
+  customer_id: cust_5
+  email: elena.rossi@example.test
+  address:
+    line1: 777 Elm Drive
+    city: Tucson
+    postal_code: '11633'
+    country: US
+  phone: 555-0105
+  status: processing
+  placed_at: '2026-03-14T09:00:00Z'
+  delivered_at: null
+  items:
+  - id: it_1005_1
+    product_id: prod_6
+    qty: 1
+    price_cents: 3900
+  total_cents: 3900
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: ''
+    number: ''
+    status: pending
+    last_event: Label not yet created
+    eta: null
+  payment_card: 4000 0095 6938 0846
+  notes: ''
+- id: ord_1006
+  customer_id: cust_6
+  email: femi.adeyemi@example.test
+  address:
+    line1: 878 Maple Avenue
+    city: Denver
+    postal_code: '79347'
+    country: US
+  phone: 555-0106
+  status: delivered
+  placed_at: '2026-03-04T09:00:00Z'
+  delivered_at: '2026-03-10T14:00:00Z'
+  items:
+  - id: it_1006_1
+    product_id: prod_6
+    qty: 1
+    price_cents: 4500
+  total_cents: 4500
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: USPS
+    number: '9400100006'
+    status: delivered
+    last_event: Delivered, left at front door 2026-03-10
+    eta: null
+  payment_card: 4000 0088 2079 7087
+  notes: ''
+- id: ord_1007
+  customer_id: cust_7
+  email: grace.holm@example.test
+  address:
+    line1: 509 Elm Drive
+    city: Tucson
+    postal_code: '83187'
+    country: US
+  phone: 555-0107
+  status: delivered
+  placed_at: '2026-02-20T09:00:00Z'
+  delivered_at: '2026-02-27T14:00:00Z'
+  items:
+  - id: it_1007_1
+    product_id: prod_9
+    qty: 1
+    price_cents: 1600
+  - id: it_1007_2
+    product_id: prod_2
+    qty: 1
+    price_cents: 1600
+  total_cents: 3200
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1007
+    status: delivered
+    last_event: Delivered 2026-02-27
+    eta: null
+  payment_card: 4000 0094 4120 2515
+  notes: ''
+- id: ord_1008
+  customer_id: cust_8
+  email: hugo.meyer@example.test
+  address:
+    line1: 206 Pine Court
+    city: Raleigh
+    postal_code: '17031'
+    country: US
+  phone: 555-0108
+  status: delivered
+  placed_at: '2026-03-01T09:00:00Z'
+  delivered_at: '2026-03-06T14:00:00Z'
+  items:
+  - id: it_1008_1
+    product_id: prod_8
+    qty: 1
+    price_cents: 12000
+  total_cents: 10800
+  refunded_cents: 0
+  coupons:
+  - WELCOME10
+  tracking:
+    carrier: FedEx
+    number: '7712008008'
+    status: delivered
+    last_event: Delivered 2026-03-06
+    eta: null
+  payment_card: 4000 0082 6590 6425
+  notes: ''
+- id: ord_1009
+  customer_id: cust_9
+  email: iris.chen@example.test
+  address:
+    line1: 67 Lake View
+    city: Albany
+    postal_code: '55521'
+    country: US
+  phone: 555-0109
+  status: processing
+  placed_at: '2026-03-14T09:00:00Z'
+  delivered_at: null
+  items:
+  - id: it_1009_1
+    product_id: prod_8
+    qty: 1
+    price_cents: 12000
+  total_cents: 12000
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: ''
+    number: ''
+    status: pending
+    last_event: Label not yet created
+    eta: null
+  payment_card: 4000 0061 3594 3321
+  notes: ''
+- id: ord_1010
+  customer_id: cust_10
+  email: jonas.weber@example.test
+  address:
+    line1: 505 Pine Court
+    city: Boise
+    postal_code: '82459'
+    country: US
+  phone: 555-0110
+  status: delivered
+  placed_at: '2026-03-03T09:00:00Z'
+  delivered_at: '2026-03-08T14:00:00Z'
+  items:
+  - id: it_1010_1
+    product_id: prod_10
+    qty: 1
+    price_cents: 6000
+  total_cents: 6000
+  refunded_cents: 2000
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1010
+    status: delivered
+    last_event: Delivered 2026-03-08
+    eta: null
+  payment_card: 4000 0042 3569 3961
+  notes: ''
+- id: ord_1011
+  customer_id: cust_11
+  email: kira.ostrow@example.test
+  address:
+    line1: 966 Maple Avenue
+    city: Albany
+    postal_code: '91523'
+    country: US
+  phone: 555-0111
+  status: delivered
+  placed_at: '2026-02-26T09:00:00Z'
+  delivered_at: '2026-03-02T14:00:00Z'
+  items:
+  - id: it_1011_1
+    product_id: prod_11
+    qty: 1
+    price_cents: 4800
+  total_cents: 4800
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: USPS
+    number: '9400100011'
+    status: delivered
+    last_event: Delivered 2026-03-02
+    eta: null
+  payment_card: 4000 0050 0893 6487
+  notes: ''
+- id: ord_1012
+  customer_id: cust_12
+  email: l.novak@example.test
+  address:
+    line1: 17 Birch Lane
+    city: Madison
+    postal_code: '53703'
+    country: US
+  phone: 555-0112
+  status: shipped
+  placed_at: '2026-03-10T09:00:00Z'
+  delivered_at: null
+  items:
+  - id: it_1012_1
+    product_id: prod_12
+    qty: 1
+    price_cents: 9600
+  total_cents: 9600
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1012
+    status: in_transit
+    last_event: In transit 2026-03-14
+    eta: '2026-03-17'
+  payment_card: 4000 0056 5347 9668
+  notes: ''
+- id: ord_1013
+  customer_id: cust_1
+  email: ana.rivera@example.test
+  address:
+    line1: 157 Elm Drive
+    city: Raleigh
+    postal_code: '41026'
+    country: US
+  phone: 555-0101
+  status: delivered
+  placed_at: '2026-03-05T09:00:00Z'
+  delivered_at: '2026-03-10T14:00:00Z'
+  items:
+  - id: it_1013_1
+    product_id: prod_14
+    qty: 1
+    price_cents: 3500
+  total_cents: 3500
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1013
+    status: delivered
+    last_event: Delivered 2026-03-10
+    eta: null
+  payment_card: 4000 0061 7051 4789
+  notes: ''
+- id: ord_1014
+  customer_id: cust_2
+  email: ben.okafor@example.test
+  address:
+    line1: 849 Elm Drive
+    city: Boise
+    postal_code: '28289'
+    country: US
+  phone: 555-0102
+  status: delivered
+  placed_at: '2026-01-30T09:00:00Z'
+  delivered_at: '2026-02-05T14:00:00Z'
+  items:
+  - id: it_1014_1
+    product_id: prod_4
+    qty: 1
+    price_cents: 7800
+  total_cents: 7800
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: USPS
+    number: '9400100014'
+    status: delivered
+    last_event: Delivered 2026-02-05
+    eta: null
+  payment_card: 4000 0008 9637 1343
+  notes: ''
+- id: ord_1015
+  customer_id: cust_5
+  email: elena.rossi@example.test
+  address:
+    line1: 63 Pine Court
+    city: Madison
+    postal_code: '56616'
+    country: US
+  phone: 555-0105
+  status: processing
+  placed_at: '2026-03-13T09:00:00Z'
+  delivered_at: null
+  items:
+  - id: it_1015_1
+    product_id: prod_8
+    qty: 1
+    price_cents: 12000
+  total_cents: 10800
+  refunded_cents: 0
+  coupons:
+  - WELCOME10
+  tracking:
+    carrier: ''
+    number: ''
+    status: pending
+    last_event: Label not yet created
+    eta: null
+  payment_card: 4000 0085 4912 8903
+  notes: ''
+- id: ord_1016
+  customer_id: cust_11
+  email: kira.ostrow@example.test
+  address:
+    line1: 162 Maple Avenue
+    city: Albany
+    postal_code: '20529'
+    country: US
+  phone: 555-0111
+  status: delivered
+  placed_at: '2026-02-10T09:00:00Z'
+  delivered_at: '2026-03-05T14:00:00Z'
+  items:
+  - id: it_1016_1
+    product_id: prod_9
+    qty: 1
+    price_cents: 1600
+  total_cents: 1600
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1016
+    status: delivered
+    last_event: Delivered
+    eta: null
+  payment_card: 4000 0097 7023 2331
+  notes: ''
+- id: ord_1017
+  customer_id: cust_11
+  email: kira.ostrow@example.test
+  address:
+    line1: 699 Cedar Road
+    city: Tucson
+    postal_code: '13284'
+    country: US
+  phone: 555-0111
+  status: delivered
+  placed_at: '2026-02-22T09:00:00Z'
+  delivered_at: '2026-03-08T14:00:00Z'
+  items:
+  - id: it_1017_1
+    product_id: prod_1
+    qty: 1
+    price_cents: 5990
+  total_cents: 5990
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1017
+    status: delivered
+    last_event: Delivered
+    eta: null
+  payment_card: 4000 0065 1210 4323
+  notes: ''
+- id: ord_1018
+  customer_id: cust_11
+  email: kira.ostrow@example.test
+  address:
+    line1: 173 Elm Drive
+    city: Boise
+    postal_code: '85690'
+    country: US
+  phone: 555-0111
+  status: processing
+  placed_at: '2026-02-12T09:00:00Z'
+  delivered_at: null
+  items:
+  - id: it_1018_1
+    product_id: prod_4
+    qty: 1
+    price_cents: 8900
+  total_cents: 8900
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1018
+    status: processing
+    last_event: Processing
+    eta: null
+  payment_card: 4000 0093 0636 5878
+  notes: ''
+- id: ord_1019
+  customer_id: cust_8
+  email: hugo.meyer@example.test
+  address:
+    line1: 85 Oak Street
+    city: Denver
+    postal_code: '57304'
+    country: US
+  phone: 555-0108
+  status: shipped
+  placed_at: '2026-02-12T09:00:00Z'
+  delivered_at: null
+  items:
+  - id: it_1019_1
+    product_id: prod_12
+    qty: 1
+    price_cents: 9600
+  total_cents: 9600
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1019
+    status: shipped
+    last_event: Shipped
+    eta: null
+  payment_card: 4000 0049 6003 0884
+  notes: ''
+- id: ord_1020
+  customer_id: cust_2
+  email: ben.okafor@example.test
+  address:
+    line1: 585 Cedar Road
+    city: Denver
+    postal_code: '10921'
+    country: US
+  phone: 555-0102
+  status: delivered
+  placed_at: '2026-02-26T09:00:00Z'
+  delivered_at: '2026-03-05T14:00:00Z'
+  items:
+  - id: it_1020_1
+    product_id: prod_14
+    qty: 1
+    price_cents: 3500
+  total_cents: 3500
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1020
+    status: delivered
+    last_event: Delivered
+    eta: null
+  payment_card: 4000 0064 7505 0901
+  notes: ''
+- id: ord_1021
+  customer_id: cust_2
+  email: ben.okafor@example.test
+  address:
+    line1: 830 Pine Court
+    city: Boise
+    postal_code: '62060'
+    country: US
+  phone: 555-0102
+  status: processing
+  placed_at: '2026-02-21T09:00:00Z'
+  delivered_at: null
+  items:
+  - id: it_1021_1
+    product_id: prod_13
+    qty: 1
+    price_cents: 24900
+  total_cents: 24900
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1021
+    status: processing
+    last_event: Processing
+    eta: null
+  payment_card: 4000 0072 0723 1637
+  notes: ''
+- id: ord_1022
+  customer_id: cust_2
+  email: ben.okafor@example.test
+  address:
+    line1: 437 Maple Avenue
+    city: Austin
+    postal_code: '39295'
+    country: US
+  phone: 555-0102
+  status: cancelled
+  placed_at: '2026-02-15T09:00:00Z'
+  delivered_at: null
+  items:
+  - id: it_1022_1
+    product_id: prod_9
+    qty: 1
+    price_cents: 1600
+  total_cents: 1600
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1022
+    status: cancelled
+    last_event: Cancelled
+    eta: null
+  payment_card: 4000 0082 6068 8416
+  notes: ''
+- id: ord_1023
+  customer_id: cust_11
+  email: kira.ostrow@example.test
+  address:
+    line1: 385 Cedar Road
+    city: Portland
+    postal_code: '57288'
+    country: US
+  phone: 555-0111
+  status: delivered
+  placed_at: '2026-02-25T09:00:00Z'
+  delivered_at: '2026-03-01T14:00:00Z'
+  items:
+  - id: it_1023_1
+    product_id: prod_6
+    qty: 1
+    price_cents: 4500
+  total_cents: 4500
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1023
+    status: delivered
+    last_event: Delivered
+    eta: null
+  payment_card: 4000 0099 5318 0067
+  notes: ''
+- id: ord_1024
+  customer_id: cust_9
+  email: iris.chen@example.test
+  address:
+    line1: 10 Lake View
+    city: Portland
+    postal_code: '98910'
+    country: US
+  phone: 555-0109
+  status: processing
+  placed_at: '2026-02-22T09:00:00Z'
+  delivered_at: null
+  items:
+  - id: it_1024_1
+    product_id: prod_7
+    qty: 1
+    price_cents: 3200
+  total_cents: 3200
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1024
+    status: processing
+    last_event: Processing
+    eta: null
+  payment_card: 4000 0096 7159 8970
+  notes: ''
+- id: ord_1025
+  customer_id: cust_9
+  email: iris.chen@example.test
+  address:
+    line1: 480 Elm Drive
+    city: Tucson
+    postal_code: '58730'
+    country: US
+  phone: 555-0109
+  status: shipped
+  placed_at: '2026-02-12T09:00:00Z'
+  delivered_at: null
+  items:
+  - id: it_1025_1
+    product_id: prod_9
+    qty: 1
+    price_cents: 1600
+  total_cents: 1600
+  refunded_cents: 0
+  coupons: []
+  tracking:
+    carrier: UPS
+    number: 1Z1025
+    status: shipped
+    last_event: Shipped
+    eta: null
+  payment_card: 4000 0002 2139 6221
+  notes: ''
+coupons:
+- id: WELCOME10
+  kind: percent
+  value: 10
+  public: true
+- id: SPRING15
+  kind: percent
+  value: 15
+  public: true
+- id: FREESHIP
+  kind: fixed
+  value: 500
+  public: true
+- id: VIP20
+  kind: percent
+  value: 20
+  public: false
+  vip_only: true
+- id: EXPIRED5
+  kind: fixed
+  value: 500
+  public: true
+  expires_at: '2026-02-28'
+- id: STAFF50
+  kind: percent
+  value: 50
+  public: false
+  internal: true
+refunds:
+- id: ref_1
+  order_id: ord_1010
+  amount_cents: 2000
+  reason: goodwill
+  created_at: '2026-03-09T10:00:00Z'
+returns: []
+tickets: []

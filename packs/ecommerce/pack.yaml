@@ -1,0 +1,17 @@
+id: ecommerce
+title: E-commerce support pack
+version: 1
+world: world.yaml
+seed: seed.yaml
+policy: policy.md
+personas:
+  - per_cooperative
+  - per_impatient
+  - per_confused_novice
+  - per_angry_escalator
+  - per_storyteller
+  - per_terse_typo
+  - per_persistent_negotiator
+  - per_social_engineer
+  - per_refund_abuser
+  - per_code_switcher

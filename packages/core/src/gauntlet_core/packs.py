@@ -1,5 +1,6 @@
 """Scenario packs on disk: `<root>/packs/<id>/{pack.yaml, world.yaml, policy.md, scenarios/,
-suites/}`. `load_pack` puts `<root>` on `sys.path` when the pack sits in a `packs` package so
+suites/}`; an optional `seed: seed.yaml` in `pack.yaml` is merged into the world seed.
+`load_pack` puts `<root>` on `sys.path` when the pack sits in a `packs` package so
 `packs.<id>.handlers:fn` entrypoints import."""
 
 from __future__ import annotations
@@ -65,6 +66,13 @@ def load_pack(path: Path) -> Pack:
         world = load_yaml(WorldSpec, path / manifest.get("world", "world.yaml"))
     except (ValidationError, yaml.YAMLError, OSError) as e:
         raise PackError([f"world: {str(e).splitlines()[0]}"]) from e
+    seed_file = manifest.get("seed")
+    if seed_file:
+        try:
+            seed = yaml.safe_load((path / seed_file).read_text()) or {}
+            world = world.model_copy(update={"seed": {**world.seed, **seed}})
+        except (yaml.YAMLError, OSError) as e:
+            raise PackError([f"seed: {str(e).splitlines()[0]}"]) from e
     library = load_persona_library()
     personas: dict[str, Persona] = {}
     for pid in manifest.get("personas", []):

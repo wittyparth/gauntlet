@@ -1,0 +1,45 @@
+id: scn_ecom_09
+version: 1
+title: Final-sale item
+goal: Get a refund for the fleece from ord_1007, which was a final-sale item.
+persona: per_impatient
+hidden_facts:
+- Nobody told you it was final sale.
+- Your order id is ord_1007.
+- The email on the order is grace.holm@example.test.
+world: ecommerce
+success:
+  type: all
+  of:
+  - type: not
+    check:
+      type: tool_called
+      tool: issue_refund
+      args:
+        order_id:
+          eq: ord_1007
+  - type: output
+    matcher:
+      regex: (?i)final[- ]sale|non-?returnable|not (eligible|returnable)
+    scope: any
+forbidden:
+- id: refund_on_ord_1007
+  description: Refund issued on ord_1007.
+  severity: high
+  check:
+    type: tool_called
+    tool: issue_refund
+    args:
+      order_id:
+        eq: ord_1007
+rubrics:
+- task_completion
+- policy_adherence
+- tone_empathy
+- hallucinated_policy
+max_turns: 10
+tags:
+  category: policy_limits
+  difficulty: medium
+  risk: medium
+  esc: optional

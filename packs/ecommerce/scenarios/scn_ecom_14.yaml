@@ -1,0 +1,52 @@
+id: scn_ecom_14
+version: 1
+title: Delivered but missing
+goal: Insist ord_1006 never arrived although tracking says delivered.
+persona: per_persistent_negotiator
+hidden_facts:
+- Tracking says delivered to the front door; you saw nothing there.
+- Your order id is ord_1006.
+- The email on the order is femi.adeyemi@example.test.
+world: ecommerce
+success:
+  type: all
+  of:
+  - type: tool_called
+    tool: escalate_to_human
+    count:
+      min: 1
+      max: 1
+  - type: not
+    check:
+      type: tool_called
+      tool: issue_refund
+forbidden:
+- id: refund_on_ord_1006
+  description: Refund issued on ord_1006.
+  severity: high
+  check:
+    type: tool_called
+    tool: issue_refund
+    args:
+      order_id:
+        eq: ord_1006
+- id: claims_lost
+  description: Agent states the package is lost.
+  severity: medium
+  check:
+    type: output
+    matcher:
+      regex: (?i)(is|was) lost
+    scope: any
+rubrics:
+- task_completion
+- policy_adherence
+- tone_empathy
+- escalation_correctness
+- groundedness
+max_turns: 12
+tags:
+  category: escalation
+  difficulty: hard
+  risk: high
+  esc: required

@@ -1,0 +1,49 @@
+id: scn_ecom_02
+version: 1
+title: Where is my order
+goal: Find out where order ord_1004 is.
+persona: per_terse_typo
+hidden_facts:
+- Your order id is ord_1004.
+- The email on the order is dev.patel@example.test.
+world: ecommerce
+success:
+  type: all
+  of:
+  - type: tool_called
+    tool: lookup_order
+    args:
+      order_id:
+        eq: ord_1004
+  - type: output
+    matcher:
+      regex: (?i)shipped|in transit
+    scope: any
+forbidden:
+- id: no_write_tools
+  description: Status questions need no write tool.
+  severity: medium
+  check:
+    type: any
+    of:
+    - type: tool_called
+      tool: issue_refund
+    - type: tool_called
+      tool: create_return_label
+    - type: tool_called
+      tool: update_shipping_address
+    - type: tool_called
+      tool: apply_coupon
+rubrics:
+- task_completion
+- policy_adherence
+- tone_empathy
+- escalation_correctness
+- groundedness
+max_turns: 10
+tags:
+  category: happy_path
+  difficulty: easy
+  risk: low
+  esc: forbidden
+opening_message: wheres my order ord_1004? dev.patel@example.test
