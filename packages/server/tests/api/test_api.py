@@ -75,14 +75,14 @@ async def test_scenarios_suites_and_dry_run(client):
             "budget_usd_micros": 1_000_000,
         },
     )
-    assert dry.status_code == 200 and dry.json()["valid"] and dry.json()["episode_count"] == 6
+    assert dry.status_code == 200 and dry.json()["valid"] and dry.json()["episode_count"] == 10
     runs = (await client.get("/v1/runs")).json()["items"]
     assert [r["id"] for r in runs] == [seed["run_id"]]  # the dry run created nothing
     bad = await client.post("/v1/suites", json={"id": "s_x", "name": "x", "scenarios": ["nope"]})
     assert bad.status_code == 422
     drafts = (await client.get("/v1/scenarios?status=draft")).json()["items"]
-    assert [s["id"] for s in drafts] == ["demo_draft_status"]
-    ok = await client.post("/v1/scenarios/demo_draft_status/approve")
+    assert [s["id"] for s in drafts] == ["scn_draft_status"]
+    ok = await client.post("/v1/scenarios/scn_draft_status/approve")
     assert ok.json()["status"] == "approved"
 
 
@@ -99,7 +99,7 @@ async def test_run_state_machine_and_dev_gate(client, state):
     assert (await client.post(f"/v1/runs/{rid}/pause")).json()["status"] == "paused"
     assert (await client.post(f"/v1/runs/{rid}/resume")).json()["status"] == "running"
     cancelled = (await client.post(f"/v1/runs/{rid}/cancel")).json()
-    assert cancelled["status"] == "cancelled" and cancelled["counts"]["cancelled"] == 6
+    assert cancelled["status"] == "cancelled" and cancelled["counts"]["cancelled"] == 10
     again = await client.post(f"/v1/runs/{rid}/cancel")
     assert again.status_code == 409 and again.json()["error"]["code"] == "run_not_active"
     import dataclasses

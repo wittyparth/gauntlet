@@ -24,4 +24,4 @@ async def test_dev_seed_then_report_over_http():
         assert r.status_code == 200, r.text
         seed = r.json()
         report = (await c.get(f"/v1/runs/{seed['run_id']}/report")).json()
-        assert report["counted"] == 6
+        assert report["counted"] == 10

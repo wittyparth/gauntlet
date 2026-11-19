@@ -27,13 +27,13 @@ class WiredAgent:
         async with httpx.AsyncClient(
             transport=httpx.ASGITransport(app=self.app), base_url="http://api.test"
         ) as c:
-            r = await c.post(f"/mock/{token}/tools/lookup_order", json={"order_id": "ord_1"})
+            r = await c.post(f"/mock/{token}/tools/lookup_order", json={"order_id": "ord_1004"})
         assert r.status_code == 200, r.text
         if self.block:
             self.reached.set()
             await asyncio.Event().wait()
         status = r.json()["result"]["status"]
-        content = f"Order ord_1 is {status}."
+        content = f"Order ord_1004 is {status}."
         return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
 
 
@@ -52,12 +52,12 @@ async def make_wired_run(client, seed) -> str:
                 "wired": True,
             },
             "profile": {"purpose": "orders"},
-            "world_id": "shop",
+            "world_id": "ecommerce",
         },
     )
     assert ver.status_code == 201, ver.text
     r = await client.post(
-        "/v1/suites", json={"id": "suite_wired", "name": "w", "scenarios": ["demo_status_1"]}
+        "/v1/suites", json={"id": "suite_wired", "name": "w", "scenarios": ["scn_ecom_02"]}
     )
     assert r.status_code == 201, r.text
     run = await client.post(
@@ -141,5 +141,5 @@ async def test_wired_episode_completes_and_resumes_after_worker_kill(client, sta
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=create_app(state)), base_url="http://api.test"
     ) as c:
-        stale = await c.post(f"/mock/{old_token}/tools/lookup_order", json={"order_id": "ord_1"})
+        stale = await c.post(f"/mock/{old_token}/tools/lookup_order", json={"order_id": "ord_1004"})
     assert stale.status_code == 409
