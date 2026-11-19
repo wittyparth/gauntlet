@@ -83,10 +83,14 @@ class MemoryJournalStore:
         j = self._get(episode_id)
         if epoch != j.epoch:
             raise StaleLease(f"{episode_id}: epoch {epoch} != {j.epoch}")
-        if events and events[0].seq != len(j.events):
-            raise SeqConflict(f"{episode_id}: seq {events[0].seq} != {len(j.events)}")
+        n = len(j.events)
+        if [e.seq for e in events] != list(range(n, n + len(events))):
+            raise SeqConflict(f"{episode_id}: events do not continue seq {n}")
         j.events.extend(events)
         for e in effects:
+            prev = j.effects.get(e.key)
+            if prev and prev.status in ("done", "failed") and e.status == "pending":
+                continue  # a finished effect never regresses to pending
             j.effects[e.key] = e
         self.appends += 1
 

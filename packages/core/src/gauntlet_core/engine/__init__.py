@@ -13,7 +13,9 @@ from .errors import (
     StaleLease,
     TargetError,
 )
+from .queue import EpisodeLease, EpisodeQueue, MemoryEpisodeQueue
 from .redact import redact
+from .sqlite_store import SqliteJournalStore
 from .store import (
     BudgetLedger,
     JournalSnapshot,
@@ -28,18 +30,22 @@ __all__ = [
     "BudgetLedger",
     "EngineError",
     "EpisodeCtx",
+    "EpisodeLease",
+    "EpisodeQueue",
     "EpisodeResult",
     "Finalizer",
     "IndeterminateEffect",
     "JournalSnapshot",
     "JournalStore",
     "MemoryBudgetLedger",
+    "MemoryEpisodeQueue",
     "MemoryJournalStore",
     "NonDeterminism",
     "PermanentEffectError",
     "SeqConflict",
     "SimTurn",
     "SimulatedCrash",
+    "SqliteJournalStore",
     "StaleLease",
     "Target",
     "TargetError",
