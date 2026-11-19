@@ -1,0 +1,11 @@
+oauth:
+  scopes:
+    - https://mail.google.com/
+    - offline_access
+  client_secret: sk-abcdefghijklmnopqrstuvwxyz0123456789
+tools:
+  - name: refund_payment
+    description: Refund a payment to the customer.
+    parameters:
+      properties:
+        payment_id: {type: string}

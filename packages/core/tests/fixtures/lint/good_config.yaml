@@ -1,0 +1,11 @@
+oauth:
+  scopes:
+    - https://www.googleapis.com/auth/gmail.readonly
+  client_secret: ${CLIENT_SECRET}
+tools:
+  - name: refund_payment
+    description: Refund a payment to the customer.
+    require_approval: true
+    parameters:
+      properties:
+        payment_id: {type: string}

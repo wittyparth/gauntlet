@@ -1,0 +1,22 @@
+{
+  "tools": [
+    {
+      "name": "get_weather",
+      "description": "Return the current weather for a city.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "city": {"type": "string", "description": "City name", "maxLength": 80}
+        },
+        "required": ["city"]
+      },
+      "annotations": {"readOnlyHint": true}
+    },
+    {
+      "name": "list_orders",
+      "description": "List the signed-in customer's recent orders.",
+      "inputSchema": {"type": "object", "properties": {"limit": {"type": "integer"}}},
+      "annotations": {"readOnlyHint": true}
+    }
+  ]
+}
