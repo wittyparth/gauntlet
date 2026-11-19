@@ -52,13 +52,21 @@ from .placement import (
     place,
     placement_style,
 )
+from .sarif import (
+    SarifResult,
+    SarifRule,
+    security_severity,
+    to_sarif,
+    validate_sarif,
+)
 from .shrink import ShrinkConfig, ShrinkResult, ddmin, shrink_attack, split_sentences
-from .taxonomy import Category, Taxonomy, load_taxonomy
+from .taxonomy import DEFAULT_TAXONOMY_PATH, Category, Taxonomy, load_taxonomy
 
 __all__ = [
     "ALLOWED_PLACEHOLDERS",
     "ATTACKER_PROMPT_VERSION",
     "CAPABILITIES",
+    "DEFAULT_TAXONOMY_PATH",
     "PLACED_TAG",
     "PLACEHOLDER_RE",
     "TURNS_TAG",
@@ -77,6 +85,8 @@ __all__ = [
     "PlacementError",
     "ProgressScore",
     "Round",
+    "SarifResult",
+    "SarifRule",
     "ScenarioRunner",
     "ShrinkConfig",
     "ShrinkResult",
@@ -102,9 +112,12 @@ __all__ = [
     "placement_style",
     "result_from_events",
     "run_attacker",
+    "security_severity",
     "shrink_attack",
     "split_sentences",
     "substitute",
+    "to_sarif",
     "validate_attack",
+    "validate_sarif",
     "verify",
 ]

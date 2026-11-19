@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import typer
 
+from .commands.attacks import attacks_app
 from .commands.demo import demo_app
 from .commands.init import init
 from .commands.report import report
@@ -23,6 +24,7 @@ app.command()(validate)
 app.command()(run)
 app.command()(report)
 app.add_typer(demo_app, name="demo")
+app.add_typer(attacks_app, name="attacks")
 
 if __name__ == "__main__":  # pragma: no cover
     app()
