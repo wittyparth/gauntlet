@@ -14,6 +14,7 @@ from .fake import CallRecord, FakeLLM, FakeReply
 from .gateway import Gateway
 from .litellm_gateway import LiteLLMGateway
 from .ratelimit import LocalRateLimiter, ProviderLimiter, RateLimiter, build_limiter
+from .scripted import ScriptedLLM, load_scripted_llm
 from .types import (
     AuthError,
     BadRequest,
@@ -48,10 +49,12 @@ __all__ = [
     "RateLimited",
     "RateLimiter",
     "RoleConfig",
+    "ScriptedLLM",
     "StructuredOutputError",
     "ToolCallRequest",
     "build_limiter",
     "cosine",
     "llm_effect",
     "load_config",
+    "load_scripted_llm",
 ]

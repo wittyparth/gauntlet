@@ -62,6 +62,7 @@ __all__ = [
     "execute_episode",
     "execute_with_attempts",
     "make_finalizer",
+    "make_llm_sim",
     "make_target",
 ]
 
@@ -191,7 +192,7 @@ def make_finalizer(
     return finalize
 
 
-def _llm_sim(gateway: Gateway):
+def make_llm_sim(gateway: Gateway):
     async def sim(ctx: EpisodeCtx, spec: ToolSpec, args: Json) -> Any:
         assert isinstance(spec.handler, LLMSimHandler)
         messages: list[Json] = [
@@ -282,7 +283,7 @@ async def execute_episode(
         return out
 
     built = build_world(job.world, scn.world_overrides, job.rng_seed)
-    world = World(built, llm_sim=_llm_sim(deps.gateway))
+    world = World(built, llm_sim=make_llm_sim(deps.gateway))
     world.bind(ctx)
     persona = merge_persona(job.persona, scn.persona_overrides)
     target = make_target(job.agent_version, world, built, deps, job.secrets)

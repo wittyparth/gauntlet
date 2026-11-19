@@ -1,0 +1,308 @@
+"""Runs: creation (with dry run), the response shape, state changes, and completion."""
+
+from __future__ import annotations
+
+import random
+from datetime import UTC, datetime
+from importlib.metadata import PackageNotFoundError, version
+from typing import Any
+
+from gauntlet_core.estimate import estimate_run_cost
+from gauntlet_core.eval import load_rubrics
+from gauntlet_core.ids import new_id
+from gauntlet_core.runner import derive_episode_seed
+from gauntlet_core.schema import AgentVersion, RunManifest, Scenario, WorldSpec
+from gauntlet_core.sim import load_persona_library
+from gauntlet_core.validate import validate_scenario
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy import func, select, text, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..db.models import AgentVersion as AgentVersionRow
+from ..db.models import Episode, Run, Suite, SuiteScenario
+from ..db.models import Persona as PersonaRow
+from ..db.models import Rubric as RubricRow
+from ..db.models import Scenario as ScenarioRow
+from ..db.models import World as WorldRow
+from ..deps import AppState
+from ..errors import ApiError, not_found
+
+__all__ = [
+    "RunCreate",
+    "agent_version_of",
+    "create_run",
+    "maybe_complete_run",
+    "run_counts",
+    "run_json",
+    "run_update_payload",
+    "set_run_status",
+]
+
+
+class RunCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    suite_id: str
+    agent_version_id: str
+    repetitions: int | None = None
+    budget_usd_micros: int
+    seed: int | None = None
+    include_drafts: bool = False
+
+
+def platform_version() -> str:
+    try:
+        return version("gauntlet-server")
+    except PackageNotFoundError:
+        return "0.0.0"
+
+
+def agent_version_of(av: AgentVersionRow) -> AgentVersion:
+    return AgentVersion.model_validate(
+        {**av.config, "id": av.id, "agent_id": av.agent_id, "label": av.label}
+    )
+
+
+async def run_counts(session: AsyncSession, run_id: str) -> dict[str, Any]:
+    rows = await session.execute(
+        select(Episode.status, Episode.outcome, func.count())
+        .where(Episode.run_id == run_id)
+        .group_by(Episode.status, Episode.outcome)
+    )
+    counts: dict[str, Any] = {"total": 0, "queued": 0, "leased": 0, "done": 0, "cancelled": 0}
+    by_outcome: dict[str, int] = {}
+    for status, outcome, n in rows:
+        counts["total"] += n
+        counts[status] += n
+        if outcome:
+            by_outcome[outcome] = by_outcome.get(outcome, 0) + n
+    counts["by_outcome"] = by_outcome
+    return counts
+
+
+def _iso(d: datetime | None) -> str | None:
+    return d.isoformat() if d else None
+
+
+async def run_json(
+    session: AsyncSession, run: Run, *, estimate: dict[str, int] | None = None
+) -> dict[str, Any]:
+    out: dict[str, Any] = {
+        "id": run.id,
+        "suite_id": run.suite_id,
+        "agent_version_id": run.agent_version_id,
+        "status": run.status,
+        "manifest": run.manifest,
+        "repetitions": run.repetitions,
+        "seed": run.seed,
+        "budget_usd_micros": run.budget_usd_micros,
+        "reserved_usd_micros": run.reserved_usd_micros,
+        "spent_usd_micros": run.spent_usd_micros,
+        "baseline_of": run.baseline_of,
+        "counts": await run_counts(session, run.id),
+        "created_at": _iso(run.created_at),
+        "finished_at": _iso(run.finished_at),
+    }
+    if estimate is not None:
+        out["estimate_usd_micros"] = estimate
+    return out
+
+
+async def run_update_payload(session: AsyncSession, run_id: str) -> dict[str, Any]:
+    run = await session.get(Run, run_id, populate_existing=True)
+    assert run is not None
+    return {
+        "run_id": run.id,
+        "status": run.status,
+        "counts": await run_counts(session, run.id),
+        "spent_usd_micros": run.spent_usd_micros,
+        "reserved_usd_micros": run.reserved_usd_micros,
+    }
+
+
+async def _latest(session: AsyncSession, model: Any, ws: str, ids: list[str]) -> dict[str, Any]:
+    rows = (
+        await session.execute(
+            select(model)
+            .where(model.workspace_id == ws, model.id.in_(ids))
+            .order_by(model.id, model.version.desc())
+        )
+    ).scalars()
+    latest: dict[str, Any] = {}
+    for r in rows:
+        latest.setdefault(r.id, r)
+    return latest
+
+
+async def create_run(
+    session: AsyncSession,
+    state: AppState,
+    workspace_id: str,
+    body: RunCreate,
+    *,
+    dry_run: bool = False,
+    run_id: str | None = None,
+    episode_ids: list[str] | None = None,
+) -> tuple[dict[str, Any], int]:
+    """Returns (response, http status). Creates nothing when `dry_run`."""
+    suite = await session.get(Suite, body.suite_id)
+    if suite is None or suite.workspace_id != workspace_id:
+        raise not_found("suite", body.suite_id)
+    av = await session.get(AgentVersionRow, body.agent_version_id)
+    if av is None or av.workspace_id != workspace_id:
+        raise not_found("agent version", body.agent_version_id)
+    if body.budget_usd_micros <= 0:
+        raise ApiError(422, "budget_too_low", "budget must be positive")
+    budget = min(body.budget_usd_micros, state.settings.max_run_budget_usd_micros)
+    scn_ids = list(
+        (
+            await session.execute(
+                select(SuiteScenario.scenario_id)
+                .where(SuiteScenario.suite_id == suite.id)
+                .order_by(SuiteScenario.position)
+            )
+        ).scalars()
+    )
+    latest = await _latest(session, ScenarioRow, workspace_id, scn_ids)
+    errors: list[dict[str, str]] = []
+    scenarios: list[Scenario] = []
+    for sid in scn_ids:
+        row = latest.get(sid)
+        if row is None:
+            errors.append({"scenario_id": sid, "code": "not_found", "message": "scenario missing"})
+        elif row.status != "approved" and not body.include_drafts:
+            errors.append({"scenario_id": sid, "code": "not_approved", "message": "draft scenario"})
+        else:
+            scenarios.append(Scenario.model_validate(row.doc))
+    world_ids = sorted({s.world for s in scenarios if isinstance(s.world, str)})
+    worlds = await _latest(session, WorldRow, workspace_id, world_ids)
+    rubric_ids = set(load_rubrics()) | set(
+        (
+            await session.execute(
+                select(RubricRow.id).where(RubricRow.workspace_id == workspace_id)
+            )
+        ).scalars()
+    )
+    persona_ids = set(load_persona_library()) | set(
+        (
+            await session.execute(
+                select(PersonaRow.id).where(PersonaRow.workspace_id == workspace_id)
+            )
+        ).scalars()
+    )
+    for scn in scenarios:
+        if isinstance(scn.world, str):
+            wrow = worlds.get(scn.world)
+            if wrow is None:
+                msg = f"world {scn.world!r} not found"
+                errors.append({"scenario_id": scn.id, "code": "unknown_world", "message": msg})
+                continue
+            spec = WorldSpec.model_validate(wrow.doc)
+        else:
+            spec = scn.world
+        for issue in validate_scenario(scn, spec, persona_ids=persona_ids, rubric_ids=rubric_ids):
+            errors.append({"scenario_id": scn.id, "code": issue.code, "message": issue.message})
+    reps = body.repetitions or suite.repetitions
+    version_model = agent_version_of(av)
+    est = estimate_run_cost(
+        scenarios,
+        reps,
+        state.gateway_config,
+        agent_model=getattr(version_model.target, "model", None),
+    )
+    estimate = {"low": est.low, "expected": est.expected, "high": est.high}
+    warnings = list(est.warnings)
+    if budget < est.low:
+        warnings.append("budget is below the low cost estimate; the run may stop early")
+    if dry_run:
+        return {
+            "valid": not errors,
+            "errors": errors,
+            "warnings": warnings,
+            "episode_count": len(scenarios) * reps,
+            "estimate_usd_micros": estimate,
+        }, 200
+    if errors:
+        raise ApiError(422, "validation_error", "the suite cannot run", errors)
+    seed = body.seed if body.seed is not None else random.Random().randrange(2**31)
+    rid = run_id or new_id("run")
+    manifest = RunManifest(
+        run_id=rid,
+        suite_id=suite.id,
+        agent_version=version_model,
+        scenario_versions={s.id: latest[s.id].version for s in scenarios},
+        seed=seed,
+        repetitions=reps,
+        model_roles={k: v.model for k, v in state.gateway_config.llm.roles.items()},
+        rubric_versions={},
+        platform_version=platform_version(),
+        budget_usd_micros=budget,
+        created_at=datetime.now(UTC),
+    )
+    run = Run(
+        id=rid,
+        workspace_id=workspace_id,
+        suite_id=suite.id,
+        agent_version_id=av.id,
+        manifest=manifest.model_dump(mode="json"),
+        status="queued",
+        repetitions=reps,
+        seed=seed,
+        world_versions={wid: w.version for wid, w in worlds.items()},
+        budget_usd_micros=budget,
+    )
+    session.add(run)
+    await session.flush()
+    n = 0
+    for scn in scenarios:
+        for rep in range(reps):
+            session.add(
+                Episode(
+                    id=episode_ids[n] if episode_ids else new_id("ep"),
+                    workspace_id=workspace_id,
+                    run_id=rid,
+                    scenario_id=scn.id,
+                    scenario_version=latest[scn.id].version,
+                    rep=rep,
+                    rng_seed=derive_episode_seed(seed, scn.id, rep),
+                )
+            )
+            n += 1
+    await session.flush()
+    out = await run_json(session, run, estimate=estimate)
+    out["warnings"] = warnings
+    return out, 201
+
+
+async def set_run_status(session: AsyncSession, run: Run, action: str) -> None:
+    """cancel | pause | resume, with the state machine of the spec (409 `run_not_active`)."""
+    allowed = {
+        "cancel": ("queued", "running", "paused"),
+        "pause": ("queued", "running"),
+        "resume": ("paused",),
+    }[action]
+    if run.status not in allowed:
+        raise ApiError(409, "run_not_active", f"cannot {action} a run that is {run.status}")
+    if action == "cancel":
+        await session.execute(
+            update(Episode)
+            .where(Episode.run_id == run.id, Episode.status == "queued")
+            .values(status="cancelled", finished_at=func.now())
+        )
+        run.status, run.finished_at = "cancelled", datetime.now(UTC)
+    elif action == "pause":
+        run.status = "paused"
+    else:
+        run.status = "running"
+
+
+async def maybe_complete_run(session: AsyncSession, run_id: str) -> bool:
+    """`done` once no episode is queued or leased (never overrides a cancelled run)."""
+    res = await session.execute(
+        text(
+            "UPDATE runs SET status = 'done', finished_at = now() "
+            "WHERE id = :r AND status IN ('queued', 'running') AND NOT EXISTS "
+            "(SELECT 1 FROM episodes WHERE run_id = :r AND status IN ('queued', 'leased'))"
+        ),
+        {"r": run_id},
+    )
+    return res.rowcount == 1  # type: ignore[attr-defined]
