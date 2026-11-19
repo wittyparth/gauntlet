@@ -2,7 +2,12 @@
 name = "gauntlet-cli"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = ["gauntlet-core"]
+dependencies = [
+    "gauntlet-core",
+    "httpx>=0.28.1",
+    "rich>=13",
+    "typer>=0.12",
+]
 
 [tool.uv.sources]
 gauntlet-core = { workspace = true }
