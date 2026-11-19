@@ -11,7 +11,7 @@ from typing import Any
 
 from gauntlet_core.schema import CheckResult, Evidence, Json, Trajectory
 
-from .support import snippet
+from ..support import snippet
 
 DetectorFn = Callable[[Trajectory, Mapping[str, Json]], CheckResult]
 
