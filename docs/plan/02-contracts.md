@@ -421,3 +421,14 @@ Judges and target are from different model families on purpose (self-preference)
 | Judge context | `JudgeEvaluator` gains an optional per-rubric `context_text` provider so `rule_context` reaches the cascade. |
 | `POST /v1/dev/seed` | P1-9 implements the shape the CLI already sends (`{"reset": bool}`) and returns the seeded ids; the CLI test is updated to match. |
 | `--fake-llm` | Stateless `ScriptedLLM` accepted for CLI testing. |
+
+### Server batch review rulings (2026-11-19)
+
+| Question | Ruling |
+|---|---|
+| 1.7a implementation | Reviewed and accepted (`EpisodeCtx` frame stack, `_replay_span`, `_absorb_external`, `_has_nested_records`, `seek_end`, `random(index)`; `World.bind`). |
+| Pending outer with nested records | Always abandon the attempt, even for retry-safe nested `llm_sim` (rare; simplicity wins). |
+| Façade serialisation | `pg_advisory_xact_lock` per episode instead of the row lock (the store takes the row lock itself). Accepted. |
+| Dev keys | Fixed derived Fernet/token key in `GAUNTLET_ENV=dev` only, with a warning; startup fails without a key otherwise. Accepted. |
+| Budget exhaustion | Cancels queued episodes; run ends `done`; report shows exclusions. Accepted. |
+| Seed | Built-in demo now; switch `/v1/dev/seed` to load `packs/ecommerce` once the pack lands. |
