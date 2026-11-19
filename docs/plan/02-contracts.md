@@ -432,3 +432,12 @@ Judges and target are from different model families on purpose (self-preference)
 | Dev keys | Fixed derived Fernet/token key in `GAUNTLET_ENV=dev` only, with a warning; startup fails without a key otherwise. Accepted. |
 | Budget exhaustion | Cancels queued episodes; run ends `done`; report shows exclusions. Accepted. |
 | Seed | Built-in demo now; switch `/v1/dev/seed` to load `packs/ecommerce` once the pack lands. |
+
+### L-R1 review rulings (2026-11-19)
+
+| Question | Ruling |
+|---|---|
+| Effect result key order | Effect results are returned with recursively sorted keys on live and replay paths (Postgres `jsonb` does not keep order; found by the chaos test). Invariant: anything derived from an effect result must not depend on key order. |
+| Budget drift on worker kill | Accepted for Phase 1: ledger is reconciled to the journal when a run completes. Revisit (reservation reclaim on lease expiry) before multi-tenant production (P5-7). |
+| Attempt cap | Default 3, `GAUNTLET_MAX_ATTEMPTS` overrides. Revisit counting only non-infrastructure abandons in Phase 3. |
+| Typed API | Every `/v1` route has a `response_model`; the web uses generated types only. |

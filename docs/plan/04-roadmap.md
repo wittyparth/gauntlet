@@ -21,9 +21,9 @@ Definition of done: `gauntlet run packs/ecommerce --target hosted.yaml` prints a
 |---|---|---|---|
 | L2 | DONE | Engine: effects, journal, episode loop, budget, cassette, memory and SQLite stores, redaction | L1 |
 | L3 | DONE | World: state, patches, diff with causal seq, crud and python handlers, faults, clock, canaries | L1 |
-| L4 | CORE | Stats: Wilson, bootstrap, pass^k, comparison, flips, sequential, agreement | L1 |
-| L5 | CORE | Checks: AST, final and prefix evaluation, matcher and ref resolution, detector registry | L1, L3 |
-| L6 | CORE | Judges: rendering, evidence validation, cascade, cache, calibration, simulator guard | L1, L4, L5 |
+| L4 | DONE | Stats: Wilson, bootstrap, pass^k, comparison, flips, sequential, agreement | L1 |
+| L5 | DONE | Checks: AST, final and prefix evaluation, matcher and ref resolution, detector registry | L1, L3 |
+| L6 | DONE | Judges: rendering, evidence validation, cascade, cache, calibration, simulator guard | L1, L4, L5 |
 | P1-1 | SUB b | LLM gateway over LiteLLM: roles from `gauntlet.toml`, cost, retries, rate limiting, `FakeLLM`, structured output | L1 |
 | P1-2 | SUB b | Targets: hosted (tool loop through `ctx`), openai_compat, http; contract tests with a fake server | L2, P1-1 |
 | P1-3 | SUB b | User simulator: persona rendering, hidden facts, turn prompt, done detection; 10-persona library | L2, P1-1 |
