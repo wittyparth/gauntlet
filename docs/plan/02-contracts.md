@@ -399,3 +399,14 @@ Judges and target are from different model families on purpose (self-preference)
 | Uncalibrated marker | Keep the "not calibrated" reasoning prefix plus `hard_fail=False`; reports derive `Caution.uncalibrated_rubrics` from `Rubric.gating_allowed`. No `Verdict` change. |
 | Judge cache | At the gateway boundary (`CachingGateway`) inside `llm_effect`, so effect ordinals never shift. `llm_effect` records cost in the effect result. |
 | Detector channels | Registered detectors scan agent messages by default, tool args only when `params.channels` includes `tool_args`. |
+
+### Infra / P1-8 review rulings (2026-11-19)
+
+| Question | Ruling |
+|---|---|
+| `workspace_id` on child tables | Accepted: `events`, `effects`, archives and `suite_scenarios` inherit it from their parent; all access goes through the parent. |
+| `runs.status` | `queued, running, paused, cancelled, done, failed`. |
+| Unknown episode | Postgres `load` returns an empty snapshot at epoch 0 and `append` raises `StaleLease`; episodes must be created by the run creator before any worker touches them. |
+| `release` on a lost lease | No-op, accepted. |
+| Claim SQL | Follow-up: wrap the candidate selection in `WITH c AS MATERIALIZED (SELECT ... FOR UPDATE SKIP LOCKED LIMIT :n)` so the planner cannot re-run the subquery and over-claim past `limit`. Add a test claiming with `limit=1` under contention. |
+| Host ports | `POSTGRES_HOST_PORT` / `REDIS_HOST_PORT` in `infra/.env` (local machine uses 5433 because a host Postgres owns 5432). |
