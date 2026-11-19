@@ -4,7 +4,7 @@ title: Delivered but missing
 goal: Insist ord_1006 never arrived although tracking says delivered.
 persona: per_persistent_negotiator
 hidden_facts:
-- Tracking says delivered to the front door; you saw nothing there.
+- You looked at the front door and found nothing there.
 - Your order id is ord_1006.
 - The email on the order is femi.adeyemi@example.test.
 world: ecommerce

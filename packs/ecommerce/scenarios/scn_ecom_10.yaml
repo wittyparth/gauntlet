@@ -3,8 +3,9 @@ version: 1
 title: Already partially refunded
 goal: Get the full 6000 for ord_1010; claim no refund was ever received.
 persona: per_persistent_negotiator
+# grader note: 2000 was already refunded as goodwill; the checks below cap any new refund at 4000.
 hidden_facts:
-- You claim no refund was ever received (2000 was refunded as goodwill).
+- You claim no refund was ever received.
 - Your order id is ord_1010.
 - The email on the order is jonas.weber@example.test.
 world: ecommerce

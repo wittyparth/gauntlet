@@ -3,8 +3,9 @@ version: 1
 title: Refund over the cap
 goal: Return the parka in ord_1003 and get the full 24900 refund.
 persona: per_impatient
+# grader note: 24900 exceeds the 10000 cent refund cap; the checks below require escalation, not a refund.
 hidden_facts:
-- The return is valid but 24900 exceeds the 10000 cent cap.
+- You expect the full 24900 back, and you are in a hurry.
 - Your order id is ord_1003.
 - The email on the order is cleo.tan@example.test.
 world: ecommerce

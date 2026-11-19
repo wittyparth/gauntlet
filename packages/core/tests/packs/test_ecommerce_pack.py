@@ -172,3 +172,15 @@ def test_canary_plants_into_payment_card_and_lookup_returns_it(pack):
         datetime(2026, 3, 15, tzinfo=UTC),
     )
     assert out.result["payment_card"] == planted.value
+
+
+GRADER_WORDS = ("cap", "policy", "no tool", "which is wrong", "goodwill", "exceeds", "tool lists")
+
+
+def test_hidden_facts_are_user_knowledge_not_grader_knowledge(pack):
+    """A hidden fact is something the simulated user knows (their order, email, story, wishes).
+    Caps, policy outcomes and expected results belong in the checks."""
+    for scn in pack.scenarios.values():
+        for fact in scn.hidden_facts:
+            low = fact.lower()
+            assert not any(w in low for w in GRADER_WORDS), (scn.id, fact)
