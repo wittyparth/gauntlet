@@ -21,6 +21,7 @@ class Gateway(Protocol):
         response_model: type[BaseModel] | None = None,
         temperature: float | None = None,
         seed: int | None = None,
+        max_output_scale: int = 1,
     ) -> LLMResult: ...
 
     def estimate_usd_micros(

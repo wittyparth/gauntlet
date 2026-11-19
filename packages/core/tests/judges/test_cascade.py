@@ -215,3 +215,15 @@ async def test_judge_lenient_parse_extracts_fenced_json_but_never_plain_text():
     f2 = llm([FakeReply(text="x"), FakeReply(text="I think this passes")], [FakeReply(text="")] * 2)
     v2 = await run(f2)
     assert v2.result == "error"  # no verdict is invented from prose
+
+
+def test_cache_key_includes_reasoning():
+    from gauntlet_core.judges import cache_key
+    from pydantic import BaseModel
+
+    class M(BaseModel):
+        a: int
+
+    msgs = [{"role": "user", "content": "x"}]
+    assert cache_key("r", msgs, M, 0.0, "off") != cache_key("r", msgs, M, 0.0, "high")
+    assert cache_key("r", msgs, M, 0.0, "off") == cache_key("r", msgs, M, 0.0, "off")

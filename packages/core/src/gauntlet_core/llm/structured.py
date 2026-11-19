@@ -25,6 +25,7 @@ from gauntlet_core.llm.types import (
     RAW_MARKER,
     GatewayError,
     LLMResult,
+    OutputTruncated,
     StructuredOutputError,
 )
 from gauntlet_core.schema import Json
@@ -41,6 +42,7 @@ __all__ = [
 
 REPAIR_PROMPT_VERSION = "structured-repair/1"
 INVALID_CODE = StructuredOutputError.code
+TRUNCATED_CODE = OutputTruncated.code
 Lenient = Callable[[str], BaseModel | None]
 
 _REPAIR = (
@@ -136,7 +138,7 @@ def lenient_json(model: type[BaseModel]) -> Lenient:
 
 
 async def structured_call(
-    call: Callable[[list[Json]], Awaitable[LLMResult]],
+    call: Callable[..., Awaitable[LLMResult]],
     messages: list[Json],
     *,
     lenient: Lenient | None = None,
@@ -146,6 +148,8 @@ async def structured_call(
     try:
         return await call(messages)
     except (GatewayError, PermanentEffectError) as first:
+        if first.code == TRUNCATED_CODE:  # reasoning ate the budget: same prompt, 2x tokens
+            return await call(messages, max_output_scale=2)
         bad = _invalid(first)
         if bad is None:
             raise
@@ -179,7 +183,7 @@ async def structured_effect(
 ) -> LLMResult:
     """`llm_effect` with `structured_call` recovery; each attempt is its own effect."""
 
-    async def call(msgs: list[Json]) -> LLMResult:
+    async def call(msgs: list[Json], max_output_scale: int = 1) -> LLMResult:
         return await llm_effect(
             ctx,
             gateway,
@@ -189,6 +193,7 @@ async def structured_effect(
             temperature=temperature,
             seed=seed,
             error_cls=error_cls,
+            max_output_scale=max_output_scale,
         )
 
     return await structured_call(call, messages, lenient=lenient)

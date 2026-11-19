@@ -47,6 +47,7 @@ class FakeLLM:
         self._pos: dict[str | None, int] = dict.fromkeys(self._queues, 0)
         self.default_cost = default_cost or Cost()
         self.calls: list[CallRecord] = []
+        self.scales: list[int] = []
 
     def _queue_key(self, role: str) -> str | None:
         return role if role in self._queues else None
@@ -60,7 +61,9 @@ class FakeLLM:
         response_model: type[BaseModel] | None = None,
         temperature: float | None = None,
         seed: int | None = None,
+        max_output_scale: int = 1,
     ) -> LLMResult:
+        self.scales.append(max_output_scale)
         self.calls.append(CallRecord(role, list(messages), tools, response_model))
         key = self._queue_key(role)
         i = self._pos[key]

@@ -105,3 +105,102 @@ def test_estimate_uses_pricing_override():
     c.llm.pricing["p/x"] = PricingConfig(input_per_mtok=2_000_000, output_per_mtok=0)
     c.llm.roles["r"] = RoleConfig(model="p/x", max_output_tokens=10)
     assert gw(c).estimate_usd_micros("r", [{"role": "user", "content": "hello"}]) > 0
+
+
+def resp_len(reasoning_tokens=480):
+    msg = SimpleNamespace(content="", tool_calls=None)
+    usage = SimpleNamespace(
+        prompt_tokens=10,
+        completion_tokens=1024,
+        completion_tokens_details=SimpleNamespace(reasoning_tokens=reasoning_tokens),
+    )
+    return SimpleNamespace(
+        choices=[SimpleNamespace(message=msg, finish_reason="length")], usage=usage
+    )
+
+
+async def _kwargs(role_cfg, role="judge_small", **kw):
+    c = GatewayConfig()
+    c.llm.roles[role] = role_cfg
+    with patch("litellm.acompletion", AsyncMock(return_value=resp())) as m:
+        await gw(c).complete(role, MSGS, **kw)
+    return m.await_args_list[-1].kwargs
+
+
+async def test_reasoning_off_is_passed_as_openrouter_extra_body():
+    k = await _kwargs(RoleConfig(model="openrouter/qwen/qwen3.7-flash", reasoning="off"))
+    assert k["extra_body"] == {"reasoning": {"enabled": False}}
+
+
+@pytest.mark.parametrize("level", ["low", "medium", "high"])
+async def test_reasoning_level_is_passed_as_effort(level):
+    k = await _kwargs(RoleConfig(model="openrouter/qwen/qwen3.7-flash", reasoning=level))
+    assert k["extra_body"] == {"reasoning": {"effort": level}}
+
+
+async def test_reasoning_default_sends_nothing():
+    k = await _kwargs(RoleConfig(model="openrouter/qwen/qwen3.7-flash", reasoning="default"))
+    assert "extra_body" not in k
+
+
+async def test_reasoning_not_sent_to_non_openrouter_models():
+    k = await _kwargs(RoleConfig(model="p/other", reasoning="off"))
+    assert "extra_body" not in k
+
+
+async def test_model_roles_default_to_reasoning_off():
+    c = GatewayConfig()
+    with patch("litellm.acompletion", AsyncMock(return_value=resp())) as m:
+        await gw(c).complete("model:openrouter/deepseek/deepseek-v4-flash", MSGS)
+    assert m.await_args_list[-1].kwargs["extra_body"] == {"reasoning": {"enabled": False}}
+
+
+async def test_empty_length_reply_raises_output_truncated_with_reasoning_tokens():
+    from gauntlet_core.llm import OutputTruncated
+
+    with (
+        patch("litellm.acompletion", AsyncMock(return_value=resp_len(480))),
+        pytest.raises(OutputTruncated) as ei,
+    ):
+        await gw().complete("judge_small", MSGS, response_model=Out)
+    assert ei.value.code == "output_truncated" and "480" in ei.value.message
+
+
+async def test_max_output_scale_doubles_max_tokens():
+    c = GatewayConfig()
+    c.llm.roles["judge_small"] = RoleConfig(model="p/x", max_output_tokens=1000)
+    with patch("litellm.acompletion", AsyncMock(return_value=resp())) as m:
+        await gw(c).complete("judge_small", MSGS, max_output_scale=2)
+    assert m.await_args_list[-1].kwargs["max_tokens"] == 2000
+
+
+async def test_reasoning_mandatory_400_retries_once_with_low_effort_and_double_budget(caplog):
+    c = GatewayConfig()
+    c.llm.roles["judge_strong"] = RoleConfig(
+        model="openrouter/z-ai/glm-x", max_output_tokens=500, reasoning="off"
+    )
+    err = lx.BadRequestError(
+        "Reasoning is mandatory for this endpoint and cannot be disabled.",
+        llm_provider="openrouter",
+        model="m",
+    )
+    with (
+        patch("litellm.acompletion", AsyncMock(side_effect=[err, resp()])) as m,
+        caplog.at_level("WARNING"),
+    ):
+        r = await gw(c).complete("judge_strong", MSGS)
+    assert r.text == "ok" and m.await_count == 2
+    first, second = (call.kwargs for call in m.await_args_list)
+    assert first["extra_body"] == {"reasoning": {"enabled": False}} and first["max_tokens"] == 500
+    assert second["extra_body"] == {"reasoning": {"effort": "low"}} and second["max_tokens"] == 1000
+    assert "openrouter/z-ai/glm-x" in caplog.text
+
+
+async def test_other_bad_requests_are_not_retried_with_reasoning():
+    err = lx.BadRequestError("bad json", llm_provider="openrouter", model="m")
+    with (
+        patch("litellm.acompletion", AsyncMock(side_effect=err)) as m,
+        pytest.raises(Exception, match="bad json"),
+    ):
+        await gw().complete("judge_small", MSGS)
+    assert m.await_count == 1

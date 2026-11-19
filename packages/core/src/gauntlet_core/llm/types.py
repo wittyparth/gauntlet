@@ -70,6 +70,13 @@ class ContextTooLong(GatewayError):
     code = "context_too_long"
 
 
+class OutputTruncated(GatewayError):
+    """The reply was empty and the provider stopped at the token limit (finish_reason
+    `length`): a reasoning model spent the output budget on hidden reasoning."""
+
+    code = "output_truncated"
+
+
 RAW_MARKER = "\n<<raw-output>>\n"
 RAW_CAP = 2000
 

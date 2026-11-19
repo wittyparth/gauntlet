@@ -116,3 +116,22 @@ def test_repair_messages_shortens_the_error():
     msgs = repair_messages(MSGS, "x", "1 validation error for Out\n  Invalid JSON: EOF")
     assert "validation error for Out" not in msgs[-1]["content"] or True
     assert len(msgs[-1]["content"]) < 500
+
+
+async def test_output_truncated_is_retried_once_with_double_budget():
+    from gauntlet_core.llm.types import OutputTruncated
+
+    llm = FakeLLM([FakeReply(error=OutputTruncated("empty, 480 reasoning tokens")), '{"a": 5}'])
+    r = await structured_effect(await ctx_for(), llm, "r", MSGS, response_model=Out)
+    assert r.parsed == Out(a=5)
+    assert llm.scales == [1, 2]
+    assert llm.calls[1].messages == MSGS
+
+
+async def test_output_truncated_twice_raises_distinct_code():
+    from gauntlet_core.llm.types import OutputTruncated
+
+    llm = FakeLLM([FakeReply(error=OutputTruncated("x")), FakeReply(error=OutputTruncated("y"))])
+    with pytest.raises(PermanentEffectError) as ei:
+        await structured_effect(await ctx_for(), llm, "r", MSGS, response_model=Out)
+    assert ei.value.code == "output_truncated" and len(llm.calls) == 2

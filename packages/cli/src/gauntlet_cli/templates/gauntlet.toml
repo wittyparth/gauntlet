@@ -14,16 +14,17 @@ temperature = 0.7
 model = "openrouter/qwen/qwen3.7-flash"
 
 [llm.roles.judge_strong]
-model = "openrouter/z-ai/glm-5.3-flash"
+model = "openrouter/google/gemini-2.5-flash-lite"
+reasoning = "off"
 
 # Prices in USD micros per 1M tokens, used for the cost estimate and the budget.
 [llm.pricing."openrouter/qwen/qwen3.7-flash"]
 input_per_mtok = 30000
 output_per_mtok = 130000
 
-[llm.pricing."openrouter/z-ai/glm-5.3-flash"]
-input_per_mtok = 150000
-output_per_mtok = 500000
+[llm.pricing."openrouter/google/gemini-2.5-flash-lite"]
+input_per_mtok = 100000
+output_per_mtok = 400000
 
 [llm.pricing."openrouter/deepseek/deepseek-v4-flash"]
 input_per_mtok = 90000

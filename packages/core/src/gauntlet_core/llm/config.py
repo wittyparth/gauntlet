@@ -6,14 +6,14 @@ import os
 import re
 import tomllib
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 # Lead-pinned defaults (2026-11-19): cheap OpenRouter models only. The API key is read by
 # litellm from OPENROUTER_API_KEY.
 SMALL_MODEL = "openrouter/qwen/qwen3.7-flash"
-STRONG_MODEL = "openrouter/z-ai/glm-5.3-flash"
+STRONG_MODEL = "openrouter/google/gemini-2.5-flash-lite"
 ATTACKER_MODEL = "openrouter/deepseek/deepseek-v4-flash"
 DEFAULT_MODEL = "openrouter/deepseek/deepseek-v4-flash"
 
@@ -22,10 +22,16 @@ class Strict(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+Reasoning = Literal["off", "low", "medium", "high", "default"]
+
+
 class RoleConfig(Strict):
     model: str
     temperature: float | None = 0.0
     max_output_tokens: int = 1024
+    # Hidden-reasoning control. Reasoning models (qwen3.7-flash) otherwise spend the whole
+    # output budget thinking and return empty content. "default" leaves the provider alone.
+    reasoning: Reasoning = "default"
     fallbacks: list[str] = []
 
 
@@ -41,21 +47,23 @@ class PricingConfig(Strict):
 
 def _default_roles() -> dict[str, RoleConfig]:
     return {
-        "simulator": RoleConfig(model=SMALL_MODEL, temperature=0.7),
-        "judge_small": RoleConfig(model=SMALL_MODEL, max_output_tokens=2048),
-        "judge_strong": RoleConfig(model=STRONG_MODEL, max_output_tokens=2048),
-        "attacker": RoleConfig(model=ATTACKER_MODEL, temperature=0.7),
-        "generator": RoleConfig(model=DEFAULT_MODEL, temperature=0.7, max_output_tokens=4096),
+        "simulator": RoleConfig(model=SMALL_MODEL, temperature=0.7, reasoning="off"),
+        "judge_small": RoleConfig(model=SMALL_MODEL, max_output_tokens=2048, reasoning="off"),
+        "judge_strong": RoleConfig(model=STRONG_MODEL, max_output_tokens=2048, reasoning="off"),
+        "attacker": RoleConfig(model=ATTACKER_MODEL, temperature=0.7, reasoning="off"),
+        "generator": RoleConfig(
+            model=DEFAULT_MODEL, temperature=0.7, max_output_tokens=4096, reasoning="off"
+        ),
         "embedder": RoleConfig(model="hash", temperature=None),
     }
 
 
 def _default_pricing() -> dict[str, PricingConfig]:
-    """usd micros per 1M tokens (in/out): qwen3.7-flash 0.03/0.13, glm-5.3-flash 0.15/0.50,
+    """usd micros per 1M tokens (in/out): qwen3.7-flash 0.03/0.13, gemini-2.5-flash-lite 0.10/0.40,
     deepseek-v4-flash 0.09/0.18 USD."""
     return {
         SMALL_MODEL: PricingConfig(input_per_mtok=30_000, output_per_mtok=130_000),
-        STRONG_MODEL: PricingConfig(input_per_mtok=150_000, output_per_mtok=500_000),
+        STRONG_MODEL: PricingConfig(input_per_mtok=100_000, output_per_mtok=400_000),
         DEFAULT_MODEL: PricingConfig(input_per_mtok=90_000, output_per_mtok=180_000),
     }
 

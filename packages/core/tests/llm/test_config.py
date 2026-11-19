@@ -12,7 +12,7 @@ def test_defaults_load_without_a_file(tmp_path, monkeypatch):
     monkeypatch.delenv("GAUNTLET_CONFIG", raising=False)
     c = load_config()
     assert c.llm.roles["judge_small"].model == "openrouter/qwen/qwen3.7-flash"
-    assert c.llm.roles["judge_strong"].model == "openrouter/z-ai/glm-5.3-flash"
+    assert c.llm.roles["judge_strong"].model == "openrouter/google/gemini-2.5-flash-lite"
     assert c.llm.roles["attacker"].model == "openrouter/deepseek/deepseek-v4-flash"
     assert c.llm.roles["simulator"].temperature == 0.7
     assert all(not r.model.startswith(("openai/", "anthropic/")) for r in c.llm.roles.values())
@@ -46,3 +46,21 @@ def test_example_parses():
     c = load_config(ROOT / "gauntlet.example.toml")
     assert c.llm.rate_limits["openrouter"].rpm == 60
     assert c.llm.pricing["openrouter/qwen/qwen3.7-flash"].input_per_mtok == 30_000
+
+
+def test_reasoning_defaults_off_for_every_model_role(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("GAUNTLET_CONFIG", raising=False)
+    c = load_config()
+    for name in ("simulator", "judge_small", "judge_strong", "attacker", "generator"):
+        assert c.llm.roles[name].reasoning == "off", name
+
+
+def test_example_sets_reasoning_off_and_bad_value_rejected(tmp_path):
+    c = load_config(ROOT / "gauntlet.example.toml")
+    for name in ("simulator", "judge_small", "judge_strong", "attacker", "generator"):
+        assert c.llm.roles[name].reasoning == "off"
+    f = tmp_path / "g.toml"
+    f.write_text('[llm.roles.simulator]\nmodel = "openrouter/x/y"\nreasoning = "max"\n')
+    with pytest.raises(ValidationError):
+        load_config(f)

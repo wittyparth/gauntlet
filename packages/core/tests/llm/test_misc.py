@@ -36,10 +36,10 @@ async def test_token_bucket_respected():
 def test_known_prices_exact():
     p = GatewayConfig().llm.pricing
     q = p["openrouter/qwen/qwen3.7-flash"]
-    g = p["openrouter/z-ai/glm-5.3-flash"]
+    g = p["openrouter/google/gemini-2.5-flash-lite"]
     d = p["openrouter/deepseek/deepseek-v4-flash"]
     assert cost_from_pricing(q, 1_000_000, 1_000_000) == 160_000
-    assert cost_from_pricing(g, 1_000_000, 1_000_000) == 650_000
+    assert cost_from_pricing(g, 1_000_000, 1_000_000) == 500_000
     assert cost_from_pricing(d, 1_000_000, 1_000_000) == 270_000
     assert cost_from_pricing(q, 1000, 100) == 43
 

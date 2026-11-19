@@ -59,8 +59,14 @@ async def _call(
             temperature=0.0,
         )  # fmt: skip
 
-    async def call(msgs: list[Json]) -> LLMResult:
-        return await gateway.complete(role, msgs, response_model=JudgeOutput, temperature=0.0)
+    async def call(msgs: list[Json], max_output_scale: int = 1) -> LLMResult:
+        return await gateway.complete(
+            role,
+            msgs,
+            response_model=JudgeOutput,
+            temperature=0.0,
+            max_output_scale=max_output_scale,
+        )
 
     return await structured_call(call, messages, lenient=lenient)
 

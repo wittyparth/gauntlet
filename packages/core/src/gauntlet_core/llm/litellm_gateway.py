@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import random
 import time
 from collections.abc import Awaitable, Callable
@@ -31,11 +32,14 @@ from .types import (
     ContextTooLong,
     GatewayError,
     LLMResult,
+    OutputTruncated,
     ProviderUnavailable,
     RateLimited,
     StructuredOutputError,
     ToolCallRequest,
 )
+
+log = logging.getLogger(__name__)
 
 
 def map_exception(exc: Exception) -> GatewayError:
@@ -73,6 +77,17 @@ def map_exception(exc: Exception) -> GatewayError:
     return BadRequest(msg)
 
 
+def reasoning_body(model: str, reasoning: str) -> Json | None:
+    """OpenRouter's `reasoning` request field, passed through LiteLLM's `extra_body` (which the
+    OpenRouter transformation merges into the request body). Other providers and "default"
+    send nothing."""
+    if reasoning == "default" or provider_of(model) != "openrouter":
+        return None
+    if reasoning == "off":
+        return {"reasoning": {"enabled": False}}
+    return {"reasoning": {"effort": reasoning}}
+
+
 def provider_of(model: str) -> str:
     return model.split("/", 1)[0] if "/" in model else "default"
 
@@ -96,7 +111,7 @@ class LiteLLMGateway:
 
     def _resolve(self, role: str) -> RoleConfig:
         if role.startswith("model:"):
-            return RoleConfig(model=role[len("model:") :])
+            return RoleConfig(model=role[len("model:") :], reasoning="off")
         try:
             return self.config.llm.roles[role]
         except KeyError:
@@ -144,13 +159,41 @@ class LiteLLMGateway:
         response_format: Json | None,
         temperature: float | None,
         seed: int | None,
+        max_tokens: int,
     ) -> Any:
-        est_tokens = sum(len(json.dumps(m)) for m in messages) // 4 + rc.max_output_tokens
+        try:
+            return await self._call(
+                model, rc.reasoning, messages, tools, response_format, temperature, seed, max_tokens
+            )
+        except BadRequest as e:
+            if rc.reasoning != "off" or "reasoning is mandatory" not in e.message.lower():
+                raise
+            log.warning(
+                "model %s rejects reasoning=off (reasoning is mandatory); retrying once with "
+                "effort=low and 2x max_output_tokens",
+                model,
+            )
+            return await self._call(
+                model, "low", messages, tools, response_format, temperature, seed, max_tokens * 2
+            )
+
+    async def _call(
+        self,
+        model: str,
+        reasoning: str,
+        messages: list[Json],
+        tools: list[Json] | None,
+        response_format: Json | None,
+        temperature: float | None,
+        seed: int | None,
+        max_tokens: int,
+    ) -> Any:
+        est_tokens = sum(len(json.dumps(m)) for m in messages) // 4 + max_tokens
         await self.limiter.acquire(provider_of(model), est_tokens)
         kwargs: Json = {
             "model": model,
             "messages": messages,
-            "max_tokens": rc.max_output_tokens,
+            "max_tokens": max_tokens,
             "timeout": self.config.llm.request_timeout_s,
             "drop_params": True,  # providers that reject temperature/seed ignore them
             "num_retries": 0,  # retries are ours
@@ -159,6 +202,9 @@ class LiteLLMGateway:
             kwargs["temperature"] = temperature
         if seed is not None:
             kwargs["seed"] = seed
+        body = reasoning_body(model, reasoning)
+        if body is not None:
+            kwargs["extra_body"] = body
         if tools:
             kwargs["tools"] = tools
         if response_format is not None:
@@ -211,6 +257,11 @@ class LiteLLMGateway:
             out_tok,
         )
 
+    @staticmethod
+    def _reasoning_tokens(resp: Any) -> int:
+        details = getattr(getattr(resp, "usage", None), "completion_tokens_details", None)
+        return int(getattr(details, "reasoning_tokens", 0) or 0)
+
     async def complete(
         self,
         role: str,
@@ -220,6 +271,7 @@ class LiteLLMGateway:
         response_model: type[BaseModel] | None = None,
         temperature: float | None = None,
         seed: int | None = None,
+        max_output_scale: int = 1,
     ) -> LLMResult:
         rc = self._resolve(role)
         temp = temperature if temperature is not None else rc.temperature
@@ -243,9 +295,17 @@ class LiteLLMGateway:
             response_format=fmt,
             temperature=temp,
             seed=seed,
+            max_tokens=rc.max_output_tokens * max_output_scale,
         )
         text, calls, finish, in_tok, out_tok = self._extract(resp)
         total = total + self._cost(model, resp, in_tok, out_tok)
+        if not text.strip() and not calls and finish == "length":
+            raise OutputTruncated(
+                f"empty reply at the output limit ({out_tok} completion tokens, "
+                f"{self._reasoning_tokens(resp)} reasoning tokens); the model spent its budget "
+                'on hidden reasoning. Set reasoning = "off" for the role or raise '
+                "max_output_tokens."
+            )
         if response_model is not None:
             try:
                 parsed = response_model.model_validate_json(text)

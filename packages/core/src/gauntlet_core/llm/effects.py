@@ -62,6 +62,7 @@ async def llm_effect(
     seed: int | None = None,
     error_cls: type[PermanentEffectError] = PermanentEffectError,
     retry_safe: bool = True,
+    max_output_scale: int = 1,
 ) -> LLMResult:
     request: Json = {
         "role": role,
@@ -71,6 +72,10 @@ async def llm_effect(
         "temperature": temperature,
         "seed": seed,
     }
+    extra: Json = {}
+    if max_output_scale != 1:  # keeps the journaled request of ordinary calls unchanged
+        request["max_output_scale"] = max_output_scale
+        extra["max_output_scale"] = max_output_scale
     est = 0
     estimator: Any = getattr(gateway, "estimate_usd_micros", None)
     if estimator is not None:
@@ -85,6 +90,7 @@ async def llm_effect(
                 response_model=response_model,
                 temperature=temperature,
                 seed=seed,
+                **extra,
             )
         except GatewayError as e:
             msg = e.message

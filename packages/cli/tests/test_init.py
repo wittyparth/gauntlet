@@ -13,7 +13,7 @@ def test_init_writes_valid_files(runner, tmp_path: Path):
     assert res.exit_code == 0
     assert AgentFile.model_validate(yaml.safe_load((tmp_path / "agent.yaml").read_text()))
     cfg = load_config(tmp_path / "gauntlet.toml")
-    assert cfg.llm.roles["judge_strong"].model == "openrouter/z-ai/glm-5.3-flash"
+    assert cfg.llm.roles["judge_strong"].model == "openrouter/google/gemini-2.5-flash-lite"
     text = (tmp_path / "agent.yaml").read_text() + (tmp_path / "gauntlet.toml").read_text()
     assert "openai/" not in text and "anthropic/" not in text
 
