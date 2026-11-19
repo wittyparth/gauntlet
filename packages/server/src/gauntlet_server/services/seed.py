@@ -120,7 +120,20 @@ async def _upsert_docs(s: AsyncSession, ws: str) -> None:
     if await s.get(m.Agent, AGENT) is None:
         s.add(m.Agent(id=AGENT, workspace_id=ws, project_id=PROJECT, name="Demo support agent"))
         await s.flush()
-    if await s.get(m.AgentVersion, VERSION) is None:
+    config = {
+        "target": {
+            "kind": "hosted",
+            "model": MODEL,
+            "system_prompt": "You are the support assistant of an outdoor gear store. "
+            "Follow the store policy.\n\n" + p.policy_text,
+        },
+        "profile": {
+            "purpose": "Customer support for an online outdoor gear store",
+            "policies_text": p.policy_text,
+        },
+    }
+    version = await s.get(m.AgentVersion, VERSION)
+    if version is None:
         s.add(
             m.AgentVersion(
                 id=VERSION,
@@ -128,20 +141,11 @@ async def _upsert_docs(s: AsyncSession, ws: str) -> None:
                 agent_id=AGENT,
                 label="v1",
                 world_id=WORLD,
-                config={
-                    "target": {
-                        "kind": "hosted",
-                        "model": MODEL,
-                        "system_prompt": "You are the support assistant of an outdoor gear store. "
-                        "Follow the store policy.\n\n" + p.policy_text,
-                    },
-                    "profile": {
-                        "purpose": "Customer support for an online outdoor gear store",
-                        "policies_text": p.policy_text,
-                    },
-                },
+                config=config,
             )
         )
+    elif version.config != config:  # the seed owns this version: keep it current
+        version.config = config
     if await s.get(m.World, (WORLD, 1)) is None:
         s.add(
             m.World(

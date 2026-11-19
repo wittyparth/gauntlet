@@ -102,3 +102,19 @@ async def test_seed_replaces_a_stale_demo_run_from_an_older_seed(client, sm):
     assert seed["failed_episode_id"]
     ep = (await client.get(f"/v1/episodes/{seed['failed_episode_id']}")).json()
     assert ep["scenario_id"] == "scn_ecom_07" and ep["verdicts"]
+
+
+async def test_seed_keeps_its_agent_version_current(client, sm):
+    from sqlalchemy import text
+
+    seed = (await client.post("/v1/dev/seed", json={})).json()
+    async with sm() as s, s.begin():
+        await s.execute(
+            text(
+                "UPDATE agent_versions SET config = jsonb_set(config, '{profile,purpose}', "
+                "'\"old\"') WHERE id = 'agv_demo'"
+            )
+        )
+    await client.post("/v1/dev/seed", json={})
+    agent = (await client.get(f"/v1/agents/{seed['agent_id']}")).json()
+    assert agent["purpose"] == "Customer support for an online outdoor gear store"
