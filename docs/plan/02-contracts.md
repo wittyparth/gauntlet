@@ -389,3 +389,13 @@ Only cheap non-OpenAI, non-Anthropic models via OpenRouter. No `openai/` or `ant
 | default, hosted targets, DVA | `openrouter/deepseek/deepseek-v4-flash` | 0.09 / 0.18 |
 
 Judges and target are from different model families on purpose (self-preference). Pinned ids, never `~...-latest` aliases (reproducibility). Key from `OPENROUTER_API_KEY`. Any live run asks the user first and has a dollar cap.
+
+### L6 / P1-1 / P1-4 review rulings (2026-11-19)
+
+| Question | Ruling |
+|---|---|
+| Judge package | `gauntlet_core.judges` (not `eval/`); `eval/` holds report models. |
+| Evaluator and ctx | `JudgeEvaluator(..., ctx=ctx)` binds the episode ctx at construction; the finalizer builds one per episode. Protocol unchanged. |
+| Uncalibrated marker | Keep the "not calibrated" reasoning prefix plus `hard_fail=False`; reports derive `Caution.uncalibrated_rubrics` from `Rubric.gating_allowed`. No `Verdict` change. |
+| Judge cache | At the gateway boundary (`CachingGateway`) inside `llm_effect`, so effect ordinals never shift. `llm_effect` records cost in the effect result. |
+| Detector channels | Registered detectors scan agent messages by default, tool args only when `params.channels` includes `tool_args`. |
