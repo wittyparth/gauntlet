@@ -409,4 +409,15 @@ Judges and target are from different model families on purpose (self-preference)
 | Unknown episode | Postgres `load` returns an empty snapshot at epoch 0 and `append` raises `StaleLease`; episodes must be created by the run creator before any worker touches them. |
 | `release` on a lost lease | No-op, accepted. |
 | Claim SQL | Follow-up: wrap the candidate selection in `WITH c AS MATERIALIZED (SELECT ... FOR UPDATE SKIP LOCKED LIMIT :n)` so the planner cannot re-run the subquery and over-claim past `limit`. Add a test claiming with `limit=1` under contention. |
-| Host ports | `POSTGRES_HOST_PORT` / `REDIS_HOST_PORT` in `infra/.env` (local machine uses 5433 because a host Postgres owns 5432). |
+| Host ports (infra) | `POSTGRES_HOST_PORT` / `REDIS_HOST_PORT` in `infra/.env` (local machine uses 5433 because a host Postgres owns 5432). |
+
+### Runtime batch review rulings (2026-11-19)
+
+| Question | Ruling |
+|---|---|
+| Nested effects | Real L2 gap (wired/hosted tool calls and `llm_sim` inside an outer effect break replay). Fixed by `03-hard-cores.md` section 1.7a; `EffectRecord` gains `span: Json | None = None`. |
+| Event payloads | `check_result`, `verdict`, `sim_note` accepted as implemented. |
+| Report models | Accepted, including `aggregate_run(..., wired)` and `EpisodeRecord.world_fidelity`. |
+| Judge context | `JudgeEvaluator` gains an optional per-rubric `context_text` provider so `rule_context` reaches the cascade. |
+| `POST /v1/dev/seed` | P1-9 implements the shape the CLI already sends (`{"reset": bool}`) and returns the seeded ids; the CLI test is updated to match. |
+| `--fake-llm` | Stateless `ScriptedLLM` accepted for CLI testing. |

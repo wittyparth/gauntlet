@@ -67,6 +67,18 @@ end: run deterministic checks → emit check_result events → emit episode_ende
 ```
 Target exceptions: connect and 5xx errors retry 3 times with backoff inside the effect; persistent failure ends with `target_error`. Judges run after the loop as a separate resumable stage so an evaluator crash never loses the trajectory.
 
+### 1.7a Nested effects (added 2026-11-19 after the runtime batch)
+Problem: a target effect (wired agent calling the façade, or a hosted agent's tool loop) and an `llm_sim` tool effect produce *nested* effects and events while the outer effect is in flight. When the outer effect is later replayed as `done`, its `fn` does not run, so the nested events and ordinals are not reproduced and the next emit or effect key mismatches (`NonDeterminism`).
+
+Design:
+1. `EpisodeCtx` keeps a stack of in-flight effects. When an outer effect completes live, it records a **span** on its `EffectRecord`: `span = {"events": <number of events appended between its pending record and its done record>, "ordinals": {kind: <effects of that kind started inside it>}}`. Add `span: Json | None = None` to `EffectRecord` (lead-approved schema change; the only one).
+2. Replaying a `done` effect that has a span: advance the replay event cursor by `span.events` (those events are already in the journal and are not re-emitted), advance each per-kind ordinal counter by `span.ordinals[kind]`, and call the ctx **replay hooks** with those events. `World` registers a hook that re-applies patches from `tool_result` events, so live world state matches the journal.
+3. Nested effects appended by another process (the api façade, section 2.6) are counted the same way: after the outer `fn` returns, ctx reloads the journal tail (`store.load`) and computes the span from what was appended in between, then calls the replay hooks so the worker's world is current.
+4. Resuming with an outer effect still `pending` and nested records after it: the nested work cannot be safely re-attributed (a live agent may not repeat the same tool calls). Treat this as `IndeterminateEffect` regardless of `retry_safe`, which triggers the abandon-attempt path (archive, attempt + 1, restart; `platform_error` after 3 attempts). Add `abandon_attempt` to `SqliteJournalStore` and `MemoryJournalStore` too, and make the CLI runner and the worker both use it.
+5. `llm_sim` tool calls go through `llm_effect` again (nested inside the tool effect), so their cost is recorded.
+
+Tests: hosted target with tools, wired target through `LocalFacade`, and an `llm_sim` tool, each crashed at every append point and resumed: the final journal equals a clean run, no tool effect is executed twice, and strict cassette replay of each makes zero calls.
+
 ### 1.8 Tests
 - Unit, with `MemoryJournalStore` and `FakeLLM`: happy path; resume from every possible crash point (parametrised: kill after each append, re-run, assert final journal is identical to an uninterrupted run and each effect executed at most once for non-pending ones); request-hash mismatch raises; stateful target pending effect triggers a new attempt; budget exhaustion ends cleanly.
 - Property (Hypothesis): for random scripts of sim and agent turns with random crash points, `journal(resumed) == journal(clean)`.
