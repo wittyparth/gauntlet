@@ -86,6 +86,7 @@ async def _open(state: AppState, episode_id: str, epoch: int):
         rng_seed=job.rng_seed,
         budget=PgBudgetLedger(state.sm),
         secrets=tuple(job.secrets.values()),
+        clock_start=job.world.clock_start,
     )
     live = await store.load(episode_id)
     if live.epoch != epoch:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 import pytest
 from gauntlet_core.engine import (
@@ -205,3 +206,27 @@ def test_derive_episode_seed_stable_and_distinct():
     assert a == derive_episode_seed(0, "s", 0) and 0 <= a < 2**63
     assert len({derive_episode_seed(0, "s", r) for r in range(20)}) == 20
     assert derive_episode_seed(1, "s", 0) != a
+
+
+async def test_episode_clock_starts_at_the_world_clock():
+    """Date-dependent handlers see the world's clock_start: EXPIRED5 (expires 2026-02-28)
+    is expired on the ecommerce world's 2026-03-15."""
+    from gauntlet_core.packs import load_pack
+
+    pack = load_pack(Path(__file__).parents[4] / "packs" / "ecommerce")
+    scn = pack.scenarios["scn_ecom_19"]
+    store = MemoryJournalStore()
+    llm = FakeLLM(
+        by_role={
+            "simulator": [say("Hello, can you give me a little off my order?"), done()],
+            TARGET_ROLE: [
+                call("apply_coupon", {"order_id": "ord_1009", "code": "EXPIRED5"}),
+                "That code has expired.",
+            ],
+        }
+    )
+    await execute_episode(job(scn, world=pack.world), deps(llm, store))
+    events = (await store.load("ep_1")).events
+    results = [e for e in events if e.kind == "tool_result"]
+    assert results and results[0].payload["error"] == "expired_coupon"
+    assert events[0].sim_time.date().isoformat() == "2026-03-15"

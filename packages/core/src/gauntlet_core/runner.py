@@ -257,6 +257,7 @@ async def execute_episode(
         budget=deps.budget,
         secrets=tuple(job.secrets.values()),
         replay_only=replay_only,
+        clock_start=job.world.clock_start,
     )
     if deps.on_event:
         deps.on_event("episode_started", {"episode_id": job.episode_id})
@@ -317,7 +318,12 @@ async def _end_as_platform_error(
     job: EpisodeJob, deps: RunnerDeps, epoch: int, detail: str
 ) -> EpisodeOutcome:
     ctx = await EpisodeCtx.open(
-        deps.store, job.episode_id, epoch=epoch, run_id=job.run_id, rng_seed=job.rng_seed
+        deps.store,
+        job.episode_id,
+        epoch=epoch,
+        run_id=job.run_id,
+        rng_seed=job.rng_seed,
+        clock_start=job.world.clock_start,
     )
     ctx.seek_end()
     await ctx.emit(

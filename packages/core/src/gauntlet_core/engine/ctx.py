@@ -75,6 +75,7 @@ class EpisodeCtx:
         budget: BudgetLedger | None = None,
         secrets: tuple[str, ...] = (),
         replay_only: bool = False,
+        clock_start: datetime | None = None,
     ) -> None:
         self.episode_id = episode_id
         self.run_id = run_id
@@ -97,7 +98,7 @@ class EpisodeCtx:
         self.last_effect_ms = 0
         self.state: dict[str, Any] = {}  # scratch space for collaborators (world, target)
         # simulated clock: derived from the turn counter, never read from the wall
-        self.clock_start = datetime(2026, 1, 1, 9, 0, tzinfo=UTC)
+        self.clock_start = clock_start or datetime(2026, 1, 1, 9, 0, tzinfo=UTC)
         self.clock_step_s = 60
         self.clock_jump_s = 0
         self.turn = 0
