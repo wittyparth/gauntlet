@@ -13,10 +13,7 @@ __all__ = ["PgEpisodeQueue"]
 
 _CLAIM = text(
     """
-    UPDATE episodes SET status = 'leased', lease_owner = :worker, epoch = epoch + 1,
-        lease_expires_at = now() + :lease_s * interval '1 second',
-        started_at = coalesce(started_at, now())
-    WHERE id IN (
+    WITH c AS MATERIALIZED (
         SELECT id FROM episodes
         WHERE (status = 'queued' OR (status = 'leased' AND lease_expires_at < now()))
           AND not_before <= now()
@@ -24,7 +21,12 @@ _CLAIM = text(
         ORDER BY priority DESC, created_at ASC
         FOR UPDATE SKIP LOCKED
         LIMIT :n)
-    RETURNING id, run_id, epoch, attempt, priority, created_at
+    UPDATE episodes SET status = 'leased', lease_owner = :worker, epoch = epoch + 1,
+        lease_expires_at = now() + :lease_s * interval '1 second',
+        started_at = coalesce(started_at, now())
+    FROM c WHERE episodes.id = c.id
+    RETURNING episodes.id, episodes.run_id, episodes.epoch, episodes.attempt,
+        episodes.priority, episodes.created_at
     """
 )
 _HOLDS = "id = :id AND epoch = :epoch AND status = 'leased' AND lease_owner = :owner"

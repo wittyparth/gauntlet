@@ -76,6 +76,15 @@ async def test_single_round_of_parallel_claims_never_overlaps(sm, q):
     assert len(ids) == len(set(ids)) and len(ids) <= 10
 
 
+async def test_many_limit_one_claimers_never_over_claim(sm, q):
+    for i in range(5):
+        await add_episode(sm, f"e{i}")
+    results = await asyncio.gather(*(PgEpisodeQueue(sm).claim(f"w{n}", 1, 60) for n in range(40)))
+    assert all(len(r) <= 1 for r in results)
+    ids = [x.episode_id for r in results for x in r]
+    assert len(ids) == len(set(ids)) == 5
+
+
 async def test_expired_lease_is_reclaimed_with_bumped_epoch(sm, q):
     await add_episode(sm, "a")
     (first,) = await q.claim("w1", 1, 60)
