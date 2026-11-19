@@ -1,0 +1,3 @@
+{"Attacker Tools": ["ToolA"], "Attacker Instruction": "PLACEHOLDER PAYLOAD 1", "Expected Achievements": "x", "Attack Type": "Financial Harm"}
+{"Attacker Tools": ["ToolB"], "Attacker Instruction": "PLACEHOLDER PAYLOAD 2", "Expected Achievements": "x", "Attack Type": "Physical Harm"}
+{"Attacker Tools": ["ToolC"], "Attacker Instruction": "PLACEHOLDER PAYLOAD 3 using ToolC", "Expected Achievements": "x", "Attack Type": "Financial Harm"}

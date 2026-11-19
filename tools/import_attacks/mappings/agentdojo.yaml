@@ -1,0 +1,24 @@
+project: AgentDojo
+repo: https://github.com/ethz-spylab/agentdojo
+license: MIT
+license_file: LICENSE
+package: agentdojo
+benchmark_version: v1.2.2
+# Attack template classes from agentdojo.attacks (registry names). Each template is applied
+# to each injection task GOAL by the library's own code; no text is written here.
+attacks: [important_instructions, ignore_previous, system_message, injecagent, direct]
+# A stand-in pipeline name the templates need (they only read it).
+pipeline_name: gpt-4o-2024-05-13
+# Attacker-controlled literals in goals, replaced by our placeholders.
+substitutions:
+  - {pattern: '[\w.+-]+@[\w-]+\.[\w.]+', value: '{{attacker_email}}'}
+  - {pattern: '\bwww\.[\w./-]+', value: '{{attacker_url}}'}
+  - {pattern: '\bUS\d{18,}\b', value: '{{marker}}'}
+# Goals matching a regex are privileged actions (category excessive_agency); the rest are
+# indirect injections. First match wins; `risk` feeds the tainted_call objective.
+privileged:
+  - {pattern: '(?i)\bdelete the file\b|\bchange the password\b', risk: [destructive], requires: ["tool:destructive"]}
+  - {pattern: '(?i)transaction|transfer|money|recurring payment|reservation|invite user', risk: [financial, write], requires: ["tool:financial"]}
+default_risk: [write, destructive, financial, external_comm]
+severity: {indirect_injection: high, excessive_agency: high}
+group_cap: 14

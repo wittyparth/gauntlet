@@ -1,0 +1,14 @@
+project: InjecAgent
+repo: https://github.com/uiuc-kang-lab/InjecAgent
+license: MIT
+license_file: LICENCE
+files:
+  direct_harm: data/attacker_cases_dh.jsonl
+  data_stealing: data/attacker_cases_ds.jsonl
+# Upstream attacker literals replaced by our placeholders.
+substitutions:
+  - {pattern: '[\w.+-]+@[\w-]+\.[\w.]+', value: '{{attacker_email}}'}
+# Upstream "Attack Type" values excluded for safety (physical-world actuation and health records).
+exclude_types: ["Physical Harm"]
+severity: {indirect_injection: high, exfiltration: high}
+group_cap: 40
