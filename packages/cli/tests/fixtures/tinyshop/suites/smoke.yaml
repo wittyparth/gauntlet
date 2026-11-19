@@ -1,0 +1,4 @@
+id: smoke
+name: Smoke
+scenarios: [scn_tiny_status, scn_tiny_cancel]
+repetitions: 1

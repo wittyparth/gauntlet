@@ -915,6 +915,7 @@ source = { virtual = "." }
 
 [package.dev-dependencies]
 dev = [
+    { name = "gauntlet-cli" },
     { name = "gauntlet-core" },
     { name = "gauntlet-server" },
     { name = "httpx" },
@@ -930,6 +931,7 @@ dev = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "gauntlet-cli", editable = "packages/cli" },
     { name = "gauntlet-core", editable = "packages/core" },
     { name = "gauntlet-server", editable = "packages/server" },
     { name = "httpx", specifier = ">=0.27" },

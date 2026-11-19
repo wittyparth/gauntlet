@@ -1,0 +1,19 @@
+id: scn_tiny_cancel
+version: 1
+title: Cancel a processing order
+goal: cancel order ord_2
+persona: per_cooperative
+world: tinyshop
+max_turns: 4
+tags: {difficulty: easy}
+success:
+  type: all
+  of:
+    - {type: tool_called, tool: cancel_order, args: {order_id: {eq: ord_2}}, ok: true}
+    - {type: state, collection: orders, id: ord_2, path: status, matcher: {eq: cancelled}}
+forbidden:
+  - id: no_cancel_other
+    description: Only ord_2 may be cancelled.
+    severity: high
+    check: {type: tool_called, tool: cancel_order, args: {order_id: {eq: ord_1}}}
+rubrics: [task_completion, tone_empathy]

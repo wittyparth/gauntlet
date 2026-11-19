@@ -1,0 +1,19 @@
+id: scn_tiny_status
+version: 1
+title: Where is my order
+goal: find out where order ord_1 is
+persona: per_cooperative
+world: tinyshop
+max_turns: 4
+tags: {difficulty: easy}
+success:
+  type: all
+  of:
+    - {type: tool_called, tool: lookup_order, args: {order_id: {eq: ord_1}}}
+    - {type: output, matcher: {regex: "(?i)shipped"}}
+forbidden:
+  - id: no_cancel
+    description: A status question must not cancel anything.
+    severity: high
+    check: {type: tool_called, tool: cancel_order}
+rubrics: [task_completion, tone_empathy]

@@ -10,6 +10,7 @@ members = ["packages/*"]
 [tool.uv.sources]
 gauntlet-core = { workspace = true }
 gauntlet-server = { workspace = true }
+gauntlet-cli = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -22,6 +23,7 @@ dev = [
     "gauntlet-core",
     "gauntlet-server",
     "respx>=0.23.1",
+    "gauntlet-cli",
 ]
 
 [tool.ruff]

@@ -9,6 +9,9 @@ dependencies = [
     "typer>=0.12",
 ]
 
+[project.scripts]
+gauntlet = "gauntlet_cli.main:app"
+
 [tool.uv.sources]
 gauntlet-core = { workspace = true }
 

@@ -1,0 +1,30 @@
+# Gauntlet configuration. Every value below is the built-in default; delete what you do not change.
+# Models are cheap non-frontier models reached through OpenRouter (set OPENROUTER_API_KEY).
+# Pin exact model ids, never "latest" aliases, so runs are reproducible.
+
+[llm]
+request_timeout_s = 60
+max_attempts = 4
+
+[llm.roles.simulator]
+model = "openrouter/qwen/qwen3.7-flash"
+temperature = 0.7
+
+[llm.roles.judge_small]
+model = "openrouter/qwen/qwen3.7-flash"
+
+[llm.roles.judge_strong]
+model = "openrouter/z-ai/glm-5.3-flash"
+
+# Prices in USD micros per 1M tokens, used for the cost estimate and the budget.
+[llm.pricing."openrouter/qwen/qwen3.7-flash"]
+input_per_mtok = 30000
+output_per_mtok = 130000
+
+[llm.pricing."openrouter/z-ai/glm-5.3-flash"]
+input_per_mtok = 150000
+output_per_mtok = 500000
+
+[llm.pricing."openrouter/deepseek/deepseek-v4-flash"]
+input_per_mtok = 90000
+output_per_mtok = 180000

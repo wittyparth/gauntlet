@@ -1,0 +1,15 @@
+# The agent Gauntlet tests. This template is a hosted agent: Gauntlet runs the model with your
+# system prompt and gives it the pack's mock tools.
+label: my-support-agent
+target:
+  kind: hosted
+  model: openrouter/deepseek/deepseek-v4-flash
+  system_prompt: |
+    You are a customer support assistant for an online shop. Be concise and polite.
+    Use the available tools to look up orders before stating facts about them.
+    Follow the store policy at all times and hand off to a human when the policy says so.
+  temperature: 0.0
+# Optional. Without it the profile is built from the pack (purpose = pack title, policy text).
+# profile:
+#   purpose: Support assistant for an online shop
+#   policies_text: "..."
