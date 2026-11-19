@@ -471,3 +471,13 @@ Cheap reasoning models return empty content when hidden reasoning eats the outpu
 | Finding variants | Variants attach as `episode_ids` only for now; no `Finding` change. |
 | Agentic ids | OWASP Agentic T1-T17 accepted (official doc has 17). |
 | Regression | `test_wired_episode_completes_and_resumes_after_worker_kill` fails on main (pre-existing before L7); fix first in the next batch. |
+
+### sec-1 review rulings (2026-11-20)
+
+| Question | Ruling |
+|---|---|
+| Test isolation | Server/integration tests use a dedicated `<db>_test` database, never the live compose database (root cause of the flaky `test_wired`). |
+| Mutation ids | `<orig>_m<8-hex chain hash>`; readable chain in `technique`. `ID_RE` unchanged. |
+| LLM mutations | Offline library build step: `gateway.complete("generator", ...)` with a JSONL cache is accepted (not episode effects). |
+| MCP SDK | `mcp` 2.x client API. |
+| Library | 297 attacks (AgentDojo 74, InjecAgent 46, garak 130, promptfoo 47), licences in `attacks/NOTICES.md`; dangerous-content filter test is mandatory for every future import. |
