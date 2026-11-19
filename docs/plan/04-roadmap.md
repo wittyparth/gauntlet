@@ -115,9 +115,9 @@ Voice simulation, browser and computer-use targets, multimodal attacks, framewor
 |---|---|---|
 | 1 | core-a | L5 checks + L4 stats |
 | 2 | core-b | L6 judges + P1-1 LLM gateway + P1-4 detectors |
-| 3 | infra | P0-2, P0-3, P1-8, P1-9 (compose, CI, Postgres stores, API, worker) |
-| 4 | runtime | P1-2 targets, P1-3 simulator, P1-5 rubrics and scoring, P1-10 CLI |
-| 5 | content | P1-6 e-commerce pack, P1-7 OpenAPI import and generation, P1-11 DVA |
+| 3 | infra | P0-2, P0-3, P1-8 (compose, CI, Postgres store, queue, ledger, SQLite store, shared store contract tests) |
+| 4 | runtime | P1-2 targets, P1-3 simulator, P1-5 rubrics and scoring, P1-10 CLI and runner |
+| 5 | server + content | P1-9 API, worker, SSE, api-process mock facade; P1-6 e-commerce pack; P1-7 OpenAPI import; P1-11 DVA |
 | 6 | web-1 | P1-12, P1-13, P1-14 (uses the `animate-ui` skill) |
 | 7 | lead | L-R1 review, chaos test run, browser verification |
 

@@ -338,3 +338,31 @@ Errors: `{"error": {"code": str, "message": str, "detail": Json | None}}` with c
 | Date | Decision | Reason |
 |---|---|---|
 | 2026-11-17 | Initial contracts | |
+| 2026-11-19 | Phase 0/1 contract questions resolved (below). Phase 2-5 questions (CQ-S*, CQ-R*, CQ-G*, CQ-P*) stay open and are decided at the start of their phase. | Plan review after phase files were written |
+
+### Phase 0 and 1 rulings (2026-11-19)
+
+These override any conflicting text in `phases/*.md`.
+
+| Question | Ruling |
+|---|---|
+| CQ-0.1 | Accepted: `web` joins compose in P1-12, `dva` in P1-11. |
+| CQ-0.2 / W6 / W7 | Accepted: when `GAUNTLET_ENV=dev`, a fixed dev API key is seeded and `/openapi.json` is public. Both are off otherwise. |
+| CQ-B1 | Accepted. The concrete gateway has `estimate_usd_micros(role, messages, *, max_output_tokens=None) -> int` and `embed(role, texts) -> list[list[float]]` (embed may raise `NotImplementedError` until P3-6). There is no `ctx.llm`; use `gauntlet_core.llm.llm_effect(ctx, gateway, role, messages, **kw) -> LLMResult`, which wraps `ctx.effect("llm", ..., retry_safe=True)`. The engine never imports `llm`. |
+| CQ-B2 | Accepted: role `model:<litellm id>` bypasses the role table. |
+| CQ-B3 | The api-process facade (hard-cores 2.6) is part of **P1-9**. It folds the world from the journal under a row lock on the episode and serves the same routes as `LocalFacade`. MCP route returns 501 in Phase 1. |
+| CQ-B4 | L5 owns the registry in `gauntlet_core.checks.detectors`: `DetectorFn = Callable[[Trajectory, Mapping[str, Json]], CheckResult]`, decorator `register(name)`, `get(name) -> DetectorFn` (raises `KeyError`), `names() -> list[str]`. Text-level detectors are wrapped by a helper `text_detector(fn: Callable[[str, Mapping], list[tuple[int,int]]])` that scans agent messages and tool-call args and builds evidence. |
+| CQ-B5 / R1 | The public API of `gauntlet_core.stats`, `checks`, `judges` is whatever their `__init__.py` `__all__` exports after lead review; consumers import only from there. |
+| CQ-B6 | Accepted: `RULE_STAGE` dict in the rubric library; the L6 cascade takes an optional `rule_stage: Callable[[Trajectory], Verdict | None]` per rubric. `Rubric` is unchanged. |
+| CQ-B7 / W10 | Accepted: report models live in `gauntlet_core.eval.report`, not `schema/`. Shapes as in P1-5. |
+| CQ-B8 | Accepted. Section 3's `EpisodeCtx.world/llm/clock` is superseded by the code: `ctx.now()`, `ctx.state`, `ctx.random()`; `World` and `Gateway` are passed to targets and simulators by constructor. |
+| CQ-B9 | Accepted: `events_archive` and `effects_archive` with an `attempt` column; `abandon_attempt` moves rows and resets `next_seq`. |
+| CQ-B10 | Accepted: `EpisodeLease` and the `EpisodeQueue` protocol live in `gauntlet_core/engine/queue.py` with a memory implementation; `finish(lease, outcome, termination=None)`. |
+| CQ-B11 | `SqliteJournalStore` in `gauntlet_core/engine/sqlite_store.py`, built in the infra batch; memory, SQLite and Postgres stores share one parametrised contract test suite. |
+| CQ-B12 | Accepted: `gauntlet_core/{runner,estimate,render,packs,ids,validate}.py` and `generate/`. P1-9 depends on P1-10. |
+| CQ-B13 | **Changed**: the judge stage runs *inside* the finalizer, before `episode_ended`, as `llm` effects on the same ctx. `verdict` events precede `episode_ended`, and `episode_ended.outcome` is the final outcome of the original judging. `episodes.outcome` mirrors it and may later differ only through rejudge or human labels (Phase 3). |
+| CQ-B14 / W9 | Accepted: `check_result {check_id, holds, severity, evidence}`, `verdict` = `Verdict` JSON, `sim_note {note, kind}`. |
+| CQ-B15 / W1-W17 | Accepted as proposed in P1-8, P1-9, P1-10. |
+| CQ-B16 / W13 | Accepted: `agent_versions.world_id` column. |
+| CQ-B17 | Accepted: `apps/dva` joins the uv workspace. |
+| Roadmap deps | Accepted: P1-8 after P0-3; P1-9 after P1-10; P3-6 after P3-5; P2-5 after P2-4; P2-7 after P2-2; P0-3 absorbs P0-1 leftovers. |
