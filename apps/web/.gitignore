@@ -1,0 +1,16 @@
+# dependencies
+node_modules
+# next
+.next
+out
+next-env.d.ts
+# env
+.env
+.env.*
+!.env.example
+# e2e artifacts and screenshots (designated, ignored)
+e2e/.screens
+e2e/.auth
+test-results
+playwright-report
+*.tsbuildinfo
