@@ -85,7 +85,7 @@ class FakeLLM:
                 else:
                     parsed = response_model.model_validate_json(text)
             except ValidationError as e:
-                raise StructuredOutputError(str(e)) from e
+                raise StructuredOutputError(str(e), raw_text=text) from e
             if not text:
                 text = parsed.model_dump_json()
         cost = reply.cost if reply.cost is not None else self.default_cost

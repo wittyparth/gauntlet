@@ -15,6 +15,12 @@ from .gateway import Gateway
 from .litellm_gateway import LiteLLMGateway
 from .ratelimit import LocalRateLimiter, ProviderLimiter, RateLimiter, build_limiter
 from .scripted import ScriptedLLM, load_scripted_llm
+from .structured import (
+    extract_json_object,
+    lenient_json,
+    structured_call,
+    structured_effect,
+)
 from .types import (
     AuthError,
     BadRequest,
@@ -54,7 +60,11 @@ __all__ = [
     "ToolCallRequest",
     "build_limiter",
     "cosine",
+    "extract_json_object",
+    "lenient_json",
     "llm_effect",
     "load_config",
     "load_scripted_llm",
+    "structured_call",
+    "structured_effect",
 ]

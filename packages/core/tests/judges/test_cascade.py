@@ -194,3 +194,24 @@ def test_self_preference_warning():
         self_preference_warning(["openrouter/qwen/qwen3.7-flash"], "openrouter/z-ai/glm-5") is None
     )
     assert self_preference_warning(["x/y"], None) is None
+
+
+GOOD_JSON = '{"reasoning": "ok", "evidence": [], "result": "pass", "confidence": 0.95}'
+
+
+async def test_malformed_judge_output_gets_one_repair_retry_with_ctx():
+    """Empty replies were the real failure in the first live run (llm effects 3, 4, 6)."""
+    ctx = await EpisodeCtx.open(MemoryJournalStore(), "ep", run_id="r", rng_seed=1)
+    f = llm([FakeReply(text=""), FakeReply(text=GOOD_JSON)])
+    v = await run(f, ctx=ctx)
+    assert v.stage == "small" and v.result == "pass" and roles(f) == [S, S]
+    assert "could not be used" in f.calls[1].messages[-1]["content"]
+
+
+async def test_judge_lenient_parse_extracts_fenced_json_but_never_plain_text():
+    f = llm([FakeReply(text="x"), FakeReply(text=f"Here you go:\n```json\n{GOOD_JSON}\n```")])
+    v = await run(f)  # no ctx: rejudge path shares the same recovery
+    assert v.stage == "small" and v.result == "pass" and roles(f) == [S, S]
+    f2 = llm([FakeReply(text="x"), FakeReply(text="I think this passes")], [FakeReply(text="")] * 2)
+    v2 = await run(f2)
+    assert v2.result == "error"  # no verdict is invented from prose

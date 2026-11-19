@@ -12,7 +12,13 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 
 from gauntlet_core.engine import EpisodeCtx, PermanentEffectError
-from gauntlet_core.llm import GatewayError, LLMResult, llm_effect
+from gauntlet_core.llm import (
+    GatewayError,
+    LLMResult,
+    lenient_json,
+    structured_call,
+    structured_effect,
+)
 from gauntlet_core.llm.gateway import Gateway
 from gauntlet_core.schema import SEVERITY_ORDER, Cost, Json, Rubric, Trajectory, Verdict
 
@@ -44,11 +50,19 @@ class StageResult:
 async def _call(
     ctx: EpisodeCtx | None, gateway: Gateway, role: str, messages: list[Json]
 ) -> LLMResult:
+    """One judge call with the shared recovery: repair retry, then JSON-from-prose. There is
+    deliberately no plain-text fallback: a verdict is never invented from free text."""
+    lenient = lenient_json(JudgeOutput)
     if ctx is not None:
-        return await llm_effect(
-            ctx, gateway, role, messages, response_model=JudgeOutput, temperature=0.0
-        )
-    return await gateway.complete(role, messages, response_model=JudgeOutput, temperature=0.0)
+        return await structured_effect(
+            ctx, gateway, role, messages, response_model=JudgeOutput, lenient=lenient,
+            temperature=0.0,
+        )  # fmt: skip
+
+    async def call(msgs: list[Json]) -> LLMResult:
+        return await gateway.complete(role, msgs, response_model=JudgeOutput, temperature=0.0)
+
+    return await structured_call(call, messages, lenient=lenient)
 
 
 async def run_stage(

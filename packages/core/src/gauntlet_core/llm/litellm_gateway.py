@@ -1,4 +1,4 @@
-"""LiteLLM-backed Gateway: retries, fallbacks, structured output repair, cost accounting."""
+"""LiteLLM-backed Gateway: retries, fallbacks, structured output validation, cost accounting."""
 
 from __future__ import annotations
 
@@ -36,8 +36,6 @@ from .types import (
     StructuredOutputError,
     ToolCallRequest,
 )
-
-_REPAIR = "Your previous output was invalid: {error}. Return only valid JSON for the schema."
 
 
 def map_exception(exc: Exception) -> GatewayError:
@@ -237,32 +235,22 @@ class LiteLLMGateway:
             }
         started = time.perf_counter()
         total = Cost()
-        convo = list(messages)
         parsed: BaseModel | None = None
-        for repair in (False, True):
-            resp, model = await self._with_retries(
-                rc,
-                messages=convo,
-                tools=tools,
-                response_format=fmt,
-                temperature=temp,
-                seed=seed,
-            )
-            text, calls, finish, in_tok, out_tok = self._extract(resp)
-            total = total + self._cost(model, resp, in_tok, out_tok)
-            if response_model is None:
-                break
+        resp, model = await self._with_retries(
+            rc,
+            messages=messages,
+            tools=tools,
+            response_format=fmt,
+            temperature=temp,
+            seed=seed,
+        )
+        text, calls, finish, in_tok, out_tok = self._extract(resp)
+        total = total + self._cost(model, resp, in_tok, out_tok)
+        if response_model is not None:
             try:
                 parsed = response_model.model_validate_json(text)
-                break
-            except ValidationError as e:
-                if repair:
-                    raise StructuredOutputError(str(e)) from e
-                convo = [
-                    *convo,
-                    {"role": "assistant", "content": text},
-                    {"role": "user", "content": _REPAIR.format(error=e)},
-                ]
+            except ValidationError as e:  # one repair is the caller's job (structured_call)
+                raise StructuredOutputError(str(e), raw_text=text) from e
         return LLMResult(
             text=text,
             tool_calls=calls,

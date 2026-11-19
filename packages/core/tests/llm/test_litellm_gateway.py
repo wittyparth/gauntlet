@@ -65,23 +65,12 @@ async def test_falls_back_after_primary_exhausted():
     assert r.model == "p/backup"
 
 
-async def test_structured_output_repair_sums_cost():
+async def test_invalid_structured_output_is_single_attempt_with_raw_text():
+    """Recovery (repair + lenient) belongs to structured_call, so each retry is its own effect."""
     mock = AsyncMock(side_effect=[resp("not json"), resp('{"a": 2}')])
-    with patch("litellm.acompletion", mock):
-        r = await gw().complete("judge_small", MSGS, response_model=Out)
-    assert r.parsed == Out(a=2)
-    assert r.cost.input_tokens == 2000
-    second = mock.await_args_list[1].kwargs["messages"]
-    assert second[-1]["content"].startswith("Your previous output was invalid")
-    assert second[-2] == {"role": "assistant", "content": "not json"}
-    # qwen3.7-flash: 1000 in * 0.03/M + 100 out * 0.13/M = 43 micros per call
-    assert r.cost.usd_micros == 86
-
-
-async def test_second_invalid_raises():
-    mock = AsyncMock(side_effect=[resp("x"), resp("y")])
-    with patch("litellm.acompletion", mock), pytest.raises(StructuredOutputError):
+    with patch("litellm.acompletion", mock), pytest.raises(StructuredOutputError) as ei:
         await gw().complete("judge_small", MSGS, response_model=Out)
+    assert ei.value.raw_text == "not json" and mock.await_count == 1
 
 
 async def test_unpriced_model_recorded():

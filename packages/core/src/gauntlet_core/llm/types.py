@@ -70,5 +70,16 @@ class ContextTooLong(GatewayError):
     code = "context_too_long"
 
 
+RAW_MARKER = "\n<<raw-output>>\n"
+RAW_CAP = 2000
+
+
 class StructuredOutputError(GatewayError):
+    """The model's reply did not validate. `raw_text` is what it actually said (capped), so a
+    caller can send the error back for one repair or try a lenient parse."""
+
     code = "structured_output_invalid"
+
+    def __init__(self, message: str = "", *, raw_text: str = "", **kw):
+        super().__init__(message, **kw)
+        self.raw_text = raw_text

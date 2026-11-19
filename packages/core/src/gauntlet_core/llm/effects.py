@@ -11,7 +11,14 @@ from gauntlet_core.engine import EpisodeCtx, PermanentEffectError
 from gauntlet_core.schema import Cost, Json
 
 from .gateway import Gateway
-from .types import GatewayError, LLMResult, ToolCallRequest
+from .types import (
+    RAW_CAP,
+    RAW_MARKER,
+    GatewayError,
+    LLMResult,
+    StructuredOutputError,
+    ToolCallRequest,
+)
 
 
 def _dump(r: LLMResult) -> Json:
@@ -80,7 +87,10 @@ async def llm_effect(
                 seed=seed,
             )
         except GatewayError as e:
-            raise error_cls(e.code, e.message) from e
+            msg = e.message
+            if isinstance(e, StructuredOutputError) and e.raw_text:
+                msg += RAW_MARKER + e.raw_text[:RAW_CAP]
+            raise error_cls(e.code, msg) from e
         return _dump(result), result.cost
 
     recorded = await ctx.effect("llm", request, fn, retry_safe=retry_safe, est_usd_micros=est)
