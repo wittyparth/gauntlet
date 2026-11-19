@@ -1,0 +1,39 @@
+# Gauntlet threat taxonomy. `id` is the value of Attack.category.
+# Framework ids verified against the official sources on verified_on (CQ-S8). An empty list means
+# "no direct mapping"; ids are never guessed.
+verified_on: 2026-11-19
+sources:
+  owasp_llm:
+    name: OWASP Top 10 for LLM Applications
+    version: "2025"
+    url: https://genai.owasp.org/llm-top-10/
+    note: LLM01 Prompt Injection, LLM02 Sensitive Information Disclosure, LLM03 Supply Chain, LLM04 Data and Model Poisoning, LLM05 Improper Output Handling, LLM06 Excessive Agency, LLM07 System Prompt Leakage, LLM08 Vector and Embedding Weaknesses, LLM09 Misinformation, LLM10 Unbounded Consumption
+  owasp_agentic:
+    name: OWASP Agentic AI - Threats and Mitigations
+    version: "1.0 (2025-02-17)"
+    url: https://genai.owasp.org/resource/agentic-ai-threats-and-mitigations
+    note: The document defines T1 to T17 (T14 Human Attacks on Multi-Agent Systems, T15 Human Manipulation, T16 Insecure Inter-Agent Protocol Abuse, T17 Supply Chain Compromise). It is not the separate ASI01-ASI10 Top 10 for Agentic Applications.
+  atlas:
+    name: MITRE ATLAS
+    version: "5.6.0"
+    url: https://atlas.mitre.org/
+    data_url: https://raw.githubusercontent.com/mitre-atlas/atlas-data/main/dist/ATLAS.yaml
+    note: AML.T0051 LLM Prompt Injection (.000 Direct, .001 Indirect), T0054 LLM Jailbreak, T0056 Extract LLM System Prompt, T0057 LLM Data Leakage, T0053 AI Agent Tool Invocation, T0025 Exfiltration via Cyber Means, T0070 RAG Poisoning, T0010 AI Supply Chain Compromise, T0029 Denial of AI Service, T0034 Cost Harvesting, T0048 External Harms
+categories:
+  - {id: direct_injection, number: 1, title: Direct prompt injection, description: The attacker types instructions that try to override the agent's rules., owasp_llm: [LLM01], owasp_agentic: [T6], atlas: [AML.T0051.000], phase_scope: imported, dangerous: false}
+  - {id: indirect_injection, number: 2, title: Indirect prompt injection, description: Instructions hidden in content the agent retrieves (documents, tool results, records)., owasp_llm: [LLM01], owasp_agentic: [T6, T12], atlas: [AML.T0051.001], phase_scope: imported, dangerous: false}
+  - {id: jailbreak, number: 3, title: Jailbreaks, description: Framing tricks that make the agent drop its policy., owasp_llm: [LLM01], owasp_agentic: [T6], atlas: [AML.T0054], phase_scope: imported, dangerous: false}
+  - {id: prompt_extraction, number: 4, title: System prompt and configuration extraction, description: Getting the agent to reveal its hidden instructions or secrets in them., owasp_llm: [LLM07], owasp_agentic: [], atlas: [AML.T0056], phase_scope: imported, dangerous: false}
+  - {id: data_disclosure, number: 5, title: Sensitive data disclosure, description: Getting the agent to reveal data it should withhold, including other users' data., owasp_llm: [LLM02], owasp_agentic: [T3], atlas: [AML.T0057], phase_scope: imported, dangerous: false}
+  - {id: excessive_agency, number: 6, title: Excessive agency and tool abuse, description: Getting the agent to take privileged actions it should not., owasp_llm: [LLM06], owasp_agentic: [T2, T3], atlas: [AML.T0053], phase_scope: imported, dangerous: false}
+  - {id: tool_injection, number: 7, title: "Injection through tools (SQL, command, path, SSRF, template)", description: Attacker-controlled arguments that exploit a tool., owasp_llm: [LLM05, LLM06], owasp_agentic: [T2, T11], atlas: [AML.T0053], phase_scope: imported, dangerous: false}
+  - {id: exfiltration, number: 8, title: Data exfiltration channels, description: Leaking data through links, images or outbound tool calls., owasp_llm: [LLM02, LLM05], owasp_agentic: [T2], atlas: [AML.T0025], phase_scope: imported, dangerous: false}
+  - {id: memory_poisoning, number: 9, title: Memory and RAG poisoning, description: Planting content in memory or retrieval stores that steers later behaviour., owasp_llm: [LLM04, LLM08], owasp_agentic: [T1], atlas: [AML.T0070], phase_scope: later, dangerous: false}
+  - {id: mcp, number: 10, title: MCP-specific attacks, description: Attacks through MCP servers, tool descriptions and tool shadowing., owasp_llm: [LLM03, LLM06], owasp_agentic: [T2], atlas: [AML.T0010], phase_scope: own_detectors, dangerous: false}
+  - {id: social_engineering, number: 11, title: Social engineering of the agent, description: Impersonation and pressure to skip verification., owasp_llm: [LLM01], owasp_agentic: [T9, T15], atlas: [AML.T0051], phase_scope: imported, dangerous: false}
+  - {id: resource_abuse, number: 12, title: Resource abuse (denial of wallet), description: Inputs that make the agent burn tokens or tool calls., owasp_llm: [LLM10], owasp_agentic: [T4], atlas: [AML.T0029, AML.T0034], phase_scope: later, dangerous: false}
+  - {id: harmful_content, number: 13, title: Harmful or policy-violating content, description: Content categories Gauntlet never imports or generates in Phase 2., owasp_llm: [], owasp_agentic: [T7], atlas: [AML.T0048], phase_scope: later, dangerous: true}
+  - {id: bias, number: 14, title: Bias and fairness probes, description: Probes for unequal treatment., owasp_llm: [LLM09], owasp_agentic: [T7], atlas: [AML.T0048], phase_scope: later, dangerous: false}
+  - {id: multi_agent, number: 15, title: Multi-agent attacks, description: Attacks that cross agent boundaries., owasp_llm: [LLM06], owasp_agentic: [T12, T13, T14], atlas: [AML.T0051.001], phase_scope: later, dangerous: false}
+  - {id: supply_chain, number: 16, title: Supply chain, description: Compromised packages, models or tool servers., owasp_llm: [LLM03], owasp_agentic: [T17], atlas: [AML.T0010], phase_scope: own_detectors, dangerous: false}
+  - {id: overreliance, number: 17, title: Overreliance and deception, description: Fabricated actions, cascading hallucination and misplaced trust., owasp_llm: [LLM09], owasp_agentic: [T5, T7], atlas: [AML.T0048], phase_scope: own_detectors, dangerous: false}

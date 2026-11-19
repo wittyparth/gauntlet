@@ -61,5 +61,6 @@ extraPaths = [
     "apps/dva/tests",
     "packages/core/tests/checks",
     "packages/core/tests/judges",
+    "packages/core/tests/security",
     "packages/server/tests/stores",
 ]
