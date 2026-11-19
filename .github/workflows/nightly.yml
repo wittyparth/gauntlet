@@ -1,0 +1,46 @@
+name: nightly
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chaos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GAUNTLET_CHAOS: "1"
+      TEST_DATABASE_URL: postgresql+asyncpg://gauntlet:gauntlet-dev-only@localhost:5432/gauntlet_test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv sync --all-packages --frozen
+      - run: cp infra/.env.example infra/.env
+      - run: docker compose -f infra/docker-compose.yml up -d --build --wait --scale worker=3
+      - run: uv run pytest tests/chaos -q
+
+  live:
+    # Off until the repository variable GAUNTLET_LIVE_ENABLED is "true" AND a secret named
+    # OPENROUTER_API_KEY exists. Live tests spend real money; GAUNTLET_LIVE_BUDGET_USD caps them.
+    if: vars.GAUNTLET_LIVE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GAUNTLET_LIVE: "1"
+      GAUNTLET_LIVE_BUDGET_USD: "2"
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv sync --all-packages --frozen
+      - run: uv run pytest tests/live -q
