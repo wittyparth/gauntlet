@@ -46,7 +46,7 @@ Definition of done: an attack suite against DVA produces findings with determini
 
 | ID | Owner | Task | Depends |
 |---|---|---|---|
-| L7 | CORE | Security core: objectives, injection harness, taint markers, attacker loop, shrinking, finding creation and dedup, verify | L5, L6 |
+| L7 | DONE | Security core: objectives, injection harness, taint markers, attacker loop, shrinking, finding creation and dedup, verify | L5, L6 |
 | P2-1 | SUB g | Threat taxonomy file with OWASP LLM / agentic and MITRE ATLAS mapping; attack YAML schema loader | L7 |
 | P2-2 | SUB g | Attack library import: garak, promptfoo, AgentDojo, InjecAgent probes normalised to `Attack` with source and licence; target 100+ across categories 1 to 8, 11 | P2-1 |
 | P2-3 | SUB g | Mutation engine: paraphrase, translate, encode, roleplay wrap, split across turns, embed in document | P2-1 |

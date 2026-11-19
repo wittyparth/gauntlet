@@ -461,3 +461,13 @@ Cheap reasoning models return empty content when hidden reasoning eats the outpu
 | CQ-S9 | Accepted: objective `check_result {check_id: "objective", holds, evidence}`. `Scenario.attack` with an inline world is a validation error unless the scenario is marked as already placed by the campaign builder. |
 | CQ-S10 | Deferred: Phase 2 imports no dangerous-content categories; truncation/classification task added before category 13 or adaptive attacks ship. |
 | CQ-S11 | Accepted as proposed in P2-5/P2-6. |
+
+### L7 review rulings (2026-11-19)
+
+| Question | Ruling |
+|---|---|
+| CQ-S2 answer | `gauntlet_core.security.__all__` as committed in 26c5837 (`place -> Placed`, `EpisodeScenarioRunner`, `attack_oracle`, `run_attacker`, `ddmin`, `shrink_attack`, `dedup_key`, `file_finding`, `file_forbidden_findings`, `verify`, `FindingStore`, `load_taxonomy`, `load_attacks`). Reviewed: ddmin is correct Zeller ddmin with memo and caps. |
+| Placed marker | `tags["placed"] == "true"` marks a campaign-placed scenario; `validate_scenario` must enforce CQ-S9 using it (P2-5). |
+| Finding variants | Variants attach as `episode_ids` only for now; no `Finding` change. |
+| Agentic ids | OWASP Agentic T1-T17 accepted (official doc has 17). |
+| Regression | `test_wired_episode_completes_and_resumes_after_worker_kill` fails on main (pre-existing before L7); fix first in the next batch. |
