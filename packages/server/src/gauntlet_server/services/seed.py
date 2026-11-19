@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import dataclasses
 import os
+from collections.abc import Mapping
 from functools import cache
 from pathlib import Path
 from typing import Any
@@ -37,10 +38,33 @@ PASS_N = 9  # smoke episodes that pass; one more fails
 EPISODES = [f"ep_demo_{i}" for i in range(PASS_N + 1)]
 
 
+def resolve_pack_dir(
+    env: Mapping[str, str] | None = None, here: Path | None = None, cwd: Path | None = None
+) -> Path:
+    """`GAUNTLET_PACK_DIR`, else the first existing `packs/ecommerce` among: next to the source
+    tree (checkout), under the working directory, and `/app` (the container image, where the
+    package is installed into site-packages and the source-relative path is meaningless)."""
+    given = (os.environ if env is None else env).get("GAUNTLET_PACK_DIR")
+    if given:
+        return Path(given)
+    here = here or Path(__file__).resolve()
+    candidates = [
+        here.parents[5] / "packs" / "ecommerce",
+        (cwd or Path.cwd()) / "packs" / "ecommerce",
+        Path("/app/packs/ecommerce"),
+    ]
+    for c in candidates:
+        if (c / "pack.yaml").is_file():
+            return c
+    raise FileNotFoundError(
+        "packs/ecommerce not found (set GAUNTLET_PACK_DIR); looked in "
+        + ", ".join(str(c) for c in candidates)
+    )
+
+
 @cache
 def pack() -> Pack:
-    default = Path(__file__).parents[5] / "packs" / "ecommerce"
-    return load_pack(Path(os.environ.get("GAUNTLET_PACK_DIR") or default))
+    return load_pack(resolve_pack_dir())
 
 
 def script() -> dict[str, Any]:
@@ -71,6 +95,21 @@ async def _reset(s: AsyncSession) -> None:
         "DELETE FROM runs WHERE id = 'run_demo'",
     ):
         await s.execute(text(sql))
+
+
+async def _drop_legacy_demo(s: AsyncSession) -> None:
+    """Remove what the pre-pack seed created, so a dev database does not keep a second,
+    stale demo (its suite, scenarios and the agent version they were run with)."""
+    for sql in (
+        "DELETE FROM suite_scenarios WHERE suite_id = 'suite_demo_smoke'",
+        "DELETE FROM suites WHERE id = 'suite_demo_smoke' "
+        "AND NOT EXISTS (SELECT 1 FROM runs WHERE suite_id = 'suite_demo_smoke')",
+        "DELETE FROM scenarios WHERE id LIKE 'demo\\_%' "
+        "AND NOT EXISTS (SELECT 1 FROM episodes WHERE scenario_id = scenarios.id)",
+        "DELETE FROM agent_versions WHERE id = :v "
+        "AND NOT EXISTS (SELECT 1 FROM runs WHERE agent_version_id = :v)",
+    ):
+        await s.execute(text(sql), {"v": VERSION})
 
 
 async def _upsert_docs(s: AsyncSession, ws: str) -> None:
@@ -164,6 +203,12 @@ async def seed_demo(state: AppState, ws: str, *, reset: bool = False) -> dict[st
         await _upsert_docs(s, ws)
     async with state.sm() as s:
         run = await s.get(m.Run, RUN)
+    if run is not None and run.suite_id != SUITE:  # left by an older seed (another suite)
+        async with state.sm() as s, s.begin():
+            await _reset(s)
+            await _drop_legacy_demo(s)
+            await _upsert_docs(s, ws)
+        run = None
     if run is None:
         async with state.sm() as s, s.begin():
             await create_run(

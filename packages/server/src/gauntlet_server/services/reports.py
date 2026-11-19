@@ -135,9 +135,9 @@ async def episode_detail(
             "tags": scn.tags,
         },
         "partial": ep.status != "done",
-        "events": [e.model_dump(mode="json") for e in shown],
+        "events": shown,
         "verdicts": [e.payload for e in events if e.kind == "verdict"],
-        "diff": diff.model_dump(mode="json"),
+        "diff": diff,
         "tools": {t.name: t.risk for t in _tools(inputs.world)},
     }
 

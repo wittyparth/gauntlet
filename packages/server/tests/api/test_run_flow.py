@@ -71,3 +71,34 @@ async def test_new_run_drained_by_workers_with_sse(client, state):
     rep = RunReport.model_validate((await client.get(f"/v1/runs/{run_id}/report")).json())
     assert rep.counted == 10
     assert run["spent_usd_micros"] > 0 and run["reserved_usd_micros"] == 0
+
+
+async def test_seed_replaces_a_stale_demo_run_from_an_older_seed(client, sm):
+    """A dev database seeded before the ecommerce pack holds a `run_demo` of another suite;
+    the seed must not keep serving it."""
+    from sqlalchemy import text
+
+    async with sm() as s, s.begin():
+        await s.execute(
+            text(
+                "INSERT INTO runs (id, workspace_id, suite_id, agent_version_id, manifest, "
+                "status, budget_usd_micros) VALUES ('run_demo', 'ws_test', 'suite_1', 'av_1', "
+                "'{}', 'done', 1000)"
+            )
+        )
+        await s.execute(
+            text(
+                "INSERT INTO episodes (id, workspace_id, run_id, scenario_id, status, outcome) "
+                "VALUES ('ep_demo_0', 'ws_test', 'run_demo', 'demo_status_1', 'done', 'failed')"
+            )
+        )
+    seed = (await client.post("/v1/dev/seed", json={})).json()
+    run = (await client.get(f"/v1/runs/{seed['run_id']}")).json()
+    assert run["suite_id"] == "ecommerce_smoke"
+    assert run["counts"]["total"] == 10 and run["counts"]["by_outcome"] == {
+        "passed": 9,
+        "failed": 1,
+    }
+    assert seed["failed_episode_id"]
+    ep = (await client.get(f"/v1/episodes/{seed['failed_episode_id']}")).json()
+    assert ep["scenario_id"] == "scn_ecom_07" and ep["verdicts"]

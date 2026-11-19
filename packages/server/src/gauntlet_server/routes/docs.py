@@ -12,6 +12,18 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
+from ..api_models import (
+    PersonaDoc,
+    PersonaList,
+    RubricDoc,
+    RubricList,
+    ScenarioList,
+    ScenarioRecord,
+    SuiteList,
+    SuiteOut,
+    WorldDoc,
+    WorldList,
+)
 from ..auth import AuthCtx
 from ..db import models as m
 from ..deps import auth_ctx, db_session
@@ -69,8 +81,16 @@ def _doc(row: Any) -> dict[str, Any]:
 # ------------------------------------------------------- generic versioned documents
 
 
-def _register(path: str, table: Any, schema: Any, what: str, set_version: bool) -> None:
-    @router.get(f"/{path}", name=f"list_{path}")
+def _register(
+    path: str,
+    table: Any,
+    schema: Any,
+    what: str,
+    set_version: bool,
+    doc_model: Any,
+    list_model: Any,
+) -> None:
+    @router.get(f"/{path}", name=f"list_{path}", response_model=list_model)
     async def list_docs(
         limit: int = 50,
         cursor: str | None = None,
@@ -81,7 +101,7 @@ def _register(path: str, table: Any, schema: Any, what: str, set_version: bool) 
             s, _latest(table, auth.workspace_id), table, Page(limit, cursor), _doc
         )
 
-    @router.get(f"/{path}/{{doc_id}}", name=f"get_{path}")
+    @router.get(f"/{path}/{{doc_id}}", name=f"get_{path}", response_model=doc_model)
     async def get_doc(
         doc_id: str,
         version: int | None = None,
@@ -98,7 +118,7 @@ def _register(path: str, table: Any, schema: Any, what: str, set_version: bool) 
             raise not_found(what, doc_id)
         return _doc(row)
 
-    @router.post(f"/{path}", status_code=201, name=f"create_{path}")
+    @router.post(f"/{path}", status_code=201, name=f"create_{path}", response_model=doc_model)
     async def create_doc(
         body: dict[str, Any] = Body(...),
         auth: AuthCtx = Depends(auth_ctx),
@@ -118,9 +138,9 @@ def _register(path: str, table: Any, schema: Any, what: str, set_version: bool) 
         return _doc(row)
 
 
-_register("worlds", m.World, WorldSpec, "world", False)
-_register("personas", m.Persona, Persona, "persona", False)
-_register("rubrics", m.Rubric, Rubric, "rubric", True)
+_register("worlds", m.World, WorldSpec, "world", False, WorldDoc, WorldList)
+_register("personas", m.Persona, Persona, "persona", False, PersonaDoc, PersonaList)
+_register("rubrics", m.Rubric, Rubric, "rubric", True, RubricDoc, RubricList)
 
 
 @router.post("/worlds/import-openapi", status_code=501)
@@ -142,7 +162,7 @@ def _scenario(row: m.Scenario) -> dict[str, Any]:
     }
 
 
-@router.get("/scenarios")
+@router.get("/scenarios", response_model=ScenarioList)
 async def list_scenarios(
     limit: int = 50,
     cursor: str | None = None,
@@ -167,7 +187,7 @@ async def list_scenarios(
     return await paginate(s, query, m.Scenario, Page(limit, cursor), _scenario)
 
 
-@router.post("/scenarios", status_code=201)
+@router.post("/scenarios", status_code=201, response_model=ScenarioRecord)
 async def create_scenario(
     body: dict[str, Any] = Body(...),
     auth: AuthCtx = Depends(auth_ctx),
@@ -194,7 +214,7 @@ async def create_scenario(
     return _scenario(row)
 
 
-@router.get("/scenarios/{scenario_id}")
+@router.get("/scenarios/{scenario_id}", response_model=ScenarioRecord)
 async def get_scenario(
     scenario_id: str, auth: AuthCtx = Depends(auth_ctx), s: AsyncSession = Depends(db_session)
 ) -> dict[str, Any]:
@@ -204,7 +224,7 @@ async def get_scenario(
     return _scenario(row)
 
 
-@router.put("/scenarios/{scenario_id}")
+@router.put("/scenarios/{scenario_id}", response_model=ScenarioRecord)
 async def put_scenario(
     scenario_id: str,
     body: dict[str, Any] = Body(...),
@@ -268,14 +288,14 @@ class BulkIds(BaseModel):
     ids: list[str]
 
 
-@router.post("/scenarios/bulk-approve")
+@router.post("/scenarios/bulk-approve", response_model=ScenarioList)
 async def bulk_approve(
     body: BulkIds, auth: AuthCtx = Depends(auth_ctx), s: AsyncSession = Depends(db_session)
 ) -> dict[str, Any]:
     return {"items": await _approve(s, auth.workspace_id, body.ids), "next_cursor": None}
 
 
-@router.post("/scenarios/{scenario_id}/approve")
+@router.post("/scenarios/{scenario_id}/approve", response_model=ScenarioRecord)
 async def approve(
     scenario_id: str, auth: AuthCtx = Depends(auth_ctx), s: AsyncSession = Depends(db_session)
 ) -> dict[str, Any]:
@@ -331,7 +351,7 @@ async def _set_scenarios(s: AsyncSession, suite_id: str, ids: list[str]) -> None
         s.add(m.SuiteScenario(suite_id=suite_id, scenario_id=sid, position=pos))
 
 
-@router.get("/suites")
+@router.get("/suites", response_model=SuiteList)
 async def list_suites(
     limit: int = 50,
     cursor: str | None = None,
@@ -344,7 +364,7 @@ async def list_suites(
     return page
 
 
-@router.post("/suites", status_code=201)
+@router.post("/suites", status_code=201, response_model=SuiteOut)
 async def create_suite(
     body: Suite, auth: AuthCtx = Depends(auth_ctx), s: AsyncSession = Depends(db_session)
 ) -> dict[str, Any]:
@@ -373,7 +393,7 @@ async def _suite_row(s: AsyncSession, auth: AuthCtx, suite_id: str) -> m.Suite:
     return row
 
 
-@router.get("/suites/{suite_id}")
+@router.get("/suites/{suite_id}", response_model=SuiteOut)
 async def get_suite(
     suite_id: str, auth: AuthCtx = Depends(auth_ctx), s: AsyncSession = Depends(db_session)
 ) -> dict[str, Any]:
@@ -381,7 +401,7 @@ async def get_suite(
     return _suite(row, await _suite_ids(s, suite_id))
 
 
-@router.put("/suites/{suite_id}")
+@router.put("/suites/{suite_id}", response_model=SuiteOut)
 async def put_suite(
     suite_id: str,
     body: Suite,

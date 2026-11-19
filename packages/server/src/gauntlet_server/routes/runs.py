@@ -7,11 +7,13 @@ import json
 from collections.abc import AsyncIterator
 from typing import Any
 
-from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi import APIRouter, Depends, Response
+from fastapi.responses import StreamingResponse
+from gauntlet_core.eval import RunReport
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..api_models import DryRunOut, EpisodeDetail, EpisodeList, RunList, RunOut
 from ..auth import AuthCtx
 from ..db.models import Episode, Run
 from ..deps import AppState, auth_ctx, db_session, get_state
@@ -32,21 +34,24 @@ async def _run(s: AsyncSession, auth: AuthCtx, run_id: str) -> Run:
     return run
 
 
-@router.post("/runs", status_code=201)
+@router.post("/runs", status_code=201, response_model=RunOut | DryRunOut)
 async def post_run(
     body: RunCreate,
+    response: Response,
     dry_run: bool = False,
     auth: AuthCtx = Depends(auth_ctx),
     s: AsyncSession = Depends(db_session),
     state: AppState = Depends(get_state),
 ) -> Any:
+    """`201` with the run; with `?dry_run=true`, `200` with validation and the cost estimate."""
     out, status = await create_run(s, state, auth.workspace_id, body, dry_run=dry_run)
     if not dry_run:
         await s.commit()
-    return JSONResponse(out, status_code=status)
+    response.status_code = status
+    return out
 
 
-@router.get("/runs")
+@router.get("/runs", response_model=RunList)
 async def list_runs(
     limit: int = 50,
     cursor: str | None = None,
@@ -68,7 +73,7 @@ async def list_runs(
     return page
 
 
-@router.get("/runs/{run_id}")
+@router.get("/runs/{run_id}", response_model=RunOut)
 async def get_run(
     run_id: str, auth: AuthCtx = Depends(auth_ctx), s: AsyncSession = Depends(db_session)
 ) -> dict[str, Any]:
@@ -85,7 +90,7 @@ async def _transition(
     return await run_json(s, run)
 
 
-@router.post("/runs/{run_id}/cancel")
+@router.post("/runs/{run_id}/cancel", response_model=RunOut)
 async def cancel_run(
     run_id: str,
     auth: AuthCtx = Depends(auth_ctx),
@@ -95,7 +100,7 @@ async def cancel_run(
     return await _transition(run_id, "cancel", auth, s, state)
 
 
-@router.post("/runs/{run_id}/pause")
+@router.post("/runs/{run_id}/pause", response_model=RunOut)
 async def pause_run(
     run_id: str,
     auth: AuthCtx = Depends(auth_ctx),
@@ -105,7 +110,7 @@ async def pause_run(
     return await _transition(run_id, "pause", auth, s, state)
 
 
-@router.post("/runs/{run_id}/resume")
+@router.post("/runs/{run_id}/resume", response_model=RunOut)
 async def resume_run(
     run_id: str,
     auth: AuthCtx = Depends(auth_ctx),
@@ -115,7 +120,7 @@ async def resume_run(
     return await _transition(run_id, "resume", auth, s, state)
 
 
-@router.get("/runs/{run_id}/episodes")
+@router.get("/runs/{run_id}/episodes", response_model=EpisodeList)
 async def list_run_episodes(
     run_id: str,
     limit: int = 50,
@@ -137,13 +142,11 @@ async def list_run_episodes(
     return await paginate(s, q, Episode, Page(limit, cursor), episode_row_json)
 
 
-@router.get("/runs/{run_id}/report")
+@router.get("/runs/{run_id}/report", response_model=RunReport)
 async def get_report(
     run_id: str, auth: AuthCtx = Depends(auth_ctx), s: AsyncSession = Depends(db_session)
-) -> Any:
-    run = await _run(s, auth, run_id)
-    report = await run_report(s, run)
-    return JSONResponse(report.model_dump(mode="json"))
+) -> RunReport:
+    return await run_report(s, await _run(s, auth, run_id))
 
 
 @router.get("/runs/{run_id}/compare", status_code=501)
@@ -161,7 +164,7 @@ async def generate_scenarios(agent_id: str, _: AuthCtx = Depends(auth_ctx)) -> N
     raise ApiError(501, "not_implemented", "scenario generation route is not wired yet")
 
 
-@router.get("/episodes/{episode_id}")
+@router.get("/episodes/{episode_id}", response_model=EpisodeDetail)
 async def get_episode(
     episode_id: str,
     events: str = "all",

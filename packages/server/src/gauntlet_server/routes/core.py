@@ -11,6 +11,19 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..api_models import (
+    AgentList,
+    AgentOut,
+    AgentVersionList,
+    AgentVersionOut,
+    ApiKeyCreated,
+    ApiKeyList,
+    ProjectList,
+    ProjectOut,
+    SecretList,
+    SecretPut,
+    WhoAmI,
+)
 from ..auth import AuthCtx, generate_key, hash_key
 from ..db.models import Agent, AgentVersion, ApiKey, Project
 from ..deps import AppState, auth_ctx, db_session, get_state
@@ -29,7 +42,7 @@ def _iso(d: Any) -> str | None:
 # --------------------------------------------------------------------------- whoami
 
 
-@router.get("/whoami")
+@router.get("/whoami", response_model=WhoAmI)
 async def whoami(
     auth: AuthCtx = Depends(auth_ctx), session: AsyncSession = Depends(db_session)
 ) -> dict[str, Any]:
@@ -62,7 +75,7 @@ def _project(p: Project) -> dict[str, Any]:
     return {"id": p.id, "name": p.name, "created_at": _iso(p.created_at)}
 
 
-@router.get("/projects")
+@router.get("/projects", response_model=ProjectList)
 async def list_projects(
     limit: int = 50,
     cursor: str | None = None,
@@ -73,7 +86,7 @@ async def list_projects(
     return await paginate(s, q, Project, Page(limit, cursor), _project)
 
 
-@router.post("/projects", status_code=201)
+@router.post("/projects", status_code=201, response_model=ProjectOut)
 async def create_project(
     body: ProjectIn, auth: AuthCtx = Depends(auth_ctx), s: AsyncSession = Depends(db_session)
 ) -> dict[str, Any]:
@@ -84,7 +97,7 @@ async def create_project(
     return _project(p)
 
 
-@router.get("/projects/{project_id}")
+@router.get("/projects/{project_id}", response_model=ProjectOut)
 async def get_project(
     project_id: str, auth: AuthCtx = Depends(auth_ctx), s: AsyncSession = Depends(db_session)
 ) -> dict[str, Any]:
@@ -105,24 +118,29 @@ class AgentIn(BaseModel):
 
 
 async def _agent_json(s: AsyncSession, a: Agent) -> dict[str, Any]:
-    latest = (
+    latest_row = (
         await s.execute(
-            select(AgentVersion.id)
+            select(AgentVersion)
             .where(AgentVersion.agent_id == a.id)
             .order_by(AgentVersion.created_at.desc(), AgentVersion.id.desc())
             .limit(1)
         )
     ).scalar()
+    latest = latest_row.id if latest_row else None
+    purpose = (
+        ((latest_row.config or {}).get("profile") or {}).get("purpose") if latest_row else None
+    )
     return {
         "id": a.id,
         "project_id": a.project_id,
         "name": a.name,
         "latest_version_id": latest,
+        "purpose": purpose,  # from the latest version's profile
         "created_at": _iso(a.created_at),
     }
 
 
-@router.get("/agents")
+@router.get("/agents", response_model=AgentList)
 async def list_agents(
     limit: int = 50,
     cursor: str | None = None,
@@ -138,7 +156,7 @@ async def list_agents(
     return page
 
 
-@router.post("/agents", status_code=201)
+@router.post("/agents", status_code=201, response_model=AgentOut)
 async def create_agent(
     body: AgentIn, auth: AuthCtx = Depends(auth_ctx), s: AsyncSession = Depends(db_session)
 ) -> dict[str, Any]:
@@ -161,7 +179,7 @@ async def _agent(s: AsyncSession, auth: AuthCtx, agent_id: str) -> Agent:
     return a
 
 
-@router.get("/agents/{agent_id}")
+@router.get("/agents/{agent_id}", response_model=AgentOut)
 async def get_agent(
     agent_id: str, auth: AuthCtx = Depends(auth_ctx), s: AsyncSession = Depends(db_session)
 ) -> dict[str, Any]:
@@ -181,7 +199,7 @@ def _version(v: AgentVersion) -> dict[str, Any]:
     return {**out, "world_id": v.world_id, "created_at": _iso(v.created_at)}
 
 
-@router.get("/agents/{agent_id}/versions")
+@router.get("/agents/{agent_id}/versions", response_model=AgentVersionList)
 async def list_versions(
     agent_id: str,
     limit: int = 50,
@@ -194,7 +212,7 @@ async def list_versions(
     return await paginate(s, q, AgentVersion, Page(limit, cursor), _version)
 
 
-@router.post("/agents/{agent_id}/versions", status_code=201)
+@router.post("/agents/{agent_id}/versions", status_code=201, response_model=AgentVersionOut)
 async def create_version(
     agent_id: str,
     body: VersionIn,
@@ -235,7 +253,7 @@ def agent_version_model(vid: str, agent_id: str, body: VersionIn) -> Any:
     )
 
 
-@router.get("/agents/{agent_id}/versions/{version_id}")
+@router.get("/agents/{agent_id}/versions/{version_id}", response_model=AgentVersionOut)
 async def get_version(
     agent_id: str,
     version_id: str,
@@ -258,7 +276,7 @@ class SecretIn(BaseModel):
     value: str
 
 
-@router.get("/secrets")
+@router.get("/secrets", response_model=SecretList)
 async def list_secrets(
     auth: AuthCtx = Depends(auth_ctx), state: AppState = Depends(get_state)
 ) -> dict[str, Any]:
@@ -266,7 +284,7 @@ async def list_secrets(
     return {"items": [{"name": n, "created_at": _iso(c)} for n, c in names], "next_cursor": None}
 
 
-@router.post("/secrets", status_code=201)
+@router.post("/secrets", status_code=201, response_model=SecretPut)
 async def put_secret(
     body: SecretIn, auth: AuthCtx = Depends(auth_ctx), state: AppState = Depends(get_state)
 ) -> dict[str, Any]:
@@ -290,7 +308,7 @@ class KeyIn(BaseModel):
     name: str
 
 
-@router.get("/api_keys")
+@router.get("/api_keys", response_model=ApiKeyList)
 async def list_keys(
     limit: int = Query(50),
     cursor: str | None = None,
@@ -312,7 +330,7 @@ async def list_keys(
     )
 
 
-@router.post("/api_keys", status_code=201)
+@router.post("/api_keys", status_code=201, response_model=ApiKeyCreated)
 async def create_key(
     body: KeyIn, auth: AuthCtx = Depends(auth_ctx), s: AsyncSession = Depends(db_session)
 ) -> dict[str, Any]:

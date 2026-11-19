@@ -6,6 +6,7 @@ from typing import Any
 
 from fastapi import APIRouter, Body, Depends
 
+from ..api_models import SeedOut
 from ..auth import AuthCtx
 from ..deps import AppState, auth_ctx, get_state
 from ..errors import not_found
@@ -14,7 +15,7 @@ from ..services.seed import seed_demo
 router = APIRouter(prefix="/v1")
 
 
-@router.post("/dev/seed")
+@router.post("/dev/seed", response_model=SeedOut)
 async def dev_seed(
     reset: bool = False,
     body: dict[str, Any] | None = Body(default=None),

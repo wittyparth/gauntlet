@@ -48,6 +48,12 @@ async def test_crud_flow_secrets_and_pagination(client):
     v = await client.post(f"/v1/agents/{a['id']}/versions", json=body)
     assert v.status_code == 201
     assert (await client.get(f"/v1/agents/{a['id']}")).json()["latest_version_id"] == v.json()["id"]
+    assert (await client.get(f"/v1/agents/{a['id']}")).json()["purpose"] == "p"
+    rows = (await client.get(f"/v1/agents?project_id={p['id']}")).json()["items"]
+    assert [r["purpose"] for r in rows] == ["p"]
+    assert (await client.post("/v1/agents", json={"project_id": p["id"], "name": "B"})).json()[
+        "purpose"
+    ] is None
 
 
 async def test_workspace_scoping(client, sm):
