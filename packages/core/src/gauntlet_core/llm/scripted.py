@@ -7,6 +7,7 @@ after a resume: the reply index is the number of `assistant` messages already in
 File format::
 
     cost_usd_micros: 0              # reported cost of every call
+    latency_s: 0                    # optional sleep before every reply (chaos tests)
     roles:
       simulator:                    # a role, or "model:<litellm id>" for the hosted agent
         - match: "ord_1"            # substring (or list: all of them) of the request; first wins
@@ -22,6 +23,7 @@ File format::
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import Any
 
@@ -52,6 +54,7 @@ def _reply(item: Any, n: int) -> FakeReply:
 class ScriptedLLM:
     def __init__(self, spec: dict[str, Any]) -> None:
         self.cost = int(spec.get("cost_usd_micros", 0))
+        self.latency_s = float(spec.get("latency_s", 0))
         self.roles: dict[str, list[tuple[str | list[str] | None, list[Any]]]] = {}
         for role, groups in (spec.get("roles") or {}).items():
             if groups and isinstance(groups[0], dict) and "replies" in groups[0]:
@@ -87,6 +90,8 @@ class ScriptedLLM:
     ) -> LLMResult:
         self.calls.append((role, messages))
         reply = self._pick(role, messages)
+        if self.latency_s:
+            await asyncio.sleep(self.latency_s)
         one = FakeLLM([reply], default_cost=Cost(usd_micros=self.cost))
         return await one.complete(
             role, messages, tools=tools, response_model=response_model, temperature=temperature

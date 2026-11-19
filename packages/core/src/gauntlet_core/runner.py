@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
@@ -67,7 +68,10 @@ __all__ = [
 ]
 
 
-MAX_ATTEMPTS = 3  # attempts per episode before an indeterminate effect becomes platform_error
+# Attempts per episode before an indeterminate effect becomes platform_error. Every worker
+# death in the middle of a wired turn burns one, so deployments that lose workers often (and
+# the chaos test) raise it with GAUNTLET_MAX_ATTEMPTS.
+MAX_ATTEMPTS = int(os.environ.get("GAUNTLET_MAX_ATTEMPTS") or 3)
 
 
 @dataclass
