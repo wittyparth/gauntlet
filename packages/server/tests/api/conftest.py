@@ -13,6 +13,7 @@ from gauntlet_server.deps import AppState
 from gauntlet_server.events import RedisPublisher
 from gauntlet_server.secrets import SecretStore
 from gauntlet_server.services.seed import script
+from pg_helpers import database_url
 from redis import asyncio as aioredis
 from sqlalchemy import text
 
@@ -25,7 +26,7 @@ async def state(sm) -> AsyncIterator[AppState]:
     redis = aioredis.from_url(url)
     settings = Settings(
         env="dev",
-        database_url=os.environ["TEST_DATABASE_URL"],
+        database_url=database_url(),
         redis_url=url,
         public_api_url="http://api.test",
         lease_s=2,

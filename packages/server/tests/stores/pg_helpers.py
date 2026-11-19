@@ -5,19 +5,51 @@ from __future__ import annotations
 import asyncio
 import os
 from concurrent.futures import ThreadPoolExecutor
+from functools import cache
 from pathlib import Path
 from typing import Any
 
+import asyncpg
 from alembic import command
 from alembic.config import Config
 from gauntlet_server.db import Sessionmaker
 from sqlalchemy import text
+from sqlalchemy.engine import make_url
 
 ALEMBIC_INI = Path(__file__).resolve().parents[2] / "alembic.ini"
 
 
+def isolated_url(url: str) -> str:
+    """The URL of a dedicated `<db>_test` database next to the one in `url`.
+
+    Tests TRUNCATE every table and the compose stack runs a live worker against its own
+    database, so tests never share it: that worker would claim the tests' queued episodes.
+    """
+    u = make_url(url)
+    name = u.database or "gauntlet"
+    return u.set(database=name if name.endswith("_test") else f"{name}_test").render_as_string(
+        hide_password=False
+    )
+
+
+async def _ensure_database(url: str) -> None:
+    u = make_url(url)
+    admin = u.set(drivername="postgresql", database="postgres")
+    conn = await asyncpg.connect(admin.render_as_string(hide_password=False))
+    try:
+        exists = await conn.fetchval("SELECT 1 FROM pg_database WHERE datname = $1", u.database)
+        if not exists:
+            await conn.execute(f'CREATE DATABASE "{u.database}"')
+    finally:
+        await conn.close()
+
+
+@cache
 def database_url() -> str:
-    return os.environ["TEST_DATABASE_URL"]
+    url = isolated_url(os.environ["TEST_DATABASE_URL"])
+    with ThreadPoolExecutor(1) as pool:
+        pool.submit(asyncio.run, _ensure_database(url)).result()
+    return url
 
 
 def alembic_config(url: str) -> Config:
