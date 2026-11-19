@@ -23,7 +23,7 @@ from gauntlet_core.engine import (
     Target,
     run_episode,
 )
-from gauntlet_core.eval.rubrics import RULE_STAGE
+from gauntlet_core.eval.rubrics import RULE_STAGE, rule_context
 from gauntlet_core.judges import JudgeEvaluator
 from gauntlet_core.llm import Gateway, llm_effect
 from gauntlet_core.schema import (
@@ -173,6 +173,7 @@ def make_finalizer(
                 ctx=ctx,
                 policy_text=policy_text,
                 rule_stages=RULE_STAGE,
+                context_provider=rule_context,
             )
             for v in await evaluator.evaluate(traj, gateway):
                 await ctx.emit(

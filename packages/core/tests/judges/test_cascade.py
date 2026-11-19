@@ -170,6 +170,22 @@ async def test_evaluator_runs_rubrics_in_order_with_rule_stages():
     assert [v.criterion for v in out] == ["a", "b"] and out[1] is decided
 
 
+async def test_context_provider_text_reaches_the_judge_prompt_per_rubric():
+    seen: list[tuple[str, str]] = []
+
+    def provider(rubric_id, trajectory):
+        seen.append((rubric_id, "x"))
+        return "HINT for a" if rubric_id == "a" else ""
+
+    ev = JudgeEvaluator([rubric(id="a"), rubric(id="b")], context_provider=provider)
+    f = llm([reply("pass", 0.95), reply("pass", 0.95)])
+    await ev.evaluate(traj(), f)
+    prompts = ["\n".join(m["content"] for m in c.messages) for c in f.calls]
+    assert "<extra_context>\nHINT for a" in prompts[0]
+    assert "<extra_context>" not in prompts[1]
+    assert [r for r, _ in seen] == ["a", "b"]
+
+
 def test_self_preference_warning():
     assert model_family("openrouter/qwen/qwen3.7-flash") == "qwen"
     w = self_preference_warning(["openrouter/qwen/qwen3.7-flash"], "openrouter/qwen/qwen3-max")

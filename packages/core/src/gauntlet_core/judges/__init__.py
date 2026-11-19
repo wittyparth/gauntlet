@@ -9,6 +9,7 @@ from .calibration import (
     calibrated,
 )
 from .cascade import (
+    ContextProvider,
     JudgeEvaluator,
     RuleStage,
     StageResult,
@@ -42,6 +43,7 @@ __all__ = [
     "SIM_FIDELITY_RUBRIC",
     "CachingGateway",
     "CalibrationReport",
+    "ContextProvider",
     "EvidenceItem",
     "GoldenItem",
     "JudgeCache",
