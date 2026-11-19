@@ -1,6 +1,6 @@
 # Roadmap and task index
 
-Each task has an ID, an owner, and dependencies. **[LEAD]** tasks are designed in `03-hard-cores.md` and implemented by the lead. **[SUB]** tasks are detailed in `phases/` and implemented by Sonnet subagents in batches (the batch letter says which tasks go to one agent together).
+Each task has an ID, an owner, and dependencies. **[CORE]** (L-numbered) tasks are designed in `03-hard-cores.md`, implemented by a Sonnet agent and reviewed line by line by the lead. **[SUB]** tasks are detailed in `phases/` and implemented by Sonnet subagents in batches (the batch letter says which tasks go to one agent together).
 
 Each phase ends with something demonstrable and a lead review (architecture drift, security of the platform itself, contract changes, refinement of the next phase).
 
@@ -11,7 +11,7 @@ Each phase ends with something demonstrable and a lead review (architecture drif
 | P0-1 | SUB a | `git init`, uv workspace (`core`, `server`, `cli`), pnpm + Turborepo, ruff, pyright, pytest config, pre-commit, `.gitignore`, package READMEs | |
 | P0-2 | SUB a | `infra/docker-compose.yml`: Postgres 16 + pgvector, Redis 7, MinIO, api, worker; Dockerfiles; `.env.example` | P0-1 |
 | P0-3 | SUB a | GitHub Actions: lint, types, unit, integration against compose services | P0-1 |
-| L1 | LEAD | `gauntlet_core.schema`: every model in `02-contracts.md` sections 1 to 5, YAML load and dump, JSON Schema export | P0-1 |
+| L1 | DONE | `gauntlet_core.schema`: every model in `02-contracts.md` sections 1 to 5, YAML load and dump, JSON Schema export | P0-1 |
 
 ## Phase 1: Vertical slice
 
@@ -19,11 +19,11 @@ Definition of done: `gauntlet run packs/ecommerce --target hosted.yaml` prints a
 
 | ID | Owner | Task | Depends |
 |---|---|---|---|
-| L2 | LEAD | Engine: effects, journal, episode loop, budget, cassette, memory and SQLite stores, redaction | L1 |
-| L3 | LEAD | World: state, patches, diff with causal seq, crud and python handlers, faults, clock, canaries | L1 |
-| L4 | LEAD | Stats: Wilson, bootstrap, pass^k, comparison, flips, sequential, agreement | L1 |
-| L5 | LEAD | Checks: AST, final and prefix evaluation, matcher and ref resolution, detector registry | L1, L3 |
-| L6 | LEAD | Judges: rendering, evidence validation, cascade, cache, calibration, simulator guard | L1, L4, L5 |
+| L2 | DONE | Engine: effects, journal, episode loop, budget, cassette, memory and SQLite stores, redaction | L1 |
+| L3 | DONE | World: state, patches, diff with causal seq, crud and python handlers, faults, clock, canaries | L1 |
+| L4 | CORE | Stats: Wilson, bootstrap, pass^k, comparison, flips, sequential, agreement | L1 |
+| L5 | CORE | Checks: AST, final and prefix evaluation, matcher and ref resolution, detector registry | L1, L3 |
+| L6 | CORE | Judges: rendering, evidence validation, cascade, cache, calibration, simulator guard | L1, L4, L5 |
 | P1-1 | SUB b | LLM gateway over LiteLLM: roles from `gauntlet.toml`, cost, retries, rate limiting, `FakeLLM`, structured output | L1 |
 | P1-2 | SUB b | Targets: hosted (tool loop through `ctx`), openai_compat, http; contract tests with a fake server | L2, P1-1 |
 | P1-3 | SUB b | User simulator: persona rendering, hidden facts, turn prompt, done detection; 10-persona library | L2, P1-1 |
@@ -46,7 +46,7 @@ Definition of done: an attack suite against DVA produces findings with determini
 
 | ID | Owner | Task | Depends |
 |---|---|---|---|
-| L7 | LEAD | Security core: objectives, injection harness, taint markers, attacker loop, shrinking, finding creation and dedup, verify | L5, L6 |
+| L7 | CORE | Security core: objectives, injection harness, taint markers, attacker loop, shrinking, finding creation and dedup, verify | L5, L6 |
 | P2-1 | SUB g | Threat taxonomy file with OWASP LLM / agentic and MITRE ATLAS mapping; attack YAML schema loader | L7 |
 | P2-2 | SUB g | Attack library import: garak, promptfoo, AgentDojo, InjecAgent probes normalised to `Attack` with source and licence; target 100+ across categories 1 to 8, 11 | P2-1 |
 | P2-3 | SUB g | Mutation engine: paraphrase, translate, encode, roleplay wrap, split across turns, embed in document | P2-1 |
@@ -77,7 +77,7 @@ Definition of done: an attack suite against DVA produces findings with determini
 
 | ID | Owner | Task | Depends |
 |---|---|---|---|
-| L8 | LEAD | Policy engine, offline policy testing, rule suggestion from findings | L5, L7 |
+| L8 | CORE | Policy engine, offline policy testing, rule suggestion from findings | L5, L7 |
 | P4-1 | SUB n | Policy compiler: policy document to proposed rules (typed machine, model, human), review flow, coverage report | L8 |
 | P4-2 | SUB n | Gateway as Python SDK middleware (wraps tool execution), shadow and enforce, decision log, approvals | L8 |
 | P4-3 | SUB n | MCP gateway: proxy, description pinning, allowlist, description scanning, namespace isolation | P4-2 |
@@ -107,4 +107,18 @@ Voice simulation, browser and computer-use targets, multimodal attacks, framewor
 
 ## Critical path
 
-`P0-1 → L1 → L2 + L3 → L5 → L6 → (P1 batches in parallel) → L-R1 → L7 → (P2 batches) → L8 → (P4 batches)`. L4 is independent after L1 and can be done any time before P1-5. While the lead builds L2 to L6, batches a (Phase 0) and b (gateway, which needs only L1) can run.
+`P0-1 → L1 → L2 + L3 → L5 → L6 → (P1 batches in parallel) → L-R1 → L7 → (P2 batches) → L8 → (P4 batches)`. L4 is independent after L1 and can be done any time before P1-5.
+
+## Execution order (agents, one at a time)
+
+| # | Agent batch | Contents |
+|---|---|---|
+| 1 | core-a | L5 checks + L4 stats |
+| 2 | core-b | L6 judges + P1-1 LLM gateway + P1-4 detectors |
+| 3 | infra | P0-2, P0-3, P1-8, P1-9 (compose, CI, Postgres stores, API, worker) |
+| 4 | runtime | P1-2 targets, P1-3 simulator, P1-5 rubrics and scoring, P1-10 CLI |
+| 5 | content | P1-6 e-commerce pack, P1-7 OpenAPI import and generation, P1-11 DVA |
+| 6 | web-1 | P1-12, P1-13, P1-14 (uses the `animate-ui` skill) |
+| 7 | lead | L-R1 review, chaos test run, browser verification |
+
+Phases 2 to 4 follow the same shape: one core agent for the L task, then one or two batches of SUB tasks, then web, then the lead review.

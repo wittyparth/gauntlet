@@ -15,14 +15,16 @@ Gauntlet is an agent testing, simulation and security platform. The product visi
 
 ## Ownership model
 
+The lead model (Fable or Opus, main session) **orchestrates and reviews; it does not write product code.** All code is written by Sonnet subagents (`model: "sonnet"`). Never spawn subagents on the top-tier model.
+
 Two kinds of task, marked in `04-roadmap.md`:
 
-- **[LEAD]** tasks are done by the lead architect model (Fable) in the main session. These are the parts where a subtle mistake poisons everything downstream: the execution engine, world state and diffing, statistics, the check language, the judge cascade, attack objectives and shrinking, the policy engine. Roughly 15 percent of the code, most of the risk.
-- **[SUB]** tasks are done by Sonnet subagents (`model: "sonnet"`), each in its own git worktree, dispatched in parallel batches grouped by domain. Connectors, CRUD API, CLI, dashboard, packs, attack-library imports, reports, integrations.
+- **[CORE]** tasks (L-numbered) are the parts where a subtle mistake poisons everything downstream: engine, world, statistics, check language, judge cascade, security core, policy engine. Their full designs are in `03-hard-cores.md`. A Sonnet agent implements one from that design; the lead reviews the diff line by line against the design and its invariants before merging. L1, L2, L3 are done.
+- **[SUB]** tasks are everything else (connectors, API, CLI, dashboard, packs, imports, reports, integrations), detailed in `phases/`.
 
 Rules for dispatching [SUB] work:
 
-1. One agent per domain batch, not per tiny task. A batch is 2 to 5 related tasks from the same phase file.
+1. Batch heavily: one agent per large batch (a whole roadmap batch letter or more), never one agent per file or small task. Run one agent at a time, at most two when their files do not overlap.
 2. The brief is short: the task IDs, the phase file path, and "read `docs/plan/README.md` and `docs/plan/02-contracts.md` first". The phase file carries the detail. Do not retype it.
 3. Subagents never change `02-contracts.md` or anything under `packages/core/src/gauntlet_core/schema/`. If a contract is wrong or missing, they stop that task and report the gap. The lead decides and records it in the decision log at the bottom of `02-contracts.md`.
 4. The lead merges worktrees, runs the full gate, and reviews at every phase boundary.
