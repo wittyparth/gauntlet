@@ -1,0 +1,53 @@
+# Gauntlet gateway configuration. Copy to gauntlet.toml (or point $GAUNTLET_CONFIG at it).
+# litellm reads the provider key from OPENROUTER_API_KEY. Values may use ${ENV_NAME}.
+# Model ids and prices pinned 2026-11-19 (project decision: cheap OpenRouter models only).
+
+[llm]
+default_provider = "openrouter"
+request_timeout_s = 60
+max_attempts = 4
+backoff_base_s = 1.0
+
+[llm.rate_limits.openrouter]
+rpm = 60
+tpm = 100000
+
+[llm.roles.simulator]
+model = "openrouter/qwen/qwen3.7-flash"
+temperature = 0.7
+max_output_tokens = 1024
+
+[llm.roles.judge_small]
+model = "openrouter/qwen/qwen3.7-flash"
+temperature = 0.0
+max_output_tokens = 2048
+
+[llm.roles.judge_strong]
+model = "openrouter/z-ai/glm-5.3-flash"
+temperature = 0.0
+max_output_tokens = 2048
+
+[llm.roles.attacker]
+model = "openrouter/deepseek/deepseek-v4-flash"
+temperature = 0.7
+
+[llm.roles.generator]
+model = "openrouter/deepseek/deepseek-v4-flash"
+temperature = 0.7
+max_output_tokens = 4096
+
+[llm.roles.embedder]
+model = "hash"   # offline hashed n-gram embedder; set a litellm embedding model id to go live
+
+# usd micros per 1M tokens (0.03 USD = 30000)
+[llm.pricing."openrouter/qwen/qwen3.7-flash"]
+input_per_mtok = 30000
+output_per_mtok = 130000
+
+[llm.pricing."openrouter/z-ai/glm-5.3-flash"]
+input_per_mtok = 150000
+output_per_mtok = 500000
+
+[llm.pricing."openrouter/deepseek/deepseek-v4-flash"]
+input_per_mtok = 90000
+output_per_mtok = 180000
