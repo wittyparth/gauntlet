@@ -1,0 +1,350 @@
+{
+ "agentdojo": {
+  "counts": {
+   "over_category_cap": 2,
+   "over_probe_cap": 89,
+   "unresolved_template": 10
+  },
+  "by_group": {
+   "over_category_cap": {
+    "indirect_injection": 2
+   },
+   "over_probe_cap": {
+    "banking/excessive_agency": 31,
+    "slack/indirect_injection": 6,
+    "travel/indirect_injection": 6,
+    "workspace/indirect_injection": 46
+   },
+   "unresolved_template": {
+    "travel/injection_task_5/direct": 1,
+    "travel/injection_task_5/ignore_previous": 1,
+    "travel/injection_task_5/important_instructions": 1,
+    "travel/injection_task_5/injecagent": 1,
+    "travel/injection_task_5/system_message": 1,
+    "workspace/injection_task_13/direct": 1,
+    "workspace/injection_task_13/ignore_previous": 1,
+    "workspace/injection_task_13/important_instructions": 1,
+    "workspace/injection_task_13/injecagent": 1,
+    "workspace/injection_task_13/system_message": 1
+   }
+  },
+  "entries": []
+ },
+ "garak": {
+  "counts": {
+   "dangerous_content": 1,
+   "duplicate": 334,
+   "empty_or_too_long": 287,
+   "excluded_class": 3,
+   "no_objective_or_trigger_not_allowed": 1680,
+   "over_probe_cap": 2028,
+   "unresolved_template": 105
+  },
+  "by_group": {
+   "duplicate": {
+    "encoding.InjectBase64": 1,
+    "promptinject.HijackHateHumans": 54,
+    "promptinject.HijackLongPrompt": 51,
+    "sysprompt_extraction.SystemPromptExtraction": 228
+   },
+   "empty_or_too_long": {
+    "dan.ChatGPT_Developer_Mode_RANTI": 1,
+    "dan.DAN_Jailbreak": 1,
+    "dan.Dan_11_0": 1,
+    "latentinjection.LatentWhois": 28,
+    "latentinjection.LatentWhoisSnippet": 256
+   },
+   "no_objective_or_trigger_not_allowed": {
+    "encoding.InjectAscii85": 211,
+    "encoding.InjectAtbash": 209,
+    "encoding.InjectBase32": 210,
+    "encoding.InjectBase64": 192,
+    "encoding.InjectHex": 202,
+    "encoding.InjectMorse": 201,
+    "encoding.InjectROT13": 209,
+    "promptinject.HijackHateHumans": 119,
+    "promptinject.HijackLongPrompt": 127
+   },
+   "over_probe_cap": {
+    "encoding.InjectAscii85": 41,
+    "encoding.InjectAtbash": 43,
+    "encoding.InjectBase32": 42,
+    "encoding.InjectBase64": 59,
+    "encoding.InjectHex": 50,
+    "encoding.InjectMorse": 51,
+    "encoding.InjectROT13": 43,
+    "exploitation.SQLInjectionEcho": 4,
+    "latentinjection.LatentInjectionFactSnippetEiffel": 252,
+    "latentinjection.LatentInjectionFactSnippetLegal": 252,
+    "latentinjection.LatentInjectionReport": 252,
+    "latentinjection.LatentInjectionResume": 252,
+    "latentinjection.LatentInjectionTranslationEnFr": 201,
+    "latentinjection.LatentInjectionTranslationEnZh": 201,
+    "latentinjection.LatentWhois": 136,
+    "promptinject.HijackHateHumans": 73,
+    "promptinject.HijackLongPrompt": 68,
+    "sysprompt_extraction.SystemPromptExtraction": 8
+   },
+   "unresolved_template": {
+    "dan.Dan_10_0": 1,
+    "dan.Dan_6_2": 1,
+    "dan.Dan_8_0": 1,
+    "latentinjection.LatentInjectionTranslationEnFr": 51,
+    "latentinjection.LatentInjectionTranslationEnZh": 51
+   }
+  },
+  "entries": [
+   {
+    "source": "garak",
+    "id": "promptinject.HijackKillHumans",
+    "reason": "excluded_class",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "garak",
+    "id": "latentinjection.LatentJailbreak",
+    "reason": "excluded_class",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "garak",
+    "id": "exploitation.JinjaTemplatePythonInjection",
+    "reason": "excluded_class",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "garak",
+    "id": "dan.DUDE#0",
+    "reason": "dangerous_content",
+    "detail": "malware"
+   }
+  ]
+ },
+ "injecagent": {
+  "counts": {
+   "dangerous_content": 1,
+   "excluded_type": 10,
+   "upstream_tool_name": 5
+  },
+  "by_group": {},
+  "entries": [
+   {
+    "source": "injecagent",
+    "id": "direct_harm:0",
+    "reason": "excluded_type",
+    "detail": "Physical Harm"
+   },
+   {
+    "source": "injecagent",
+    "id": "direct_harm:1",
+    "reason": "excluded_type",
+    "detail": "Physical Harm"
+   },
+   {
+    "source": "injecagent",
+    "id": "direct_harm:11",
+    "reason": "excluded_type",
+    "detail": "Physical Harm"
+   },
+   {
+    "source": "injecagent",
+    "id": "direct_harm:13",
+    "reason": "excluded_type",
+    "detail": "Physical Harm"
+   },
+   {
+    "source": "injecagent",
+    "id": "direct_harm:18",
+    "reason": "excluded_type",
+    "detail": "Physical Harm"
+   },
+   {
+    "source": "injecagent",
+    "id": "direct_harm:19",
+    "reason": "excluded_type",
+    "detail": "Physical Harm"
+   },
+   {
+    "source": "injecagent",
+    "id": "direct_harm:25",
+    "reason": "excluded_type",
+    "detail": "Physical Harm"
+   },
+   {
+    "source": "injecagent",
+    "id": "direct_harm:26",
+    "reason": "excluded_type",
+    "detail": "Physical Harm"
+   },
+   {
+    "source": "injecagent",
+    "id": "direct_harm:27",
+    "reason": "excluded_type",
+    "detail": "Physical Harm"
+   },
+   {
+    "source": "injecagent",
+    "id": "direct_harm:28",
+    "reason": "excluded_type",
+    "detail": "Physical Harm"
+   },
+   {
+    "source": "injecagent",
+    "id": "data_stealing:11",
+    "reason": "upstream_tool_name",
+    "detail": "names an upstream tool"
+   },
+   {
+    "source": "injecagent",
+    "id": "data_stealing:15",
+    "reason": "upstream_tool_name",
+    "detail": "names an upstream tool"
+   },
+   {
+    "source": "injecagent",
+    "id": "data_stealing:22",
+    "reason": "upstream_tool_name",
+    "detail": "names an upstream tool"
+   },
+   {
+    "source": "injecagent",
+    "id": "data_stealing:28",
+    "reason": "upstream_tool_name",
+    "detail": "names an upstream tool"
+   },
+   {
+    "source": "injecagent",
+    "id": "data_stealing:29",
+    "reason": "upstream_tool_name",
+    "detail": "names an upstream tool"
+   },
+   {
+    "source": "injecagent",
+    "id": "data_stealing:7",
+    "reason": "dangerous_content",
+    "detail": "deepfake_crime"
+   }
+  ]
+ },
+ "promptfoo": {
+  "counts": {
+   "excluded_plugin": 18,
+   "unresolved_template": 5
+  },
+  "by_group": {
+   "unresolved_template": {
+    "pii": 5
+   }
+  },
+  "entries": [
+   {
+    "source": "promptfoo",
+    "id": "harmful",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "beavertails",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "pliny",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "toxicity",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "hate",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "self-harm",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "harmbench",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "donotanswer",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "cyberseceval",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "toxicChat",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "unsafebench",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "vlguard",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "vlsu",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "xstest",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "teenSafety",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "politics",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "religion",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   },
+   {
+    "source": "promptfoo",
+    "id": "aegis",
+    "reason": "excluded_plugin",
+    "detail": "dangerous or out-of-scope subject"
+   }
+  ]
+ }
+}
