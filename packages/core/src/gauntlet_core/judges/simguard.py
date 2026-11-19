@@ -1,7 +1,10 @@
 """Simulator guard (03-hard-cores 5.5): cheap per-turn rules plus one small-judge rubric.
 
-A rule hit means the simulated user broke character; the caller ends the episode as
-`simulator_error`. The rubric verdict feeds the flaky-scenario report, not the outcome.
+A drift hit (`SimIssue.kind == "drift"`: empty, assistant role claim, language switch) means
+the simulated user broke character; the caller ends the episode as `simulator_error`. A
+`note` hit (`hidden_fact_early`) does not: real users volunteer what they know, so the caller
+records a `sim_note` event and carries on. The rubric verdict feeds the flaky-scenario
+report, not the outcome.
 """
 
 from __future__ import annotations
@@ -70,7 +73,13 @@ class SimIssue:
     code: str  # empty | claims_assistant | language_switch | hidden_fact_early
     detail: str
 
+    @property
+    def kind(self) -> str:
+        """`note` (record and continue) or `drift` (end the episode)."""
+        return "note" if self.code in NOTE_CODES else "drift"
 
+
+NOTE_CODES = frozenset({"hidden_fact_early"})
 _EXPECTED = {"japanese": {"cjk", "hiragana", "katakana"}}
 
 

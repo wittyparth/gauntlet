@@ -112,11 +112,24 @@ async def test_guard_hit_ends_simulator_error():
     assert res.detail is not None and res.detail.startswith("claims_assistant")
 
 
-async def test_guard_catches_hidden_fact_leak_before_asked():
+async def test_hidden_fact_volunteered_early_is_noted_not_fatal():
     scn = scenario(hidden_facts=["order id is ord_1001"])
-    llm = FakeLLM([say("my order is ord_1001")])
-    res, _ = await run(llm, scn, guard=True)
-    assert res.detail is not None and res.detail.startswith("hidden_fact_early")
+    llm = FakeLLM([say("my order is ord_1001"), done()])
+    res, ctx = await run(llm, scn, guard=True)
+    assert res.outcome == "passed" and said(ctx) == ["my order is ord_1001"]
+    notes = [e for e in ctx.trajectory_so_far if e.kind == "sim_note"]
+    assert len(notes) == 1 and notes[0].actor == "platform"
+    assert notes[0].payload["kind"] == "hidden_fact_early"
+    assert "ord_1001" in notes[0].payload["note"]
+    kinds = [e.kind for e in ctx.trajectory_so_far]
+    assert kinds.index("sim_note") < kinds.index("user_message")
+
+
+async def test_language_switch_still_ends_episode():
+    llm = FakeLLM([say("Привет, мне нужен возврат денег за заказ")])
+    res, _ = await run(llm, guard=True)
+    assert res.outcome == "simulator_error"
+    assert res.detail is not None and res.detail.startswith("language_switch")
 
 
 async def test_guard_allows_fact_after_question():
