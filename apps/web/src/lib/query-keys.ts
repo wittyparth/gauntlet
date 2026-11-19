@@ -1,0 +1,17 @@
+export const qk = {
+  projects: ["projects"] as const,
+  agents: ["agents"] as const,
+  agent: (id: string) => ["agents", id] as const,
+  agentVersions: (id: string) => ["agents", id, "versions"] as const,
+  scenarios: ["scenarios"] as const,
+  scenario: (id: string) => ["scenarios", id] as const,
+  suites: ["suites"] as const,
+  worlds: ["worlds"] as const,
+  world: (id: string) => ["worlds", id] as const,
+  secrets: ["secrets"] as const,
+  runs: ["runs"] as const,
+  run: (id: string) => ["runs", id] as const,
+  runEpisodes: (id: string) => ["runs", id, "episodes"] as const,
+  runReport: (id: string) => ["runs", id, "report"] as const,
+  episode: (id: string) => ["episodes", id] as const,
+};
