@@ -1,7 +1,7 @@
 import pytest
 import yaml
 from gauntlet_core.schema import Check, Matcher, Scenario, dump_yaml
-from gauntlet_core.schema.checks import Not, ToolCalled
+from gauntlet_core.schema.checks import All, Not, ToolCalled
 from pydantic import TypeAdapter, ValidationError
 
 SCN = {
@@ -34,8 +34,10 @@ SCN = {
 
 def test_scenario_roundtrip_and_discrimination():
     s = Scenario.model_validate(SCN)
-    assert isinstance(s.success.of[0], Not)
-    assert isinstance(s.success.of[0].check, ToolCalled)
+    assert isinstance(s.success, All)
+    first = s.success.of[0]
+    assert isinstance(first, Not)
+    assert isinstance(first.check, ToolCalled)
     again = Scenario.model_validate(yaml.safe_load(dump_yaml(s)))
     assert again == s
 

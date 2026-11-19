@@ -4,6 +4,7 @@ import string
 import urllib.parse
 from collections import Counter
 from datetime import UTC, datetime
+from typing import Literal
 
 import pytest
 from gauntlet_core.engine import (
@@ -234,10 +235,19 @@ def test_canary_detected_through_transforms(kind):
         assert detect(f"partial {v[2:16]} only", [c])[0].kind == "fragment"
 
 
+KINDS: list[Literal["api_key", "email", "card", "ssn", "record"]] = [
+    "api_key",
+    "email",
+    "card",
+    "ssn",
+    "record",
+]
+
+
 def test_canary_no_false_positives():
     cs = [
         plant(CanarySpec(id=f"k{i}", kind=k, placement="system_prompt", location="l"), 9)
-        for i, k in enumerate(["api_key", "email", "card", "ssn", "record"])
+        for i, k in enumerate(KINDS)
     ]
     rng = random.Random(0)
     alphabet = string.ascii_letters + string.digits + " -_.,@:/"
@@ -284,7 +294,7 @@ class ToolAgent:
     async def close(self, ctx):
         pass
 
-    async def send(self, ctx, text):
+    async def send(self, ctx, user_text):
         r1 = await self.world.call_tool(ctx, "get_order", {"order_id": "ord_1"})
         r2 = await self.world.call_tool(ctx, "get_order", {"order_id": "ord_1"})
         r3 = await self.world.call_tool(ctx, "create_refund", {"order_id": "ord_1", "amount": 40})
@@ -314,7 +324,7 @@ async def run_with_world(store, built, calls):
 async def test_world_in_episode_faults_patches_and_trajectory():
     built = build_world(SPEC, None, 1)
     store = MemoryJournalStore()
-    res, world = await run_with_world(store, built, Counter())
+    await run_with_world(store, built, Counter())
     events = (await store.load("ep")).events
     kinds = [e.kind for e in events]
     assert "fault_injected" in kinds
@@ -366,5 +376,6 @@ async def test_untrusted_tool_results_are_tagged_with_markers():
     ctx = await EpisodeCtx.open(store, "ep", run_id="r", rng_seed=1)
     await World(built).call_tool(ctx, "fetch_page", {})
     await ctx.flush()
-    res = [e for e in (await store.load("ep")).events if e.kind == "tool_result"][0]
+    res = next(e for e in (await store.load("ep")).events if e.kind == "tool_result")
+    assert res.origin is not None
     assert res.origin.trust == "untrusted_external" and res.origin.markers == ["hello"]

@@ -1,3 +1,4 @@
+import contextlib
 from collections import Counter
 
 import pytest
@@ -129,7 +130,7 @@ async def test_resume_from_every_crash_point_converges():
         pending = {key for key, r in (await journal(store)).effects.items() if r.status != "done"}
         store.crash_before_append = None
         store.bump_epoch(EP)  # a new worker claims it
-        result, ctx = await run(store, turns, calls)
+        result, _ctx = await run(store, turns, calls)
         j = await journal(store)
         assert shape(j.events) == expected, f"crash point {k}"
         assert all(r.status == "done" for r in j.effects.values())
@@ -161,10 +162,8 @@ async def test_property_any_crash_sequence_converges(turns, crashes):
     store = MemoryJournalStore()
     for extra in crashes:
         store.crash_before_append = store.appends + extra
-        try:
+        with contextlib.suppress(SimulatedCrash):
             await run(store, turns)
-        except SimulatedCrash:
-            pass
         store.bump_epoch(EP)
     store.crash_before_append = None
     await run(store, turns)
@@ -184,7 +183,7 @@ async def test_nondeterministic_reexecution_is_detected():
         sim = Sim(["a", "b"], calls)
         agent = Agent(calls)
         original = agent.send
-        agent.send = lambda c, t: original(c, t + "!")
+        agent.send = lambda ctx, user_text: original(ctx, user_text + "!")  # type: ignore[method-assign]
         await go(ctx, scenario(), sim, agent)
 
 
@@ -236,7 +235,7 @@ async def test_target_error_is_recorded_and_replayed():
     store, calls = MemoryJournalStore(), Counter()
     result, _ = await run(store, ["a"], calls, reply=lambda t: TargetError("http_503", "down"))
     assert result.outcome == "target_error" and result.termination == "target_unreachable"
-    again, ctx = await run(store, ["a"], calls, reply=lambda t: "should not be called")
+    again, _ctx = await run(store, ["a"], calls, reply=lambda t: "should not be called")
     assert again.outcome == "target_error" and calls["agent:a"] == 1
 
 

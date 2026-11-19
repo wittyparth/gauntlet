@@ -40,6 +40,7 @@ __all__ = [
     "detect",
     "diff_from_patches",
     "field_changes",
+    "fold_world",
     "invert",
     "naive_diff",
     "pick_fault",
