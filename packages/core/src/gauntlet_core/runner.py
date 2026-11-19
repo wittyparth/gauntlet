@@ -17,6 +17,7 @@ from gauntlet_core.engine import (
     BudgetLedger,
     EpisodeCtx,
     Finalizer,
+    IndeterminateEffect,
     JournalStore,
     PermanentEffectError,
     Target,
@@ -24,7 +25,7 @@ from gauntlet_core.engine import (
 )
 from gauntlet_core.eval.rubrics import RULE_STAGE
 from gauntlet_core.judges import JudgeEvaluator
-from gauntlet_core.llm import Gateway
+from gauntlet_core.llm import Gateway, llm_effect
 from gauntlet_core.schema import (
     SCORED_OUTCOMES,
     AgentVersion,
@@ -53,14 +54,19 @@ from gauntlet_core.validate import contains_judge, validate_scenario
 from gauntlet_core.world import BuiltWorld, World, build_trajectory, build_world
 
 __all__ = [
+    "MAX_ATTEMPTS",
     "EpisodeJob",
     "EpisodeOutcome",
     "RunnerDeps",
     "derive_episode_seed",
     "execute_episode",
+    "execute_with_attempts",
     "make_finalizer",
     "make_target",
 ]
+
+
+MAX_ATTEMPTS = 3  # attempts per episode before an indeterminate effect becomes platform_error
 
 
 @dataclass
@@ -195,8 +201,10 @@ def _llm_sim(gateway: Gateway):
             },
             {"role": "user", "content": json.dumps(args, default=str)},
         ]
-        # The enclosing `tool` effect records the result, so the model is called directly.
-        res = await gateway.complete("simulator", messages, temperature=0.0, seed=ctx.rng_seed)
+        # Nested inside the `tool` effect (1.7a): its own `llm` effect records cost and result.
+        res = await llm_effect(
+            ctx, gateway, "simulator", messages, temperature=0.0, seed=ctx.rng_seed
+        )
         try:
             return json.loads(res.text)
         except ValueError:
@@ -274,7 +282,7 @@ async def execute_episode(
 
     built = build_world(job.world, scn.world_overrides, job.rng_seed)
     world = World(built, llm_sim=_llm_sim(deps.gateway))
-    ctx.state["world"] = world
+    world.bind(ctx)
     persona = merge_persona(job.persona, scn.persona_overrides)
     target = make_target(job.agent_version, world, built, deps, job.secrets)
     sim = LLMUserSimulator(scn, persona, deps.gateway, guard=make_guard(scn, persona))
@@ -301,3 +309,48 @@ async def execute_episode(
     if deps.on_event:
         deps.on_event("episode_finished", {"episode_id": job.episode_id, "outcome": out.outcome})
     return out
+
+
+async def _end_as_platform_error(
+    job: EpisodeJob, deps: RunnerDeps, epoch: int, detail: str
+) -> EpisodeOutcome:
+    ctx = await EpisodeCtx.open(
+        deps.store, job.episode_id, epoch=epoch, run_id=job.run_id, rng_seed=job.rng_seed
+    )
+    ctx.seek_end()
+    await ctx.emit(
+        EventDraft(
+            kind="episode_ended",
+            actor="platform",
+            sim_time=ctx.now(),
+            payload={"outcome": "platform_error", "termination": "error", "detail": detail},
+        )
+    )
+    await ctx.flush()
+    out = EpisodeOutcome(
+        "platform_error", "error", detail, await _total_cost(deps.store, job.episode_id),
+        (), [], "full", 0,
+    )  # fmt: skip
+    if deps.on_event:
+        deps.on_event("episode_finished", {"episode_id": job.episode_id, "outcome": out.outcome})
+    return out
+
+
+async def execute_with_attempts(
+    job: EpisodeJob, deps: RunnerDeps, *, epoch: int = 0, replay_only: bool = False
+) -> EpisodeOutcome:
+    """`execute_episode` plus the abandon-attempt path (hard-cores 1.3 and 1.7a): when resuming
+    meets an indeterminate effect the journal is archived under its attempt number and the
+    episode restarts from scratch; the third indeterminate attempt ends as `platform_error`.
+    Raises StaleLease and NonDeterminism to the caller."""
+    while True:
+        try:
+            return await execute_episode(job, deps, epoch=epoch, replay_only=replay_only)
+        except IndeterminateEffect as exc:
+            if replay_only:
+                raise
+            attempt = (await deps.store.load(job.episode_id)).attempt
+            if attempt + 1 >= MAX_ATTEMPTS:
+                detail = f"IndeterminateEffect in all {MAX_ATTEMPTS} attempts: {exc}"
+                return await _end_as_platform_error(job, deps, epoch, detail)
+            await deps.store.abandon_attempt(job.episode_id, epoch)

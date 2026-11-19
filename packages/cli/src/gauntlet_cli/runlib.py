@@ -16,7 +16,6 @@ from typing import Any
 
 import httpx
 from gauntlet_core.engine import (
-    IndeterminateEffect,
     MemoryBudgetLedger,
     NonDeterminism,
     SqliteJournalStore,
@@ -31,7 +30,7 @@ from gauntlet_core.runner import (
     EpisodeOutcome,
     RunnerDeps,
     derive_episode_seed,
-    execute_episode,
+    execute_with_attempts,
 )
 from gauntlet_core.schema import AgentProfile, AgentVersion, Scenario, Verdict
 from gauntlet_core.targets import LocalFacade, UrlPolicy
@@ -155,8 +154,8 @@ async def execute_plan(
                 async with sem:
                     epoch = await store.bump_epoch(ep_id)
                     try:
-                        out = await execute_episode(_job(plan, ep_id), deps, epoch=epoch)
-                    except (IndeterminateEffect, NonDeterminism, StaleLease) as e:
+                        out = await execute_with_attempts(_job(plan, ep_id), deps, epoch=epoch)
+                    except (NonDeterminism, StaleLease) as e:
                         out = _platform_error(f"{type(e).__name__}: {e}")
                     except Exception as e:  # one broken episode must not stop the run
                         out = _platform_error(f"{type(e).__name__}: {e}")

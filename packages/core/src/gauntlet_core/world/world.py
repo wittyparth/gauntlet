@@ -6,7 +6,7 @@ from __future__ import annotations
 import copy
 import json
 from collections import Counter
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -116,6 +116,21 @@ class World:
         self._n = 0
         self._llm_sim = llm_sim
 
+    def bind(self, ctx: EpisodeCtx) -> None:
+        """Register as the ctx's replay hook (1.7a): tool results that were produced inside a
+        nested span, or by another process, are folded into this world's state."""
+        ctx.state["world"] = self
+        ctx.add_replay_hook(self.apply_events)
+
+    def apply_events(self, events: Sequence[Event]) -> None:
+        """Fold journal events this execution did not produce itself."""
+        for e in events:
+            if e.kind == "tool_call":
+                self._n += 1
+                self._calls[e.payload["tool"]] += 1
+            elif e.kind == "tool_result" and e.payload.get("patch"):
+                self.state.apply([PatchOp.model_validate(p) for p in e.payload["patch"]])
+
     def snapshot(self) -> WorldSnapshot:
         return self.state.snapshot()
 
@@ -167,7 +182,9 @@ class World:
     async def call_tool(
         self, ctx: EpisodeCtx, tool: str, args: Json, *, via: str = "hosted"
     ) -> ToolResult:
+        ctx.add_replay_hook(self.apply_events)  # no-op when already bound
         call_id = f"call_{self._n}"
+        call_n = self._n
         self._n += 1
         await ctx.emit(
             EventDraft(
@@ -180,7 +197,7 @@ class World:
         spec = self.built.tools.get(tool)
         index = self._calls[tool]
         self._calls[tool] += 1
-        roll = ctx.random()
+        roll = ctx.random(call_n)
 
         async def run() -> tuple[Json, None]:
             if spec is None:

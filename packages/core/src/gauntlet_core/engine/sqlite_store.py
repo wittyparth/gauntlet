@@ -22,13 +22,20 @@ __all__ = ["SqliteJournalStore"]
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS episodes (
-    id TEXT PRIMARY KEY, epoch INTEGER NOT NULL DEFAULT 0, next_seq INTEGER NOT NULL DEFAULT 0);
+    id TEXT PRIMARY KEY, epoch INTEGER NOT NULL DEFAULT 0, next_seq INTEGER NOT NULL DEFAULT 0,
+    attempt INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS events (
     episode_id TEXT NOT NULL, seq INTEGER NOT NULL, kind TEXT NOT NULL, doc TEXT NOT NULL,
     PRIMARY KEY (episode_id, seq));
 CREATE TABLE IF NOT EXISTS effects (
     episode_id TEXT NOT NULL, key TEXT NOT NULL, status TEXT NOT NULL, doc TEXT NOT NULL,
     PRIMARY KEY (episode_id, key));
+CREATE TABLE IF NOT EXISTS events_archive (
+    episode_id TEXT NOT NULL, attempt INTEGER NOT NULL, seq INTEGER NOT NULL, kind TEXT NOT NULL,
+    doc TEXT NOT NULL, PRIMARY KEY (episode_id, attempt, seq));
+CREATE TABLE IF NOT EXISTS effects_archive (
+    episode_id TEXT NOT NULL, attempt INTEGER NOT NULL, key TEXT NOT NULL, status TEXT NOT NULL,
+    doc TEXT NOT NULL, PRIMARY KEY (episode_id, attempt, key));
 """
 
 
@@ -42,6 +49,9 @@ class SqliteJournalStore:
         conn = await aiosqlite.connect(path, isolation_level=None)  # explicit transactions
         await conn.execute("PRAGMA journal_mode=WAL")
         await conn.executescript(_SCHEMA)
+        cur = await conn.execute("PRAGMA table_info(episodes)")
+        if "attempt" not in {r[1] for r in await cur.fetchall()}:  # a pre-1.7a journal file
+            await conn.execute("ALTER TABLE episodes ADD COLUMN attempt INTEGER NOT NULL DEFAULT 0")
         return cls(conn)
 
     async def close(self) -> None:
@@ -74,7 +84,7 @@ class SqliteJournalStore:
             await self._conn.execute("BEGIN")
             try:
                 cur = await self._conn.execute(
-                    "SELECT epoch FROM episodes WHERE id = ?", (episode_id,)
+                    "SELECT epoch, attempt FROM episodes WHERE id = ?", (episode_id,)
                 )
                 row = await cur.fetchone()
                 cur = await self._conn.execute(
@@ -87,7 +97,12 @@ class SqliteJournalStore:
                 effects = [EffectRecord.model_validate_json(r[0]) for r in await cur.fetchall()]
             finally:
                 await self._conn.execute("COMMIT")
-        return JournalSnapshot(events, {e.key: e for e in effects}, int(row[0]) if row else 0)
+        return JournalSnapshot(
+            events,
+            {e.key: e for e in effects},
+            int(row[0]) if row else 0,
+            int(row[1]) if row else 0,
+        )
 
     async def append(
         self,
@@ -137,3 +152,39 @@ class SqliteJournalStore:
         await c.execute(
             "UPDATE episodes SET next_seq = ? WHERE id = ?", (next_seq + len(events), episode_id)
         )
+
+    async def abandon_attempt(self, episode_id: str, epoch: int) -> int:
+        async with self._lock:
+            await self._conn.execute("BEGIN IMMEDIATE")
+            try:
+                c = self._conn
+                await c.execute("INSERT OR IGNORE INTO episodes (id) VALUES (?)", (episode_id,))
+                cur = await c.execute(
+                    "SELECT epoch, attempt FROM episodes WHERE id = ?", (episode_id,)
+                )
+                row = await cur.fetchone()
+                assert row is not None
+                if int(row[0]) != epoch:
+                    raise StaleLease(f"{episode_id}: epoch {epoch} != {row[0]}")
+                attempt = int(row[1])
+                await c.execute(
+                    "INSERT INTO events_archive (episode_id, attempt, seq, kind, doc) "
+                    "SELECT episode_id, ?, seq, kind, doc FROM events WHERE episode_id = ?",
+                    (attempt, episode_id),
+                )
+                await c.execute(
+                    "INSERT INTO effects_archive (episode_id, attempt, key, status, doc) "
+                    "SELECT episode_id, ?, key, status, doc FROM effects WHERE episode_id = ?",
+                    (attempt, episode_id),
+                )
+                await c.execute("DELETE FROM events WHERE episode_id = ?", (episode_id,))
+                await c.execute("DELETE FROM effects WHERE episode_id = ?", (episode_id,))
+                await c.execute(
+                    "UPDATE episodes SET next_seq = 0, attempt = attempt + 1 WHERE id = ?",
+                    (episode_id,),
+                )
+                await c.execute("COMMIT")
+            except BaseException:
+                await self._conn.execute("ROLLBACK")
+                raise
+            return attempt + 1

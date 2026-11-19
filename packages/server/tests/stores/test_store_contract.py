@@ -7,56 +7,30 @@ and require the journal to equal the one an uninterrupted in-memory run produces
 from __future__ import annotations
 
 from collections import Counter
-from collections.abc import AsyncIterator
 
 import pytest
-import pytest_asyncio
 from gauntlet_core.engine import (
     EpisodeCtx,
     MemoryJournalStore,
     SeqConflict,
     SimulatedCrash,
-    SqliteJournalStore,
     StaleLease,
     run_episode,
 )
-from gauntlet_server.db import make_engine, make_sessionmaker
 from harness import (
     Agent,
     CrashingStore,
     Harness,
-    MemoryHarness,
-    PgHarness,
     Sim,
-    SqliteHarness,
     effect,
     effect_shape,
     event,
     scenario,
     shape,
 )
-from pg_helpers import reset
 
 EP = "ep_1"
 TURNS = ["a", "b", "c"]
-
-
-@pytest_asyncio.fixture(
-    params=["memory", "sqlite", pytest.param("postgres", marks=pytest.mark.integration)]
-)
-async def backend(request: pytest.FixtureRequest) -> AsyncIterator[Harness]:
-    if request.param == "memory":
-        yield MemoryHarness()
-    elif request.param == "sqlite":
-        store = await SqliteJournalStore.open()
-        yield SqliteHarness(store)
-        await store.close()
-    else:
-        engine = make_engine(request.getfixturevalue("migrated_url"))
-        maker = make_sessionmaker(engine)
-        await reset(maker)
-        yield PgHarness(maker)
-        await engine.dispose()
 
 
 async def test_append_load_round_trip(backend: Harness):
@@ -120,6 +94,32 @@ async def test_unrelated_episodes_do_not_interfere(backend: Harness):
     b = await backend.store.load("ep_b")
     assert b.events == [] and b.effects == {}
     await backend.store.append("ep_b", 0, events=[event(0)])
+
+
+async def test_effect_span_round_trips(backend: Harness):
+    await backend.new_episode(EP)
+    rec = effect("target:0", "done", reply="r").model_copy(
+        update={"span": {"events": 2, "ordinals": {"tool": 1}}}
+    )
+    await backend.store.append(EP, 0, events=[event(0), event(1)], effects=[rec])
+    assert (await backend.store.load(EP)).effects["target:0"].span == rec.span
+
+
+async def test_abandon_attempt_resets_the_journal_and_counts_attempts(backend: Harness):
+    await backend.new_episode(EP)
+    epoch = await backend.claim(EP)
+    await backend.store.append(
+        EP, epoch, events=[event(0), event(1)], effects=[effect("llm:0", cost=4)]
+    )
+    assert (await backend.store.load(EP)).attempt == 0
+    assert await backend.store.abandon_attempt(EP, epoch) == 1
+    j = await backend.store.load(EP)
+    assert (j.events, j.effects, j.attempt, j.epoch) == ([], {}, 1, epoch)
+    await backend.store.append(EP, epoch, events=[event(0)], effects=[effect("llm:0")])
+    assert [e.seq for e in (await backend.store.load(EP)).events] == [0]
+    assert await backend.store.abandon_attempt(EP, epoch) == 2
+    with pytest.raises(StaleLease):
+        await backend.store.abandon_attempt(EP, epoch + 1)
 
 
 # ------------------------------------------------------------- engine on every backend

@@ -244,6 +244,7 @@ class Effect(Base):
     request_hash: Mapped[str]
     result: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     cost: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    span: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     created_at: Mapped[datetime] = created_at_col()
 
 
@@ -267,6 +268,7 @@ class EffectArchive(Base):
     request_hash: Mapped[str]
     result: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     cost: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    span: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     created_at: Mapped[datetime] = created_at_col()
 
 
