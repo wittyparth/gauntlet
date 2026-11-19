@@ -20,12 +20,19 @@ from .cascade import (
     run_stage,
     self_preference_warning,
 )
-from .evidence import EvidenceItem, JudgeOutput, quote_in_event, validate_evidence
+from .evidence import (
+    EvidenceItem,
+    JudgeOutput,
+    check_evidence,
+    quote_in_event,
+    validate_evidence,
+)
 from .render import (
     JUDGE_SYSTEM,
     build_messages,
     event_text,
     event_texts,
+    normalize_quote,
     normalize_text,
     render_rubric,
     render_trajectory,
@@ -61,11 +68,13 @@ __all__ = [
     "cache_key",
     "calibrate",
     "calibrated",
+    "check_evidence",
     "evaluate_rubric",
     "evaluate_sim_fidelity",
     "event_text",
     "event_texts",
     "model_family",
+    "normalize_quote",
     "normalize_text",
     "quote_in_event",
     "render_rubric",

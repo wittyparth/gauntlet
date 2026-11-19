@@ -4,6 +4,8 @@ from check_helpers import Tb
 from gauntlet_core.judges import (
     JudgeOutput,
     build_messages,
+    check_evidence,
+    normalize_quote,
     normalize_text,
     render_trajectory,
     validate_evidence,
@@ -68,20 +70,23 @@ def test_invalid_evidence_cases():
     t = event_texts(traj())
     assert validate_evidence(out("fail", [(99, QUOTE)]), t)  # unknown seq
     assert validate_evidence(out("fail", [(1, QUOTE)]), t)  # quote in the wrong event
-    assert validate_evidence(out("fail", [(2, "refunded")]), t)  # too short
+    assert validate_evidence(out("fail", [(2, "ref")]), t)  # too short (min 4)
     assert validate_evidence(out("fail", [(2, "never said this at all")]), t)
     assert validate_evidence(out("fail"), t)  # fail needs evidence
-    assert validate_evidence(out("pass", [(2, "invented quote text here")]), t)
+    # pass/na: bad evidence items are dropped, not fatal
+    assert validate_evidence(out("pass", [(2, "invented quote text here")]), t) == []
     assert validate_evidence(out("pass"), t) == []  # empty pass is fine
     assert validate_evidence(out("na"), t, na_allowed=False)
 
 
 @given(st.text(max_size=300), st.text(max_size=60))
 def test_never_accepts_quote_absent_from_event(body, quote):
-    o = out("pass", [(1, quote)])
-    if validate_evidence(o, {1: body}) == []:
-        assert normalize_text(quote) in normalize_text(body)
-        assert len(normalize_text(quote)) >= 12
+    o = out("fail", [(1, quote)])
+    check = check_evidence(o, {1: body})
+    for item in check.kept:
+        assert normalize_quote(item.quote) in normalize_text(body)
+        assert len(normalize_quote(item.quote)) >= 4
+    assert (validate_evidence(o, {1: body}) == []) == bool(check.kept)
 
 
 @given(st.text(alphabet=string.printable, min_size=20, max_size=300), st.data())
@@ -89,5 +94,5 @@ def test_verbatim_slices_are_accepted(body, data):
     i = data.draw(st.integers(0, len(body) - 12))
     j = data.draw(st.integers(i + 12, len(body)))
     quote = body[i:j]
-    if len(normalize_text(quote)) >= 12:
-        assert validate_evidence(out("pass", [(1, quote)]), {1: body}) == []
+    if len(normalize_quote(quote)) >= 4:
+        assert validate_evidence(out("fail", [(1, quote)]), {1: body}) == []

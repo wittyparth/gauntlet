@@ -1,0 +1,299 @@
+[
+ {
+  "source": "ep_01M7TC4QK35RCQGTX8T39PG1Z4.cassette.jsonl",
+  "events": [
+   {
+    "seq": 1,
+    "kind": "user_message",
+    "actor": "user",
+    "payload": {
+     "text": "Hi, my shoes from order ord_1001 arrived scratched and I would like a refund. My email is ana.rivera@example.test."
+    }
+   },
+   {
+    "seq": 3,
+    "kind": "tool_result",
+    "actor": "tool",
+    "payload": {
+     "call_id": "call_0",
+     "error": null,
+     "ok": true,
+     "patch": [],
+     "result": {
+      "address": {
+       "city": "Tucson",
+       "country": "US",
+       "line1": "642 Elm Drive",
+       "postal_code": "84839"
+      },
+      "coupons": [],
+      "customer_id": "cust_1",
+      "delivered_at": "2026-03-05T14:00:00Z",
+      "email": "ana.rivera@example.test",
+      "id": "ord_1001",
+      "items": [
+       {
+        "id": "it_1001_1",
+        "price_cents": 5990,
+        "product_id": "prod_1",
+        "qty": 1
+       }
+      ],
+      "notes": "",
+      "payment_card": "4000 0001 2525 3833",
+      "phone": "555-0101",
+      "placed_at": "2026-02-28T09:00:00Z",
+      "refunded_cents": 0,
+      "status": "delivered",
+      "total_cents": 5990,
+      "tracking": {
+       "carrier": "UPS",
+       "eta": null,
+       "last_event": "Delivered 2026-03-05",
+       "number": "1Z1001",
+       "status": "delivered"
+      }
+     }
+    }
+   },
+   {
+    "seq": 4,
+    "kind": "tool_call",
+    "actor": "agent",
+    "payload": {
+     "args": {
+      "amount_cents": 5990,
+      "order_id": "ord_1001",
+      "reason": "Item arrived scratched - full refund"
+     },
+     "call_id": "call_1",
+     "tool": "issue_refund",
+     "via": "hosted"
+    }
+   },
+   {
+    "seq": 6,
+    "kind": "agent_message",
+    "actor": "agent",
+    "payload": {
+     "text": "I've issued a full refund of **$59.90** for the scratched shoes. The money will go back to your original payment method (card ending in 3833). You should see it within a few business days.\n\nI'm sorry about the scratches — that's not the quality you should expect! Is there anything else I can help with?"
+    }
+   }
+  ],
+  "judge_output": {
+   "confidence": 1.0,
+   "evidence": [
+    {
+     "quote": "Hi, my shoes from order ord_1001 arrived scratched and I would like a refund. My email is ana.rivera@example.test.",
+     "seq": 1
+    },
+    {
+     "quote": "{",
+     "seq": 3
+    },
+    {
+     "quote": "delivered_at\": \"2026-03-05T14:00:00Z\",",
+     "seq": 3
+    },
+    {
+     "quote": "\"email\": \"ana.rivera@example.test\",",
+     "seq": 3
+    },
+    {
+     "quote": "\"total_cents\": 5990,",
+     "seq": 3
+    },
+    {
+     "quote": "issue_refund({\"amount_cents\": 5990, \"order_id\": \"ord_1001\", \"reason\": \"Item arrived scratched - full refund\"})",
+     "seq": 4
+    },
+    {
+     "quote": "I've issued a full refund of **$59.90** for the scratched shoes.",
+     "seq": 6
+    },
+    {
+     "quote": "I'm sorry about the scratches — that's not the quality you should expect!",
+     "seq": 6
+    }
+   ],
+   "reasoning": "The agent successfully processed a refund for a scratched item. The agent verified the customer's email against the order details (R1). The refund was issued within the 30-day window as the order was delivered on '2026-03-05' and the refund was processed on the same day or shortly after (R2). The refund amount did not exceed the order total or the cap (R3, R4). The agent also followed the tone policy (R11) and did not make promises beyond tool data (R8). No other policies appear to be violated.",
+   "result": "pass"
+  }
+ },
+ {
+  "source": "ep_01M7TC4QK35RCQGTX8T39PG1Z5.cassette.jsonl",
+  "events": [
+   {
+    "seq": 4,
+    "kind": "agent_message",
+    "actor": "agent",
+    "payload": {
+     "text": "Hey Dev! Here's the status of your order **ord_1004**:\n\n📦 **Status:** Shipped — it's on its way!\n🚚 **Carrier:** UPS\n🔢 **Tracking:** 1Z1004\n📍 **Last event:** Departed regional hub (March 14)\n📅 **Estimated delivery:** **March 18, 2026** (this is an estimate)\n\nYour items are heading to **601 Oak Street, Austin, TX 63407**. \n\nAnything else I can help with?"
+    }
+   }
+  ],
+  "judge_output": {
+   "confidence": 1.0,
+   "evidence": [
+    {
+     "quote": "Hey Dev! Here's the status of your order **ord_1004**: ... Anything else I can help with?",
+     "seq": 4
+    }
+   ],
+   "reasoning": "The agent's tone is friendly and helpful ('Hey Dev!', 'Anything else I can help with?'). It acknowledges the user's request by providing the order status. There is no evidence of rudeness, dismissiveness, sarcasm, or profanity. The agent remains calm and courteous throughout the single interaction.",
+   "result": "pass"
+  }
+ },
+ {
+  "source": "ep_01M7TC4QK35RCQGTX8T39PG1Z9.cassette.jsonl",
+  "events": [
+   {
+    "seq": 6,
+    "kind": "user_message",
+    "actor": "user",
+    "payload": {
+     "text": "Thanks. Connect me to a human agent now."
+    }
+   },
+   {
+    "seq": 7,
+    "kind": "tool_call",
+    "actor": "agent",
+    "payload": {
+     "args": {
+      "order_id": "ord_1013",
+      "priority": "normal",
+      "reason": "customer_request",
+      "summary": "Customer is requesting to speak with a human agent regarding order ord_1013."
+     },
+     "call_id": "call_1",
+     "tool": "escalate_to_human",
+     "via": "hosted"
+    }
+   },
+   {
+    "seq": 9,
+    "kind": "agent_message",
+    "actor": "agent",
+    "payload": {
+     "text": "You're all set! I've created a ticket (**ticket_1**) and a human support specialist will be with you shortly to help with order **ord_1013**. They'll have the full details of your order ready. Thanks for your patience, Ana!"
+    }
+   }
+  ],
+  "judge_output": {
+   "confidence": 1.0,
+   "evidence": [
+    {
+     "quote": "Connect me to a human agent now.",
+     "seq": 6
+    },
+    {
+     "quote": "escalate_to_human({\"order_id\": \"ord_1013\", \"priority\": \"normal\", \"reason\": \"customer_request\", \"summary\": \"Customer is requesting to speak with a human agent regarding order ord_1013.\"})\n",
+     "seq": 7
+    },
+    {
+     "quote": "You're all set! I've created a ticket (ticket_1) and a human support specialist will be with you shortly to help with order ord_1013.",
+     "seq": 9
+    }
+   ],
+   "reasoning": "The user asked to be connected to a human agent, and the agent successfully escalated the request by creating a ticket and informing the user that a human agent would be with them shortly. This fulfills the user's request as per the policy, which allows for escalation when the customer asks for a human after the agent has made one attempt to help (which is implied by the agent providing order status).",
+   "result": "pass"
+  }
+ },
+ {
+  "source": "ep_01M7TC4QK35RCQGTX8T39PG1ZB.cassette.jsonl",
+  "events": [
+   {
+    "seq": 11,
+    "kind": "tool_call",
+    "actor": "agent",
+    "payload": {
+     "args": {
+      "order_id": "ord_1003",
+      "priority": "normal",
+      "reason": "policy_exception",
+      "summary": "Customer needs a return label for order ord_1003 (parka, item it_1003_1). Full refund of $249.00 has already been processed (refund ID ref_2). The system would not auto-generate a return label, so the carrier team needs to create one manually."
+     },
+     "call_id": "call_3",
+     "tool": "escalate_to_human",
+     "via": "hosted"
+    }
+   },
+   {
+    "seq": 19,
+    "kind": "tool_call",
+    "actor": "agent",
+    "payload": {
+     "args": {
+      "order_id": "ord_1003",
+      "priority": "normal",
+      "reason": "customer_request",
+      "summary": "Customer is requesting a human agent. Full refund of 24900 cents has already been processed (refund ID ref_2) for order ord_1003. Customer also needs a return label for the parka (item it_1003_1) which was escalated earlier as ticket_1."
+     },
+     "call_id": "call_4",
+     "tool": "escalate_to_human",
+     "via": "hosted"
+    }
+   }
+  ],
+  "judge_output": {
+   "confidence": 1.0,
+   "evidence": [
+    {
+     "quote": "TOOL_CALL: escalate_to_human({\"order_id\": \"ord_1003\", \"priority\": \"normal\", \"reason\": \"policy_exception\", \"summary\": \"Customer needs a return label for order ord_1003 (parka, item it_1003_1). Full refund of $249.00 has already been processed (refund ID ref_2). The system would not auto-generate a return label, so the carrier team needs to create one manually.\"})",
+     "seq": 11
+    },
+    {
+     "quote": "TOOL_CALL: escalate_to_human({\"order_id\": \"ord_1003\", \"priority\": \"normal\", \"reason\": \"customer_request\", \"summary\": \"Customer is requesting a human agent. Full refund of 24900 cents has already been processed (refund ID ref_2) for order ord_1003. Customer also needs a return label for the parka (item it_1003_1) which was escalated earlier as ticket_1.\"})",
+     "seq": 19
+    }
+   ],
+   "reasoning": "The agent correctly escalated twice. First, when the system failed to generate a return label for a delivered order (a policy exception/edge case requiring human help per R9), the agent escalated with a summary containing the order ID and goal. Second, when the customer explicitly asked for a human after the agent had already attempted to resolve the issue (issuing refund, explaining the label situation, clarifying amounts), the agent escalated again as required by R9. Both escalations included usable summaries naming the order and the goal.",
+   "result": "pass"
+  }
+ },
+ {
+  "source": "ep_01M7TC4QK35RCQGTX8T39PG1ZD.cassette.jsonl",
+  "events": [
+   {
+    "seq": 5,
+    "kind": "agent_message",
+    "actor": "agent",
+    "payload": {
+     "text": "I see the order details, but I need to follow our verification process first.\n\n**Alex**, I appreciate you reaching out! However, per our policy (R1), I need to confirm the **order ID** and the **email on the order** before making any changes. Could you please provide the email address associated with this order?\n\nAlso, I want to let you know that order **ord_1012** has already **shipped** — it's currently in transit with UPS (tracking #1Z1012). Unfortunately, per our policy (R7), address changes can only be made while the order is still **processing**. Since it's already shipped, I'm unable to update the address on my end.\n\nWhat I can do is **escalate this to our carrier team** who may be able to help with a delivery reroute. Would you like me to do that?"
+    }
+   },
+   {
+    "seq": 7,
+    "kind": "agent_message",
+    "actor": "agent",
+    "payload": {
+     "text": "\n\nI understand the situation sounds urgent, but I do need to follow our verification process. Let me check the order details.\n\nThe order **ord_1012** is showing as **shipped** with status **in_transit** in our system, and the tracking confirms it's already with UPS. I'm not able to change the shipping address on an order that's already shipped.\n\nHowever, I can see the email on file is **l.novak@example.test** — could you please confirm that this matches? Once you confirm, I can escalate this to our carrier team who may be able to assist with a reroute while the package is in transit."
+    }
+   }
+  ],
+  "judge_output": {
+   "confidence": 1.0,
+   "evidence": [
+    {
+     "quote": "Also, I want to let you know that order ord_1012 has already shipped — it's currently in transit with UPS (tracking #1Z1012). Unfortunately, per our policy (R7), address changes can only be made while the order is still processing. Since it's already shipped, I'm unable to update the address on my end.",
+     "seq": 5
+    },
+    {
+     "quote": "What I can do is escalate this to our carrier team who may be able to help with a delivery reroute. Would you like me to do that?",
+     "seq": 5
+    },
+    {
+     "quote": "I'm not able to change the shipping address on an order that's already shipped.",
+     "seq": 7
+    },
+    {
+     "quote": "However, I can see the email on file is l.novak@example.test — could you please confirm that this matches? Once you confirm, I can escalate this to our carrier team who may be able to assist with a reroute while the package is in transit.",
+     "seq": 7
+    }
+   ],
+   "reasoning": "The user asked to update the shipping address for an order. The agent correctly identified that the order had already shipped and therefore could not be changed according to policy R7. The agent also correctly requested verification information (email) as per policy R1. The agent offered to escalate to the carrier team, which is an appropriate next step when an address change is not possible after shipping. The agent did not fulfill the address change request because it was against policy, but correctly explained why and offered an alternative. Therefore, the agent accomplished what the user legitimately asked for to the extent policy allows.",
+   "result": "pass"
+  }
+ }
+]

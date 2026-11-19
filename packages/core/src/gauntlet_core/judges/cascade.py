@@ -23,8 +23,8 @@ from gauntlet_core.llm.gateway import Gateway
 from gauntlet_core.schema import SEVERITY_ORDER, Cost, Json, Rubric, Trajectory, Verdict
 
 from .cache import CachingGateway, JudgeCache
-from .evidence import JudgeOutput, to_evidence, validate_evidence
-from .render import build_messages, event_texts
+from .evidence import JudgeOutput, check_evidence, sanitize, to_evidence
+from .render import build_messages, event_actors, event_texts
 
 RuleStage = Callable[[Trajectory], Verdict | None]
 ContextProvider = Callable[[str, Trajectory], str]  # (rubric id, trajectory) -> extra context
@@ -84,6 +84,7 @@ async def run_stage(
     """One judge call, validated; one retry with the validation error appended."""
     messages = build_messages(rubric, traj, policy_text=policy_text, context_text=context_text)
     texts = event_texts(traj)
+    actors = event_actors(traj)
     na_allowed = rubric.na_definition is not None
     res = StageResult()
     for attempt in (0, 1):
@@ -99,8 +100,9 @@ async def run_stage(
         if not isinstance(out, JudgeOutput):
             res.output, res.errors = None, ["judge returned no structured output"]
             return res
-        res.output = out
-        res.errors = validate_evidence(out, texts, na_allowed=na_allowed)
+        check = check_evidence(out, texts, actors, na_allowed=na_allowed)
+        res.output = sanitize(out, check)
+        res.errors = check.errors
         if not res.errors:
             return res
         if attempt == 0:
