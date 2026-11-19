@@ -441,3 +441,7 @@ Judges and target are from different model families on purpose (self-preference)
 | Budget drift on worker kill | Accepted for Phase 1: ledger is reconciled to the journal when a run completes. Revisit (reservation reclaim on lease expiry) before multi-tenant production (P5-7). |
 | Attempt cap | Default 3, `GAUNTLET_MAX_ATTEMPTS` overrides. Revisit counting only non-infrastructure abandons in Phase 3. |
 | Typed API | Every `/v1` route has a `response_model`; the web uses generated types only. |
+
+### Model ruling update (2026-11-19, after live demo)
+
+Cheap reasoning models return empty content when hidden reasoning eats the output budget. Every role now sets `reasoning = "off"` (OpenRouter `reasoning: {enabled: false}`). `judge_strong` moves from `z-ai/glm-5.3-flash` (reasoning cannot be disabled) to `openrouter/google/gemini-2.5-flash-lite` ($0.10 / $0.40 per 1M). User allows slightly pricier models in the same cheap tier if they are more reliable; still never OpenAI or Anthropic.
