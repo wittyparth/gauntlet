@@ -83,6 +83,9 @@ class EffectRecord(Model):
     status: Literal["pending", "done", "failed"]
     result: Json | None = None
     cost: Cost | None = None
+    # Nested work done while this effect was in flight (hard-cores 1.7a):
+    # {"events": <events appended between pending and done>, "ordinals": {kind: <effects started>}}
+    span: Json | None = None
 
 
 WorldSnapshot = dict[str, dict[str, Json]]

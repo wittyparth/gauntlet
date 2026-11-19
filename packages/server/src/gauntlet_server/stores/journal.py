@@ -22,11 +22,12 @@ _INSERT_EVENT = text(
 )
 _UPSERT_EFFECT = text(
     """
-    INSERT INTO effects (episode_id, key, kind, status, request_hash, result, cost)
-    VALUES (:ep, :key, :kind, :status, :hash, CAST(:result AS jsonb), CAST(:cost AS jsonb))
+    INSERT INTO effects (episode_id, key, kind, status, request_hash, result, cost, span)
+    VALUES (:ep, :key, :kind, :status, :hash, CAST(:result AS jsonb), CAST(:cost AS jsonb),
+            CAST(:span AS jsonb))
     ON CONFLICT (episode_id, key) DO UPDATE SET
       kind = EXCLUDED.kind, status = EXCLUDED.status, request_hash = EXCLUDED.request_hash,
-      result = EXCLUDED.result, cost = EXCLUDED.cost
+      result = EXCLUDED.result, cost = EXCLUDED.cost, span = EXCLUDED.span
     """
 )
 
@@ -44,11 +45,11 @@ class PgJournalStore:
         as empty at epoch 0 (it cannot be appended to, see `append`)."""
         async with self._sm() as s, s.begin():
             await s.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY"))
-            epoch = (
+            head = (
                 await s.execute(
-                    text("SELECT epoch FROM episodes WHERE id = :id"), {"id": episode_id}
+                    text("SELECT epoch, attempt FROM episodes WHERE id = :id"), {"id": episode_id}
                 )
-            ).scalar()
+            ).first()
             ev_rows = (
                 await s.execute(
                     text("SELECT doc FROM events WHERE episode_id = :id ORDER BY seq"),
@@ -59,14 +60,16 @@ class PgJournalStore:
             fx_rows = (
                 await s.execute(
                     text(
-                        "SELECT key, kind, status, request_hash, result, cost "
+                        "SELECT key, kind, status, request_hash, result, cost, span "
                         "FROM effects WHERE episode_id = :id"
                     ),
                     {"id": episode_id},
                 )
             ).mappings()
             effects = {r["key"]: EffectRecord.model_validate(dict(r)) for r in fx_rows}
-        return JournalSnapshot(events, effects, int(epoch or 0))
+        return JournalSnapshot(
+            events, effects, int(head[0]) if head else 0, int(head[1]) if head else 0
+        )
 
     async def append(
         self,
@@ -132,6 +135,7 @@ class PgJournalStore:
                     "hash": eff.request_hash,
                     "result": _json(eff.result),
                     "cost": eff.cost.model_dump_json() if eff.cost else None,
+                    "span": _json(eff.span),
                 },
             )
         if added_cost:
@@ -164,8 +168,8 @@ class PgJournalStore:
             await s.execute(
                 text(
                     "INSERT INTO effects_archive "
-                    "(episode_id, attempt, key, kind, status, request_hash, result, cost) "
-                    "SELECT episode_id, :a, key, kind, status, request_hash, result, cost "
+                    "(episode_id, attempt, key, kind, status, request_hash, result, cost, span) "
+                    "SELECT episode_id, :a, key, kind, status, request_hash, result, cost, span "
                     "FROM effects WHERE episode_id = :id"
                 ),
                 p,

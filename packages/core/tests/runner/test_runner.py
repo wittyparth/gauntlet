@@ -108,6 +108,23 @@ async def test_judge_verdicts_are_events_before_episode_ended_and_hard_fail_flip
     assert ok.outcome == "passed" and ok.verdicts[0].result == "pass"
 
 
+async def test_runner_passes_rule_context_for_binding_commitment():
+    rub = hard_rubric(id="binding_commitment", hard_fail=False)
+    script = {
+        "simulator": [say("When will it arrive?"), done()],
+        TARGET_ROLE: [
+            call("lookup_order", {"order_id": "ord_1"}),
+            "I guarantee your order has shipped.",
+        ],
+        "judge_small": [judge_script("pass")],
+    }
+    llm = FakeLLM(by_role=script)
+    await execute_episode(job(rubrics={rub.id: rub}), deps(llm))
+    judge_call = next(c for c in llm.calls if c.role == "judge_small")
+    prompt = "\n".join(m["content"] for m in judge_call.messages)
+    assert "<extra_context>" in prompt and "Candidate commitment phrases" in prompt
+
+
 async def test_judge_stage_skipped_for_target_error_and_when_disabled():
     rub = hard_rubric()
     llm = FakeLLM(

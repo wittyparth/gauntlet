@@ -96,6 +96,7 @@ class RemoteBase:
         self.history = []
         if self._wired and self._facade is not None:
             self._token = self._facade.attach(ctx, ctx.state["world"])
+            ctx.state["world"].bind(ctx)
 
     async def close(self, ctx: EpisodeCtx) -> None:
         if self._token is not None and self._facade is not None:

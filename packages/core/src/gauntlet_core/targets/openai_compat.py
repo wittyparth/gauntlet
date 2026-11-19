@@ -73,7 +73,13 @@ class OpenAICompatTarget(RemoteBase):
                 raise TargetError("bad_reply", "missing choices[0].message.content")
             return {"reply": content}, None
 
-        res = await ctx.effect("target", {"turn": turn, "messages": messages}, fn, retry_safe=True)
+        res = await ctx.effect(
+            "target",
+            {"turn": turn, "messages": messages},
+            fn,
+            retry_safe=True,
+            nested=self._wired,
+        )
         reply = str(res["reply"])
         self.history.append({"role": "assistant", "content": reply})
         return reply

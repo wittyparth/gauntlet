@@ -20,7 +20,7 @@ from gauntlet_core.engine import (
     SimulatedCrash,
     SqliteJournalStore,
 )
-from gauntlet_core.schema import Cost, EffectRecord, Event, Scenario
+from gauntlet_core.schema import Cost, EffectRecord, Event, EventDraft, Scenario
 from gauntlet_server.db import Sessionmaker
 from gauntlet_server.stores import PgJournalStore
 from pg_helpers import add_episode, add_run, execute, scalar
@@ -106,6 +106,9 @@ class CrashingStore:
         await self.inner.append(episode_id, epoch, events=events, effects=effects)
         self.appends += 1
 
+    async def abandon_attempt(self, episode_id: str, epoch: int) -> int:
+        return await self.inner.abandon_attempt(episode_id, epoch)
+
 
 def event(seq: int, kind: str = "user_message", **payload: Any) -> Event:
     return Event(
@@ -133,7 +136,7 @@ def shape(events: Sequence[Event]) -> list[tuple[Any, ...]]:
 
 
 def effect_shape(j: JournalSnapshot) -> dict[str, tuple[Any, ...]]:
-    return {k: (r.kind, r.status, r.request_hash, r.result) for k, r in j.effects.items()}
+    return {k: (r.kind, r.status, r.request_hash, r.result, r.span) for k, r in j.effects.items()}
 
 
 # ----------------------------------------------------------------- tiny engine fixture
@@ -182,6 +185,26 @@ class Agent:
     async def send(self, ctx: EpisodeCtx, user_text: str) -> str:
         async def fn():
             self.calls[user_text] += 1
+            return {"reply": f"re: {user_text}"}, None
+
+        res = await ctx.effect("target", {"text": user_text}, fn, retry_safe=True)
+        return res["reply"]
+
+
+class NestedAgent(Agent):
+    """The outer `target` effect does nested work: a `tool` effect and an event (1.7a)."""
+
+    async def send(self, ctx: EpisodeCtx, user_text: str) -> str:
+        async def fn():
+            self.calls[user_text] += 1
+
+            async def inner():
+                return {"v": user_text}, None
+
+            await ctx.effect("tool", {"t": user_text}, inner, retry_safe=True)
+            await ctx.emit(
+                EventDraft(kind="sim_note", actor="platform", sim_time=T0, payload={"n": user_text})
+            )
             return {"reply": f"re: {user_text}"}, None
 
         res = await ctx.effect("target", {"text": user_text}, fn, retry_safe=True)

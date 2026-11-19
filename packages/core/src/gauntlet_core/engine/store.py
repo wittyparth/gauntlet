@@ -16,6 +16,7 @@ class JournalSnapshot:
     events: list[Event] = field(default_factory=list)
     effects: dict[str, EffectRecord] = field(default_factory=dict)
     epoch: int = 0
+    attempt: int = 0
 
 
 class JournalStore(Protocol):
@@ -36,6 +37,11 @@ class JournalStore(Protocol):
         """
         ...
 
+    async def abandon_attempt(self, episode_id: str, epoch: int) -> int:
+        """Archive the journal under the current attempt number and start a fresh one at seq 0
+        (CQ-B9, hard-cores 1.7a). Returns the new attempt. Raises StaleLease on a wrong epoch."""
+        ...
+
 
 class BudgetLedger(Protocol):
     async def reserve(self, run_id: str, usd_micros: int) -> bool: ...
@@ -54,6 +60,7 @@ class MemoryJournalStore:
 
     def __init__(self) -> None:
         self._journals: dict[str, JournalSnapshot] = {}
+        self._archive: dict[tuple[str, int], JournalSnapshot] = {}
         self.appends = 0
         self.crash_before_append: int | None = None
 
@@ -68,7 +75,20 @@ class MemoryJournalStore:
 
     async def load(self, episode_id: str) -> JournalSnapshot:
         j = self._get(episode_id)
-        return JournalSnapshot(list(j.events), dict(j.effects), j.epoch)
+        return JournalSnapshot(list(j.events), dict(j.effects), j.epoch, j.attempt)
+
+    async def abandon_attempt(self, episode_id: str, epoch: int) -> int:
+        j = self._get(episode_id)
+        if epoch != j.epoch:
+            raise StaleLease(f"{episode_id}: epoch {epoch} != {j.epoch}")
+        self._archive[(episode_id, j.attempt)] = JournalSnapshot(
+            list(j.events), dict(j.effects), j.epoch, j.attempt
+        )
+        j.events, j.effects, j.attempt = [], {}, j.attempt + 1
+        return j.attempt
+
+    def archived(self, episode_id: str, attempt: int) -> JournalSnapshot:
+        return self._archive[(episode_id, attempt)]
 
     async def append(
         self,

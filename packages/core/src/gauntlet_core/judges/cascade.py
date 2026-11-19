@@ -21,6 +21,7 @@ from .evidence import JudgeOutput, to_evidence, validate_evidence
 from .render import build_messages, event_texts
 
 RuleStage = Callable[[Trajectory], Verdict | None]
+ContextProvider = Callable[[str, Trajectory], str]  # (rubric id, trajectory) -> extra context
 SMALL_ROLE = "judge_small"
 STRONG_ROLE = "judge_strong"
 NOT_CALIBRATED = "[not calibrated: cannot fail a CI gate] "
@@ -198,6 +199,7 @@ class JudgeEvaluator:
         ctx: EpisodeCtx | None = None,
         policy_text: str = "",
         rule_stages: Mapping[str, RuleStage] | None = None,
+        context_provider: ContextProvider | None = None,
         cache: JudgeCache | None = None,
         id: str = "judges",
     ) -> None:
@@ -206,6 +208,7 @@ class JudgeEvaluator:
         self.ctx = ctx
         self.policy_text = policy_text
         self.rule_stages = dict(rule_stages or {})
+        self.context_provider = context_provider
         self.cache = cache
 
     async def evaluate(self, traj: Trajectory, gateway: Gateway) -> list[Verdict]:
@@ -217,6 +220,7 @@ class JudgeEvaluator:
                 gw,
                 ctx=self.ctx,
                 policy_text=self.policy_text,
+                context_text=self.context_provider(r.id, traj) if self.context_provider else "",
                 rule_stage=self.rule_stages.get(r.id),
             )
             for r in self.rubrics

@@ -121,6 +121,7 @@ class HttpTarget(RemoteBase):
             {"turn": turn, "body": body, "conversation_id": self.conversation_id},
             fn,
             retry_safe=not cfg.stateful,
+            nested=self._wired,
         )
         if res.get("conversation_id"):
             self.conversation_id = str(res["conversation_id"])
