@@ -5,7 +5,7 @@ import type { Verdict } from "@/lib/api/models";
 
 import { sortVerdicts, VerdictList } from "./verdict-list";
 
-const v = (criterion: string, result: string, severity: string, hard_fail = false): Verdict => ({
+const v = (criterion: string, result: Verdict["result"], severity: Verdict["severity"], hard_fail = false): Verdict => ({
   criterion,
   evaluator: `rule:${criterion}`,
   result,

@@ -5,6 +5,7 @@ test("agents: shows seeded data", async ({ page, seeded, shot }) => {
   await page.goto("/agents");
   await expect(page.getByRole("heading", { level: 1, name: "Agents" })).toBeVisible();
   await expect(page.getByTestId("agent-row").filter({ hasText: agent.name }).first()).toBeVisible();
+  await expect(page.getByTestId("agent-row").filter({ hasText: "Customer support for an online outdoor gear store" }).first()).toBeVisible();
   await shot(page, "agents");
   await page.getByTestId("agent-row").filter({ hasText: agent.name }).first().click();
   await expect(page).toHaveURL(new RegExp(`/agents/${agent.id}`));

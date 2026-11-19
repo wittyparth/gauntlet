@@ -90,6 +90,8 @@ def create_app(state: AppState | None = None) -> FastAPI:
         docs_url="/docs" if dev_mode else None,
         redoc_url=None,
         openapi_url="/openapi.json" if dev_mode else None,
+        # core models carry a wrap serializer, so their serialization-mode schema is empty
+        separate_input_output_schemas=False,
     )
     if state is not None:
         application.state.gauntlet = state
@@ -106,7 +108,10 @@ def create_app(state: AppState | None = None) -> FastAPI:
 
         if application.openapi_schema is None:
             schema = get_openapi(
-                title=application.title, version=application.version, routes=application.routes
+                title=application.title,
+                version=application.version,
+                routes=application.routes,
+                separate_input_output_schemas=False,
             )
             schema.setdefault("components", {}).setdefault("schemas", {})["ErrorEnvelope"] = (
                 ErrorEnvelope.schema

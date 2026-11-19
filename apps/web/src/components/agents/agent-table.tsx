@@ -9,6 +9,10 @@ import type { Agent } from "@/lib/api/models";
 const columns: ColumnDef<Agent, unknown>[] = [
   { header: "Name", cell: ({ row }) => <span className="font-medium">{row.original.name}</span> },
   {
+    header: "Purpose",
+    cell: ({ row }) => <span className="line-clamp-2 max-w-md text-muted-foreground">{row.original.purpose ?? "No profile yet"}</span>,
+  },
+  {
     header: "Latest version",
     cell: ({ row }) => <span className="font-mono text-xs">{row.original.latest_version_id ? shortId(row.original.latest_version_id) : "none"}</span>,
   },

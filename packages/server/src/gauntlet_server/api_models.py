@@ -61,6 +61,8 @@ __all__ = [
 
 
 class _Out(BaseModel):
+    """Own response rows declare every field without a default: always present, maybe null."""
+
     model_config = ConfigDict(extra="forbid")
 
 
@@ -68,21 +70,21 @@ class Paginated[T](_Out):
     """`{items, next_cursor}`; `next_cursor` is null on the last page."""
 
     items: list[T]
-    next_cursor: str | None = None
+    next_cursor: str | None
 
 
 class WhoAmI(_Out):
     workspace_id: str
-    key_id: str | None = None
-    key_name: str | None = None
+    key_id: str | None
+    key_name: str | None
     scopes: list[str]
-    default_project_id: str | None = None
+    default_project_id: str | None
 
 
 class ProjectOut(_Out):
     id: str
     name: str
-    created_at: str | None = None
+    created_at: str
 
 
 class ProjectList(Paginated[ProjectOut]):
@@ -93,9 +95,9 @@ class AgentOut(_Out):
     id: str
     project_id: str
     name: str
-    latest_version_id: str | None = None
-    purpose: str | None = None  # the latest version's profile purpose
-    created_at: str | None = None
+    latest_version_id: str | None
+    purpose: str | None  # the latest version's profile purpose
+    created_at: str
 
 
 class AgentList(Paginated[AgentOut]):
@@ -103,8 +105,8 @@ class AgentList(Paginated[AgentOut]):
 
 
 class AgentVersionOut(AgentVersion):
-    world_id: str | None = None
-    created_at: str | None = None
+    world_id: str | None
+    created_at: str
 
 
 class AgentVersionList(Paginated[AgentVersionOut]):
@@ -113,7 +115,7 @@ class AgentVersionList(Paginated[AgentVersionOut]):
 
 class SecretOut(_Out):
     name: str
-    created_at: str | None = None
+    created_at: str | None
 
 
 class SecretList(Paginated[SecretOut]):
@@ -126,9 +128,9 @@ class SecretPut(_Out):
 
 class ApiKeyOut(_Out):
     id: str
-    name: str | None = None
-    prefix: str | None = None
-    created_at: str | None = None
+    name: str | None
+    prefix: str | None
+    created_at: str | None
 
 
 class ApiKeyList(Paginated[ApiKeyOut]):
@@ -137,8 +139,8 @@ class ApiKeyList(Paginated[ApiKeyOut]):
 
 class ApiKeyCreated(_Out):
     id: str
-    name: str | None = None
-    prefix: str | None = None
+    name: str | None
+    prefix: str | None
     key: str  # shown once
 
 
@@ -220,10 +222,10 @@ class RunOut(_Out):
     budget_usd_micros: int
     reserved_usd_micros: int
     spent_usd_micros: int
-    baseline_of: str | None = None
+    baseline_of: str | None
     counts: RunCounts
     created_at: str
-    finished_at: str | None = None
+    finished_at: str | None
     estimate_usd_micros: Estimate | None = None  # on creation
     warnings: list[str] | None = None  # on creation
 
@@ -244,16 +246,16 @@ class EpisodeRow(_Out):
     id: str
     run_id: str
     scenario_id: str
-    scenario_version: int | None = None
+    scenario_version: int | None
     rep: int
     status: EpisodeStatus
-    outcome: Outcome | None = None
-    termination: Termination | None = None
+    outcome: Outcome | None
+    termination: Termination | None
     attempt: int
     cost_usd_micros: int
-    world_fidelity: str | None = None
+    world_fidelity: str | None
     created_at: str
-    finished_at: str | None = None
+    finished_at: str | None
 
 
 class EpisodeList(Paginated[EpisodeRow]):
@@ -278,10 +280,10 @@ class EpisodeDetail(EpisodeRow):
 
 
 class SeedOut(_Out):
-    api_key_hint: str | None = None
+    api_key_hint: str | None
     project_id: str
     agent_id: str
     agent_version_id: str
     suite_id: str
     run_id: str
-    failed_episode_id: str | None = None
+    failed_episode_id: str | None

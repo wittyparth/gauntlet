@@ -16,7 +16,8 @@ export function seededHelpers(request: APIRequest) {
   return {
     async run(): Promise<{ id: string; suite_id: string }> {
       const runs = await items("/v1/runs?limit=200");
-      const run = runs.find((r) => r.status === "done") ?? runs[0];
+      // The seeded demo run (ecommerce smoke suite) first; other specs create runs of their own.
+      const run = runs.find((r) => r.id === "run_demo") ?? runs.find((r) => r.status === "done") ?? runs[0];
       return run as { id: string; suite_id: string };
     },
     async failedEpisode(): Promise<{ id: string; run_id: string; scenario_id: string }> {

@@ -2,16 +2,9 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { bodyOf, client } from "@/lib/api/client";
+import { ApiError, bodyOf, client } from "@/lib/api/client";
+import { isDryRun } from "@/lib/api/models";
 import type { components } from "@/lib/api/schema";
-import {
-  agentSchema,
-  agentVersionSchema,
-  createdRunSchema,
-  estimateSchema,
-  projectSchema,
-  suiteSchema,
-} from "@/lib/api/models";
 import { qk } from "@/lib/query-keys";
 
 type Schemas = components["schemas"];
@@ -20,7 +13,7 @@ export function useCreateProject() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (body: Schemas["ProjectIn"]) =>
-      projectSchema.parse(bodyOf(await client.POST("/v1/projects", { body }))),
+      bodyOf(await client.POST("/v1/projects", { body })),
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.projects }),
   });
 }
@@ -29,7 +22,7 @@ export function useCreateAgent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (body: Schemas["AgentIn"]) =>
-      agentSchema.parse(bodyOf(await client.POST("/v1/agents", { body }))),
+      bodyOf(await client.POST("/v1/agents", { body })),
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.agents }),
   });
 }
@@ -38,14 +31,12 @@ export function useCreateAgentVersion(agentId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (body: Schemas["VersionIn"]) =>
-      agentVersionSchema.parse(
-        bodyOf(
+      bodyOf(
           await client.POST("/v1/agents/{agent_id}/versions", {
             params: { path: { agent_id: agentId } },
             body,
           }),
         ),
-      ),
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.agent(agentId) }),
   });
 }
@@ -54,25 +45,29 @@ export function useCreateSuite() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (body: Schemas["Suite"]) =>
-      suiteSchema.parse(bodyOf(await client.POST("/v1/suites", { body }))),
+      bodyOf(await client.POST("/v1/suites", { body })),
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.suites }),
   });
 }
 
 export function useRunEstimate() {
   return useMutation({
-    mutationFn: async (body: Schemas["RunCreate"]) =>
-      estimateSchema.parse(
-        bodyOf(await client.POST("/v1/runs", { params: { query: { dry_run: true } }, body })),
-      ),
+    mutationFn: async (body: Schemas["RunCreate"]) => {
+      const res = bodyOf(await client.POST("/v1/runs", { params: { query: { dry_run: true } }, body }));
+      if (!isDryRun(res)) throw new ApiError(500, "unexpected", "Expected a dry-run answer.");
+      return res;
+    },
   });
 }
 
 export function useCreateRun() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (body: Schemas["RunCreate"]) =>
-      createdRunSchema.parse(bodyOf(await client.POST("/v1/runs", { body }))),
+    mutationFn: async (body: Schemas["RunCreate"]) => {
+      const res = bodyOf(await client.POST("/v1/runs", { body }));
+      if (isDryRun(res)) throw new ApiError(500, "unexpected", "Expected a created run.");
+      return res;
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.runs }),
   });
 }

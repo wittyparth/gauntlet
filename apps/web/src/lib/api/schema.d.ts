@@ -434,7 +434,10 @@ export interface paths {
         /** List Runs */
         get: operations["list_runs_v1_runs_get"];
         put?: never;
-        /** Post Run */
+        /**
+         * Post Run
+         * @description `201` with the run; with `?dry_run=true`, `200` with validation and the cost estimate.
+         */
         post: operations["post_run_v1_runs_post"];
         delete?: never;
         options?: never;
@@ -676,6 +679,28 @@ export interface components {
             /** Description */
             description?: string | null;
         };
+        /** AgentList */
+        AgentList: {
+            /** Items */
+            items: components["schemas"]["AgentOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** AgentOut */
+        AgentOut: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Name */
+            name: string;
+            /** Latest Version Id */
+            latest_version_id: string | null;
+            /** Purpose */
+            purpose: string | null;
+            /** Created At */
+            created_at: string;
+        };
         /** AgentProfile */
         AgentProfile: {
             /** Purpose */
@@ -703,10 +728,487 @@ export interface components {
              */
             languages: string[];
         };
+        /** AgentVersion */
+        AgentVersion: {
+            /** Id */
+            id: string;
+            /** Agent Id */
+            agent_id: string;
+            /** Label */
+            label: string;
+            /** Target */
+            target: components["schemas"]["HostedTargetConfig"] | components["schemas"]["OpenAICompatTargetConfig"] | components["schemas"]["HttpTargetConfig"];
+            profile: components["schemas"]["AgentProfile"];
+        };
+        /** AgentVersionList */
+        AgentVersionList: {
+            /** Items */
+            items: components["schemas"]["AgentVersionOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** AgentVersionOut */
+        AgentVersionOut: {
+            /** Id */
+            id: string;
+            /** Agent Id */
+            agent_id: string;
+            /** Label */
+            label: string;
+            /** Target */
+            target: components["schemas"]["HostedTargetConfig"] | components["schemas"]["OpenAICompatTargetConfig"] | components["schemas"]["HttpTargetConfig"];
+            profile: components["schemas"]["AgentProfile"];
+            /** World Id */
+            world_id: string | null;
+            /** Created At */
+            created_at: string;
+        };
+        /** All */
+        All: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "all";
+            /** Of */
+            of: (components["schemas"]["All"] | components["schemas"]["Any_"] | components["schemas"]["Not"] | components["schemas"]["ToolCalled"] | components["schemas"]["Sequence"] | components["schemas"]["State"] | components["schemas"]["StateDiffCheck"] | components["schemas"]["Output"] | components["schemas"]["CanaryLeaked"] | components["schemas"]["Egress"] | components["schemas"]["TaintedCall"] | components["schemas"]["Detector"] | components["schemas"]["Judge"])[];
+        };
+        /** Any_ */
+        Any_: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "any";
+            /** Of */
+            of: (components["schemas"]["All"] | components["schemas"]["Any_"] | components["schemas"]["Not"] | components["schemas"]["ToolCalled"] | components["schemas"]["Sequence"] | components["schemas"]["State"] | components["schemas"]["StateDiffCheck"] | components["schemas"]["Output"] | components["schemas"]["CanaryLeaked"] | components["schemas"]["Egress"] | components["schemas"]["TaintedCall"] | components["schemas"]["Detector"] | components["schemas"]["Judge"])[];
+        };
+        /** ApiKeyCreated */
+        ApiKeyCreated: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string | null;
+            /** Prefix */
+            prefix: string | null;
+            /** Key */
+            key: string;
+        };
+        /** ApiKeyList */
+        ApiKeyList: {
+            /** Items */
+            items: components["schemas"]["ApiKeyOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** ApiKeyOut */
+        ApiKeyOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string | null;
+            /** Prefix */
+            prefix: string | null;
+            /** Created At */
+            created_at: string | null;
+        };
+        /** AttackRef */
+        AttackRef: {
+            /** Attack */
+            attack: string;
+            /**
+             * Params
+             * @default {}
+             */
+            params: {
+                [key: string]: unknown;
+            };
+        };
         /** BulkIds */
         BulkIds: {
             /** Ids */
             ids: string[];
+        };
+        /** CanaryLeaked */
+        CanaryLeaked: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "canary_leaked";
+            /**
+             * Canary
+             * @default *
+             */
+            canary: string;
+            /**
+             * Channels
+             * @default [
+             *       "output",
+             *       "tool_args"
+             *     ]
+             */
+            channels: ("output" | "tool_args")[];
+        };
+        /** CanarySpec */
+        CanarySpec: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "api_key" | "email" | "card" | "ssn" | "record" | "freeform";
+            /**
+             * Placement
+             * @enum {string}
+             */
+            placement: "system_prompt" | "world_record" | "document" | "tool_result";
+            /** Location */
+            location: string;
+        };
+        /** Caution */
+        Caution: {
+            /** Self Preference */
+            self_preference: boolean;
+            /** Uncalibrated Rubrics */
+            uncalibrated_rubrics: string[];
+            /**
+             * World Fidelity
+             * @enum {string}
+             */
+            world_fidelity: "full" | "simulated";
+            /** Reduced Coverage */
+            reduced_coverage: boolean;
+            /** Unpriced Models */
+            unpriced_models: string[];
+            /**
+             * Adaptive Sampling
+             * @default false
+             */
+            adaptive_sampling: boolean;
+        };
+        /** Cost */
+        Cost: {
+            /**
+             * Usd Micros
+             * @default 0
+             */
+            usd_micros: number;
+            /**
+             * Input Tokens
+             * @default 0
+             */
+            input_tokens: number;
+            /**
+             * Output Tokens
+             * @default 0
+             */
+            output_tokens: number;
+            /** Model */
+            model?: string | null;
+        };
+        /** CrudHandler */
+        CrudHandler: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "crud";
+            /** Collection */
+            collection: string;
+            /**
+             * Op
+             * @enum {string}
+             */
+            op: "get" | "list" | "create" | "update" | "delete";
+            /** Key Arg */
+            key_arg?: string | null;
+            /**
+             * Filter Args
+             * @default []
+             */
+            filter_args: string[];
+        };
+        /** Detector */
+        Detector: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "detector";
+            /** Name */
+            name: string;
+            /**
+             * Params
+             * @default {}
+             */
+            params: {
+                [key: string]: unknown;
+            };
+        };
+        /** DimensionStats */
+        DimensionStats: {
+            /** Criterion */
+            criterion: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "low" | "medium" | "high" | "critical";
+            /** Passed */
+            passed: number;
+            /** Failed */
+            failed: number;
+            /** Na */
+            na: number;
+            /** Error */
+            error: number;
+            /** Score */
+            score: number | null;
+            /** Gating Allowed */
+            gating_allowed: boolean;
+        };
+        /** DocumentSpec */
+        DocumentSpec: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Body */
+            body: string;
+            /**
+             * Trusted
+             * @default true
+             */
+            trusted: boolean;
+            injection?: components["schemas"]["InjectionSpec"] | null;
+        };
+        /** DryRunOut */
+        DryRunOut: {
+            /** Valid */
+            valid: boolean;
+            /** Errors */
+            errors: {
+                [key: string]: string;
+            }[];
+            /** Warnings */
+            warnings: string[];
+            /** Episode Count */
+            episode_count: number;
+            estimate_usd_micros: components["schemas"]["Estimate"];
+        };
+        /** Egress */
+        Egress: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "egress";
+            /**
+             * Allow Domains
+             * @default []
+             */
+            allow_domains: string[];
+            /**
+             * Allow Recipients
+             * @default []
+             */
+            allow_recipients: string[];
+        };
+        /** EpisodeDetail */
+        EpisodeDetail: {
+            /** Id */
+            id: string;
+            /** Run Id */
+            run_id: string;
+            /** Scenario Id */
+            scenario_id: string;
+            /** Scenario Version */
+            scenario_version: number | null;
+            /** Rep */
+            rep: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "leased" | "done" | "cancelled";
+            /** Outcome */
+            outcome: ("passed" | "failed" | "invalid_scenario" | "simulator_error" | "target_error" | "platform_error" | "budget_exhausted") | null;
+            /** Termination */
+            termination: ("user_done" | "max_turns" | "agent_stuck" | "target_unreachable" | "budget" | "simulator_drift" | "error") | null;
+            /** Attempt */
+            attempt: number;
+            /** Cost Usd Micros */
+            cost_usd_micros: number;
+            /** World Fidelity */
+            world_fidelity: string | null;
+            /** Created At */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            scenario: components["schemas"]["EpisodeScenario"];
+            /** Partial */
+            partial: boolean;
+            /** Events */
+            events: components["schemas"]["Event"][];
+            /** Verdicts */
+            verdicts: components["schemas"]["Verdict"][];
+            diff: components["schemas"]["StateDiff"];
+            /** Tools */
+            tools: {
+                [key: string]: string;
+            };
+        };
+        /** EpisodeList */
+        EpisodeList: {
+            /** Items */
+            items: components["schemas"]["EpisodeRow"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** EpisodeRow */
+        EpisodeRow: {
+            /** Id */
+            id: string;
+            /** Run Id */
+            run_id: string;
+            /** Scenario Id */
+            scenario_id: string;
+            /** Scenario Version */
+            scenario_version: number | null;
+            /** Rep */
+            rep: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "leased" | "done" | "cancelled";
+            /** Outcome */
+            outcome: ("passed" | "failed" | "invalid_scenario" | "simulator_error" | "target_error" | "platform_error" | "budget_exhausted") | null;
+            /** Termination */
+            termination: ("user_done" | "max_turns" | "agent_stuck" | "target_unreachable" | "budget" | "simulator_drift" | "error") | null;
+            /** Attempt */
+            attempt: number;
+            /** Cost Usd Micros */
+            cost_usd_micros: number;
+            /** World Fidelity */
+            world_fidelity: string | null;
+            /** Created At */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+        };
+        /** EpisodeScenario */
+        EpisodeScenario: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Goal */
+            goal: string;
+            /** Max Turns */
+            max_turns: number;
+            /** Tags */
+            tags: {
+                [key: string]: string;
+            };
+        };
+        /** Estimate */
+        Estimate: {
+            /** Low */
+            low: number;
+            /** Expected */
+            expected: number;
+            /** High */
+            high: number;
+        };
+        /** Event */
+        Event: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "episode_started" | "user_message" | "agent_message" | "tool_call" | "tool_result" | "fault_injected" | "sim_note" | "check_result" | "verdict" | "episode_ended";
+            /**
+             * Actor
+             * @enum {string}
+             */
+            actor: "user" | "agent" | "tool" | "platform";
+            /**
+             * Sim Time
+             * Format: date-time
+             */
+            sim_time: string;
+            /**
+             * Wall Ms
+             * @default 0
+             */
+            wall_ms: number;
+            /**
+             * Payload
+             * @default {}
+             */
+            payload: {
+                [key: string]: unknown;
+            };
+            origin?: components["schemas"]["Origin"] | null;
+            cost?: components["schemas"]["Cost"] | null;
+            /** Effect Key */
+            effect_key?: string | null;
+            /** Seq */
+            seq: number;
+        };
+        /** Evidence */
+        Evidence: {
+            /** Seq */
+            seq: number;
+            /** Quote */
+            quote?: string | null;
+            /** Note */
+            note?: string | null;
+        };
+        /** FailureRef */
+        FailureRef: {
+            /** Episode Id */
+            episode_id: string;
+            /** Scenario Id */
+            scenario_id: string;
+            /** Reasons */
+            reasons: string[];
+        };
+        /** FaultSpec */
+        FaultSpec: {
+            /** Tool */
+            tool: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "timeout" | "http_500" | "http_429" | "malformed_json" | "empty" | "stale" | "latency" | "schema_drift";
+            /**
+             * Probability
+             * @default 1
+             */
+            probability: number;
+            /** On Call Index */
+            on_call_index?: number | null;
+            /**
+             * Params
+             * @default {}
+             */
+            params: {
+                [key: string]: unknown;
+            };
+        };
+        /** FieldChange */
+        FieldChange: {
+            /** Path */
+            path: string;
+            /** Old */
+            old?: unknown;
+            /** New */
+            new?: unknown;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -772,10 +1274,106 @@ export interface components {
              */
             wired: boolean;
         };
+        /** InjectionSpec */
+        InjectionSpec: {
+            /** Attack */
+            attack: string;
+            /**
+             * Placement
+             * @default body
+             * @enum {string}
+             */
+            placement: "body" | "footer" | "html_comment" | "hidden_text" | "metadata";
+        };
+        /** IntRange */
+        IntRange: {
+            /** Min */
+            min?: number | null;
+            /** Max */
+            max?: number | null;
+        };
+        /** Judge */
+        Judge: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "judge";
+            /** Rubric */
+            rubric: string;
+        };
         /** KeyIn */
         KeyIn: {
             /** Name */
             name: string;
+        };
+        /** LLMSimHandler */
+        LLMSimHandler: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "llm_sim";
+            /** Instructions */
+            instructions: string;
+        };
+        /**
+         * Matcher
+         * @description A value test. Every key that is set must hold. `ref` resolves a comparison value.
+         */
+        Matcher: {
+            /** Eq */
+            eq?: unknown;
+            /** Ne */
+            ne?: unknown;
+            /** In */
+            in?: unknown[] | null;
+            /** Regex */
+            regex?: string | null;
+            /** Contains */
+            contains?: unknown;
+            /** Gt */
+            gt?: number | null;
+            /** Gte */
+            gte?: number | null;
+            /** Lt */
+            lt?: number | null;
+            /** Lte */
+            lte?: number | null;
+            /** Exists */
+            exists?: boolean | null;
+            /** Ref */
+            ref?: string | null;
+            /**
+             * Ref Op
+             * @default eq
+             * @enum {string}
+             */
+            ref_op: "eq" | "ne" | "gt" | "gte" | "lt" | "lte";
+        };
+        /** NamedCheck */
+        NamedCheck: {
+            /** Id */
+            id: string;
+            /** Description */
+            description: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "low" | "medium" | "high" | "critical";
+            /** Check */
+            check: components["schemas"]["All"] | components["schemas"]["Any_"] | components["schemas"]["Not"] | components["schemas"]["ToolCalled"] | components["schemas"]["Sequence"] | components["schemas"]["State"] | components["schemas"]["StateDiffCheck"] | components["schemas"]["Output"] | components["schemas"]["CanaryLeaked"] | components["schemas"]["Egress"] | components["schemas"]["TaintedCall"] | components["schemas"]["Detector"] | components["schemas"]["Judge"];
+        };
+        /** Not */
+        Not: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "not";
+            /** Check */
+            check: components["schemas"]["All"] | components["schemas"]["Any_"] | components["schemas"]["Not"] | components["schemas"]["ToolCalled"] | components["schemas"]["Sequence"] | components["schemas"]["State"] | components["schemas"]["StateDiffCheck"] | components["schemas"]["Output"] | components["schemas"]["CanaryLeaked"] | components["schemas"]["Egress"] | components["schemas"]["TaintedCall"] | components["schemas"]["Detector"] | components["schemas"]["Judge"];
         };
         /** OpenAICompatTargetConfig */
         OpenAICompatTargetConfig: {
@@ -796,10 +1394,222 @@ export interface components {
              */
             wired: boolean;
         };
+        /** Origin */
+        Origin: {
+            /**
+             * Trust
+             * @enum {string}
+             */
+            trust: "system" | "user" | "untrusted_external";
+            /** Source */
+            source?: string | null;
+            /**
+             * Markers
+             * @default []
+             */
+            markers: string[];
+        };
+        /** Output */
+        Output: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "output";
+            /**
+             * Actor
+             * @default agent
+             * @constant
+             */
+            actor: "agent";
+            matcher: components["schemas"]["Matcher"];
+            /**
+             * Scope
+             * @default any
+             * @enum {string}
+             */
+            scope: "any" | "last" | "all";
+        };
+        /** PersonaDoc */
+        PersonaDoc: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /**
+             * Traits
+             * @default {}
+             */
+            traits: {
+                [key: string]: string | number;
+            };
+            /**
+             * Behavior Rules
+             * @default []
+             */
+            behavior_rules: string[];
+            /** Adversarial Intent */
+            adversarial_intent?: string | null;
+            /** Version */
+            version: number;
+            /** Created At */
+            created_at: string;
+        };
+        /** PersonaList */
+        PersonaList: {
+            /** Items */
+            items: components["schemas"]["PersonaDoc"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
         /** ProjectIn */
         ProjectIn: {
             /** Name */
             name: string;
+        };
+        /** ProjectList */
+        ProjectList: {
+            /** Items */
+            items: components["schemas"]["ProjectOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** ProjectOut */
+        ProjectOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Created At */
+            created_at: string;
+        };
+        /** PythonHandler */
+        PythonHandler: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "python";
+            /** Entrypoint */
+            entrypoint: string;
+        };
+        /** RecordChange */
+        RecordChange: {
+            /** Collection */
+            collection: string;
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "added" | "removed" | "changed";
+            /**
+             * Fields
+             * @default []
+             */
+            fields: components["schemas"]["FieldChange"][];
+            /** Record */
+            record?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Seqs
+             * @default []
+             */
+            seqs: number[];
+        };
+        /** RubricDoc */
+        RubricDoc: {
+            /** Id */
+            id: string;
+            /**
+             * Version
+             * @default 1
+             */
+            version: number;
+            /** Title */
+            title: string;
+            /** Question */
+            question: string;
+            /** Pass Definition */
+            pass_definition: string;
+            /** Fail Definition */
+            fail_definition: string;
+            /** Na Definition */
+            na_definition?: string | null;
+            /**
+             * Severity
+             * @default medium
+             * @enum {string}
+             */
+            severity: "low" | "medium" | "high" | "critical";
+            /**
+             * Hard Fail
+             * @default false
+             */
+            hard_fail: boolean;
+            /**
+             * Scope
+             * @default conversation
+             * @enum {string}
+             */
+            scope: "conversation" | "step";
+            /**
+             * Examples
+             * @default []
+             */
+            examples: components["schemas"]["RubricExample"][];
+            /**
+             * Threshold
+             * @default 0.8
+             */
+            threshold: number;
+            /**
+             * Gating Allowed
+             * @default false
+             */
+            gating_allowed: boolean;
+            /** Created At */
+            created_at: string;
+        };
+        /** RubricExample */
+        RubricExample: {
+            /** Transcript */
+            transcript: string;
+            /**
+             * Result
+             * @enum {string}
+             */
+            result: "pass" | "fail" | "na";
+            /** Why */
+            why: string;
+        };
+        /** RubricList */
+        RubricList: {
+            /** Items */
+            items: components["schemas"]["RubricDoc"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** RunCounts */
+        RunCounts: {
+            /** Total */
+            total: number;
+            /** Queued */
+            queued: number;
+            /** Leased */
+            leased: number;
+            /** Done */
+            done: number;
+            /** Cancelled */
+            cancelled: number;
+            /** By Outcome */
+            by_outcome: {
+                [key: string]: number;
+            };
         };
         /** RunCreate */
         RunCreate: {
@@ -819,12 +1629,353 @@ export interface components {
              */
             include_drafts: boolean;
         };
+        /** RunList */
+        RunList: {
+            /** Items */
+            items: components["schemas"]["RunOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** RunManifest */
+        RunManifest: {
+            /** Run Id */
+            run_id: string;
+            /** Suite Id */
+            suite_id: string;
+            agent_version: components["schemas"]["AgentVersion"];
+            /** Scenario Versions */
+            scenario_versions: {
+                [key: string]: number;
+            };
+            /** Seed */
+            seed: number;
+            /** Repetitions */
+            repetitions: number;
+            /** Model Roles */
+            model_roles: {
+                [key: string]: string;
+            };
+            /**
+             * Rubric Versions
+             * @default {}
+             */
+            rubric_versions: {
+                [key: string]: number;
+            };
+            /** Platform Version */
+            platform_version: string;
+            /** Budget Usd Micros */
+            budget_usd_micros: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** RunOut */
+        RunOut: {
+            /** Id */
+            id: string;
+            /** Suite Id */
+            suite_id: string;
+            /** Agent Version Id */
+            agent_version_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "running" | "paused" | "cancelled" | "done" | "failed";
+            manifest: components["schemas"]["RunManifest"];
+            /** Repetitions */
+            repetitions: number;
+            /** Seed */
+            seed: number;
+            /** Budget Usd Micros */
+            budget_usd_micros: number;
+            /** Reserved Usd Micros */
+            reserved_usd_micros: number;
+            /** Spent Usd Micros */
+            spent_usd_micros: number;
+            /** Baseline Of */
+            baseline_of: string | null;
+            counts: components["schemas"]["RunCounts"];
+            /** Created At */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            estimate_usd_micros?: components["schemas"]["Estimate"] | null;
+            /** Warnings */
+            warnings?: string[] | null;
+        };
+        /** RunReport */
+        RunReport: {
+            /** Run Id */
+            run_id: string;
+            /** Counted */
+            counted: number;
+            /** Excluded */
+            excluded: {
+                [key: string]: number;
+            };
+            /** Pass Rate */
+            pass_rate: number | null;
+            /** Ci Low */
+            ci_low: number | null;
+            /** Ci High */
+            ci_high: number | null;
+            /** Per Scenario */
+            per_scenario: components["schemas"]["ScenarioStats"][];
+            /** Dimensions */
+            dimensions: components["schemas"]["DimensionStats"][];
+            /** Composite Score */
+            composite_score: number | null;
+            /** Hard Fail Episodes */
+            hard_fail_episodes: string[];
+            /** Cost Usd Micros */
+            cost_usd_micros: number;
+            /** Cost Per Episode Usd Micros */
+            cost_per_episode_usd_micros: number;
+            /** Latency P50 Ms */
+            latency_p50_ms: number | null;
+            /** Latency P95 Ms */
+            latency_p95_ms: number | null;
+            /** Failures */
+            failures: components["schemas"]["FailureRef"][];
+            caution: components["schemas"]["Caution"];
+        };
+        /** Scenario */
+        Scenario: {
+            /** Id */
+            id: string;
+            /**
+             * Version
+             * @default 1
+             */
+            version: number;
+            /** Title */
+            title: string;
+            /** Goal */
+            goal: string;
+            /** Persona */
+            persona: string;
+            /**
+             * Persona Overrides
+             * @default {}
+             */
+            persona_overrides: {
+                [key: string]: string | number;
+            };
+            /**
+             * Hidden Facts
+             * @default []
+             */
+            hidden_facts: string[];
+            /** Opening Message */
+            opening_message?: string | null;
+            /** World */
+            world: string | components["schemas"]["WorldSpec"];
+            /**
+             * World Overrides
+             * @default {}
+             */
+            world_overrides: {
+                [key: string]: unknown;
+            };
+            /** Success */
+            success: components["schemas"]["All"] | components["schemas"]["Any_"] | components["schemas"]["Not"] | components["schemas"]["ToolCalled"] | components["schemas"]["Sequence"] | components["schemas"]["State"] | components["schemas"]["StateDiffCheck"] | components["schemas"]["Output"] | components["schemas"]["CanaryLeaked"] | components["schemas"]["Egress"] | components["schemas"]["TaintedCall"] | components["schemas"]["Detector"] | components["schemas"]["Judge"];
+            /**
+             * Forbidden
+             * @default []
+             */
+            forbidden: components["schemas"]["NamedCheck"][];
+            /**
+             * Rubrics
+             * @default []
+             */
+            rubrics: string[];
+            /**
+             * Max Turns
+             * @default 12
+             */
+            max_turns: number;
+            /**
+             * Tags
+             * @default {}
+             */
+            tags: {
+                [key: string]: string;
+            };
+            attack?: components["schemas"]["AttackRef"] | null;
+        };
+        /** ScenarioList */
+        ScenarioList: {
+            /** Items */
+            items: components["schemas"]["ScenarioRecord"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** ScenarioRecord */
+        ScenarioRecord: {
+            scenario: components["schemas"]["Scenario"];
+            /** Id */
+            id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "approved";
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "pack" | "generated" | "mined" | "pinned";
+            /** Version */
+            version: number;
+            /** Created At */
+            created_at: string;
+        };
+        /** ScenarioStats */
+        ScenarioStats: {
+            /** Scenario Id */
+            scenario_id: string;
+            /** Title */
+            title: string;
+            /** Counted */
+            counted: number;
+            /** Passed */
+            passed: number;
+            /** Rate */
+            rate: number | null;
+            /** Ci Low */
+            ci_low: number | null;
+            /** Ci High */
+            ci_high: number | null;
+            /** Excluded */
+            excluded: {
+                [key: string]: number;
+            };
+            /** Episode Ids */
+            episode_ids: string[];
+        };
         /** SecretIn */
         SecretIn: {
             /** Name */
             name: string;
             /** Value */
             value: string;
+        };
+        /** SecretList */
+        SecretList: {
+            /** Items */
+            items: components["schemas"]["SecretOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** SecretOut */
+        SecretOut: {
+            /** Name */
+            name: string;
+            /** Created At */
+            created_at: string | null;
+        };
+        /** SecretPut */
+        SecretPut: {
+            /** Name */
+            name: string;
+        };
+        /** SeedOut */
+        SeedOut: {
+            /** Api Key Hint */
+            api_key_hint: string | null;
+            /** Project Id */
+            project_id: string;
+            /** Agent Id */
+            agent_id: string;
+            /** Agent Version Id */
+            agent_version_id: string;
+            /** Suite Id */
+            suite_id: string;
+            /** Run Id */
+            run_id: string;
+            /** Failed Episode Id */
+            failed_episode_id: string | null;
+        };
+        /** Sequence */
+        Sequence: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "sequence";
+            /** First */
+            first: components["schemas"]["All"] | components["schemas"]["Any_"] | components["schemas"]["Not"] | components["schemas"]["ToolCalled"] | components["schemas"]["Sequence"] | components["schemas"]["State"] | components["schemas"]["StateDiffCheck"] | components["schemas"]["Output"] | components["schemas"]["CanaryLeaked"] | components["schemas"]["Egress"] | components["schemas"]["TaintedCall"] | components["schemas"]["Detector"] | components["schemas"]["Judge"];
+            /** Then */
+            then: components["schemas"]["All"] | components["schemas"]["Any_"] | components["schemas"]["Not"] | components["schemas"]["ToolCalled"] | components["schemas"]["Sequence"] | components["schemas"]["State"] | components["schemas"]["StateDiffCheck"] | components["schemas"]["Output"] | components["schemas"]["CanaryLeaked"] | components["schemas"]["Egress"] | components["schemas"]["TaintedCall"] | components["schemas"]["Detector"] | components["schemas"]["Judge"];
+            /**
+             * Strict
+             * @default false
+             */
+            strict: boolean;
+        };
+        /** State */
+        State: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "state";
+            /** Collection */
+            collection: string;
+            /** Id */
+            id?: string | null;
+            /** Where */
+            where?: {
+                [key: string]: components["schemas"]["Matcher"];
+            } | null;
+            /** Path */
+            path: string;
+            matcher: components["schemas"]["Matcher"];
+        };
+        /** StateDiff */
+        StateDiff: {
+            /**
+             * Changes
+             * @default []
+             */
+            changes: components["schemas"]["RecordChange"][];
+        };
+        /** StateDiffCheck */
+        StateDiffCheck: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "state_diff";
+            /** Collection */
+            collection: string;
+            added?: components["schemas"]["IntRange"] | null;
+            removed?: components["schemas"]["IntRange"] | null;
+            /** Changed */
+            changed?: {
+                [key: string]: components["schemas"]["Matcher"];
+            } | null;
+            /**
+             * Only
+             * @default false
+             */
+            only: boolean;
+        };
+        /** StaticHandler */
+        StaticHandler: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "static";
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            };
         };
         /** Suite */
         Suite: {
@@ -844,6 +1995,107 @@ export interface components {
                 [key: string]: number;
             } | null;
         };
+        /** SuiteList */
+        SuiteList: {
+            /** Items */
+            items: components["schemas"]["SuiteOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** SuiteOut */
+        SuiteOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Scenarios */
+            scenarios: string[];
+            /**
+             * Repetitions
+             * @default 1
+             */
+            repetitions: number;
+            /** Persona Mix */
+            persona_mix?: {
+                [key: string]: number;
+            } | null;
+            /** Created At */
+            created_at: string;
+        };
+        /** TaintedCall */
+        TaintedCall: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "tainted_call";
+            /**
+             * Tool
+             * @default *
+             */
+            tool: string;
+            /** Risk */
+            risk?: string[] | null;
+        };
+        /** ToolCalled */
+        ToolCalled: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "tool_called";
+            /** Tool */
+            tool: string;
+            /**
+             * Args
+             * @default {}
+             */
+            args: {
+                [key: string]: components["schemas"]["Matcher"];
+            };
+            /**
+             * @default {
+             *       "min": 1
+             *     }
+             */
+            count: components["schemas"]["IntRange"];
+            /** Ok */
+            ok?: boolean | null;
+        };
+        /** ToolSpec */
+        ToolSpec: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /**
+             * Input Schema
+             * @default {
+             *       "type": "object",
+             *       "properties": {}
+             *     }
+             */
+            input_schema: {
+                [key: string]: unknown;
+            };
+            /**
+             * Risk
+             * @enum {string}
+             */
+            risk: "read" | "write" | "destructive" | "financial" | "external_comm";
+            /** Handler */
+            handler: components["schemas"]["CrudHandler"] | components["schemas"]["PythonHandler"] | components["schemas"]["LLMSimHandler"] | components["schemas"]["StaticHandler"];
+            /**
+             * Untrusted Output
+             * @default false
+             */
+            untrusted_output: boolean;
+            /**
+             * Honeytool
+             * @default false
+             */
+            honeytool: boolean;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -857,6 +2109,55 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /** Verdict */
+        Verdict: {
+            /** Evaluator */
+            evaluator: string;
+            /** Rubric Version */
+            rubric_version?: number | null;
+            /** Criterion */
+            criterion: string;
+            /**
+             * Result
+             * @enum {string}
+             */
+            result: "pass" | "fail" | "na" | "error";
+            /**
+             * Severity
+             * @default medium
+             * @enum {string}
+             */
+            severity: "low" | "medium" | "high" | "critical";
+            /**
+             * Hard Fail
+             * @default false
+             */
+            hard_fail: boolean;
+            /**
+             * Confidence
+             * @default 1
+             */
+            confidence: number;
+            /**
+             * Evidence
+             * @default []
+             */
+            evidence: components["schemas"]["Evidence"][];
+            /**
+             * Reasoning
+             * @default
+             */
+            reasoning: string;
+            /**
+             * Stage
+             * @default rule
+             * @enum {string}
+             */
+            stage: "rule" | "small" | "strong" | "human";
+            /** Model */
+            model?: string | null;
+            cost?: components["schemas"]["Cost"] | null;
+        };
         /** VersionIn */
         VersionIn: {
             /** Label */
@@ -866,6 +2167,108 @@ export interface components {
             profile: components["schemas"]["AgentProfile"];
             /** World Id */
             world_id?: string | null;
+        };
+        /** WhoAmI */
+        WhoAmI: {
+            /** Workspace Id */
+            workspace_id: string;
+            /** Key Id */
+            key_id: string | null;
+            /** Key Name */
+            key_name: string | null;
+            /** Scopes */
+            scopes: string[];
+            /** Default Project Id */
+            default_project_id: string | null;
+        };
+        /** WorldDoc */
+        WorldDoc: {
+            /** Id */
+            id?: string | null;
+            /**
+             * Tools
+             * @default []
+             */
+            tools: components["schemas"]["ToolSpec"][];
+            /**
+             * Seed
+             * @default {}
+             */
+            seed: {
+                [key: string]: {
+                    [key: string]: unknown;
+                }[];
+            };
+            /**
+             * Clock Start
+             * Format: date-time
+             */
+            clock_start: string;
+            /**
+             * Faults
+             * @default []
+             */
+            faults: components["schemas"]["FaultSpec"][];
+            /**
+             * Canaries
+             * @default []
+             */
+            canaries: components["schemas"]["CanarySpec"][];
+            /**
+             * Documents
+             * @default []
+             */
+            documents: components["schemas"]["DocumentSpec"][];
+            /** Version */
+            version: number;
+            /** Created At */
+            created_at: string;
+        };
+        /** WorldList */
+        WorldList: {
+            /** Items */
+            items: components["schemas"]["WorldDoc"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** WorldSpec */
+        WorldSpec: {
+            /** Id */
+            id?: string | null;
+            /**
+             * Tools
+             * @default []
+             */
+            tools: components["schemas"]["ToolSpec"][];
+            /**
+             * Seed
+             * @default {}
+             */
+            seed: {
+                [key: string]: {
+                    [key: string]: unknown;
+                }[];
+            };
+            /**
+             * Clock Start
+             * Format: date-time
+             */
+            clock_start: string;
+            /**
+             * Faults
+             * @default []
+             */
+            faults: components["schemas"]["FaultSpec"][];
+            /**
+             * Canaries
+             * @default []
+             */
+            canaries: components["schemas"]["CanarySpec"][];
+            /**
+             * Documents
+             * @default []
+             */
+            documents: components["schemas"]["DocumentSpec"][];
         };
         ErrorEnvelope: {
             error: {
@@ -898,9 +2301,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["WhoAmI"];
                 };
             };
         };
@@ -923,9 +2324,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ProjectList"];
                 };
             };
             /** @description Validation Error */
@@ -958,9 +2357,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ProjectOut"];
                 };
             };
             /** @description Validation Error */
@@ -991,9 +2388,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ProjectOut"];
                 };
             };
             /** @description Validation Error */
@@ -1026,9 +2421,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["AgentList"];
                 };
             };
             /** @description Validation Error */
@@ -1061,9 +2454,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["AgentOut"];
                 };
             };
             /** @description Validation Error */
@@ -1094,9 +2485,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["AgentOut"];
                 };
             };
             /** @description Validation Error */
@@ -1130,9 +2519,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["AgentVersionList"];
                 };
             };
             /** @description Validation Error */
@@ -1167,9 +2554,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["AgentVersionOut"];
                 };
             };
             /** @description Validation Error */
@@ -1201,9 +2586,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["AgentVersionOut"];
                 };
             };
             /** @description Validation Error */
@@ -1232,9 +2615,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["SecretList"];
                 };
             };
         };
@@ -1258,9 +2639,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["SecretPut"];
                 };
             };
             /** @description Validation Error */
@@ -1321,9 +2700,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ApiKeyList"];
                 };
             };
             /** @description Validation Error */
@@ -1356,9 +2733,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ApiKeyCreated"];
                 };
             };
             /** @description Validation Error */
@@ -1419,9 +2794,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["WorldList"];
                 };
             };
             /** @description Validation Error */
@@ -1456,9 +2829,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["WorldDoc"];
                 };
             };
             /** @description Validation Error */
@@ -1491,9 +2862,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["WorldDoc"];
                 };
             };
             /** @description Validation Error */
@@ -1525,9 +2894,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["PersonaList"];
                 };
             };
             /** @description Validation Error */
@@ -1562,9 +2929,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["PersonaDoc"];
                 };
             };
             /** @description Validation Error */
@@ -1597,9 +2962,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["PersonaDoc"];
                 };
             };
             /** @description Validation Error */
@@ -1631,9 +2994,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["RubricList"];
                 };
             };
             /** @description Validation Error */
@@ -1668,9 +3029,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["RubricDoc"];
                 };
             };
             /** @description Validation Error */
@@ -1703,9 +3062,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["RubricDoc"];
                 };
             };
             /** @description Validation Error */
@@ -1761,9 +3118,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ScenarioList"];
                 };
             };
             /** @description Validation Error */
@@ -1798,9 +3153,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ScenarioRecord"];
                 };
             };
             /** @description Validation Error */
@@ -1831,9 +3184,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ScenarioRecord"];
                 };
             };
             /** @description Validation Error */
@@ -1870,9 +3221,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ScenarioRecord"];
                 };
             };
             /** @description Validation Error */
@@ -1905,9 +3254,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ScenarioList"];
                 };
             };
             /** @description Validation Error */
@@ -1938,9 +3285,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ScenarioRecord"];
                 };
             };
             /** @description Validation Error */
@@ -1972,9 +3317,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["SuiteList"];
                 };
             };
             /** @description Validation Error */
@@ -2007,9 +3350,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["SuiteOut"];
                 };
             };
             /** @description Validation Error */
@@ -2040,9 +3381,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["SuiteOut"];
                 };
             };
             /** @description Validation Error */
@@ -2077,9 +3416,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["SuiteOut"];
                 };
             };
             /** @description Validation Error */
@@ -2114,9 +3451,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["RunList"];
                 };
             };
             /** @description Validation Error */
@@ -2151,7 +3486,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["RunOut"] | components["schemas"]["DryRunOut"];
                 };
             };
             /** @description Validation Error */
@@ -2182,9 +3517,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["RunOut"];
                 };
             };
             /** @description Validation Error */
@@ -2215,9 +3548,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["RunOut"];
                 };
             };
             /** @description Validation Error */
@@ -2248,9 +3579,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["RunOut"];
                 };
             };
             /** @description Validation Error */
@@ -2281,9 +3610,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["RunOut"];
                 };
             };
             /** @description Validation Error */
@@ -2320,9 +3647,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["EpisodeList"];
                 };
             };
             /** @description Validation Error */
@@ -2353,7 +3678,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["RunReport"];
                 };
             };
             /** @description Validation Error */
@@ -2481,9 +3806,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["EpisodeDetail"];
                 };
             };
             /** @description Validation Error */
@@ -2552,9 +3875,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["SeedOut"];
                 };
             };
             /** @description Validation Error */

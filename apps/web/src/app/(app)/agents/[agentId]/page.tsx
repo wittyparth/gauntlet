@@ -71,7 +71,7 @@ function Overview({ agentId }: { agentId: string }) {
         ) : (
           <>
             <ProfileCard profile={version.profile} />
-            <ToolInventory worldId={version.world_id} allowed={version.target.tools} />
+            <ToolInventory worldId={version.world_id} allowed={version.target.kind === "hosted" ? version.target.tools : undefined} />
             <TargetCard target={version.target} />
             <LatestRunsCard versionIds={list.map((v) => v.id)} startAction={<StartRunDialog agentVersionId={version.id} variant="outline" />} />
           </>
