@@ -27,6 +27,7 @@ from gauntlet_core.schema import (
 )
 
 from .canary import plant
+from .markers import INJECT_PREFIX, append_injection, scan_markers
 from .state import WorldState, WorldView, diff_from_patches
 from .tools import (
     NeedsLLM,
@@ -50,6 +51,7 @@ class BuiltWorld:
     documents: dict[str, DocumentSpec] = field(default_factory=dict)
     tool_result_canaries: dict[str, list[str]] = field(default_factory=dict)  # tool -> values
     markers: list[str] = field(default_factory=list)  # taint markers planted by injections
+    tool_injections: dict[str, list[str]] = field(default_factory=dict)  # tool -> bodies
 
 
 def _merge_seed(seed: dict[str, list[Json]], overrides: Json) -> dict[str, list[Json]]:
@@ -87,6 +89,12 @@ def build_world(spec: WorldSpec, overrides: Json | None, episode_seed: int) -> B
             docs[c.location] = d.model_copy(update={"body": f"{d.body}\n{planted.value}"})
         else:
             built.tool_result_canaries.setdefault(c.location, []).append(planted.value)
+    for d in docs.values():
+        if d.id.startswith(INJECT_PREFIX):
+            built.tool_injections.setdefault(d.id[len(INJECT_PREFIX) :], []).append(d.body)
+    built.markers = scan_markers(
+        seed, [d.body for d in docs.values()], [t.description for t in spec.tools]
+    )
     built.initial = WorldState.from_seed(seed).snapshot()
     return built
 
@@ -170,6 +178,9 @@ class World:
         extra = self.built.tool_result_canaries.get(spec.name)
         if extra and out.error is None and isinstance(result, dict):
             result = {**result, "internal_note": " ".join(extra)}
+        injected = self.built.tool_injections.get(spec.name)
+        if injected and out.error is None:
+            result = append_injection(result, injected)
         return {
             "ok": out.error is None,
             "result": result,

@@ -22,6 +22,7 @@ from gauntlet_core.engine import (
     JournalStore,
     PermanentEffectError,
     Target,
+    UserSimulator,
     run_episode,
 )
 from gauntlet_core.eval.rubrics import RULE_STAGE, rule_context
@@ -247,7 +248,12 @@ async def _total_cost(store: JournalStore, episode_id: str) -> Cost:
 
 
 async def execute_episode(
-    job: EpisodeJob, deps: RunnerDeps, *, epoch: int = 0, replay_only: bool = False
+    job: EpisodeJob,
+    deps: RunnerDeps,
+    *,
+    epoch: int = 0,
+    replay_only: bool = False,
+    sim: UserSimulator | None = None,
 ) -> EpisodeOutcome:
     """Run, resume or replay one episode. Raises StaleLease, IndeterminateEffect and
     NonDeterminism to the caller."""
@@ -292,7 +298,7 @@ async def execute_episode(
     world.bind(ctx)
     persona = merge_persona(job.persona, scn.persona_overrides)
     target = make_target(job.agent_version, world, built, deps, job.secrets)
-    sim = LLMUserSimulator(scn, persona, deps.gateway, guard=make_guard(scn, persona))
+    sim = sim or LLMUserSimulator(scn, persona, deps.gateway, guard=make_guard(scn, persona))
     finalizer = make_finalizer(
         scn,
         built,
@@ -349,7 +355,12 @@ async def _end_as_platform_error(
 
 
 async def execute_with_attempts(
-    job: EpisodeJob, deps: RunnerDeps, *, epoch: int = 0, replay_only: bool = False
+    job: EpisodeJob,
+    deps: RunnerDeps,
+    *,
+    epoch: int = 0,
+    replay_only: bool = False,
+    sim: UserSimulator | None = None,
 ) -> EpisodeOutcome:
     """`execute_episode` plus the abandon-attempt path (hard-cores 1.3 and 1.7a): when resuming
     meets an indeterminate effect the journal is archived under its attempt number and the
@@ -357,7 +368,8 @@ async def execute_with_attempts(
     Raises StaleLease and NonDeterminism to the caller."""
     while True:
         try:
-            return await execute_episode(job, deps, epoch=epoch, replay_only=replay_only)
+            extra = {"sim": sim} if sim is not None else {}
+            return await execute_episode(job, deps, epoch=epoch, replay_only=replay_only, **extra)
         except IndeterminateEffect as exc:
             if replay_only:
                 raise
