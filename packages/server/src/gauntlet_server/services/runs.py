@@ -296,7 +296,12 @@ async def set_run_status(session: AsyncSession, run: Run, action: str) -> None:
 
 
 async def maybe_complete_run(session: AsyncSession, run_id: str) -> bool:
-    """`done` once no episode is queued or leased (never overrides a cancelled run)."""
+    """`done` once no episode is queued or leased (never overrides a cancelled run).
+
+    Completing also reconciles the budget ledger with the journal. A worker killed between
+    recording an effect and settling its reservation leaves a reservation nobody releases and
+    spend below the recorded effect costs; with no episode left in flight, `reserved` is
+    zero and `spent` is the sum of the episode costs (which the journal keeps atomically)."""
     res = await session.execute(
         text(
             "UPDATE runs SET status = 'done', finished_at = now() "
@@ -305,4 +310,14 @@ async def maybe_complete_run(session: AsyncSession, run_id: str) -> bool:
         ),
         {"r": run_id},
     )
-    return res.rowcount == 1  # type: ignore[attr-defined]
+    if res.rowcount != 1:  # type: ignore[attr-defined]
+        return False
+    await session.execute(
+        text(
+            "UPDATE runs SET reserved_usd_micros = 0, spent_usd_micros = "
+            "(SELECT coalesce(sum(cost_usd_micros), 0) FROM episodes WHERE run_id = :r) "
+            "WHERE id = :r"
+        ),
+        {"r": run_id},
+    )
+    return True

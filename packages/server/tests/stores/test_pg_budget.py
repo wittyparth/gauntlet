@@ -66,3 +66,21 @@ async def test_concurrent_reserve_and_settle_stay_consistent(sm: Sessionmaker):
     await asyncio.gather(*(worker() for _ in range(10)))
     reserved, spent = await totals(sm)
     assert reserved == 0 and spent % 30 == 0 and spent <= 1000
+
+
+async def test_completing_a_run_reconciles_the_ledger_with_the_journal(sm: Sessionmaker):
+    """A worker killed between recording an effect and settling it leaves the run with a
+    reservation nobody will release and spend lower than the effect costs (found by the chaos
+    test). When the run completes, `reserved` is zero and `spent` equals the episode costs."""
+    from gauntlet_server.services.runs import maybe_complete_run
+    from pg_helpers import add_episode
+
+    await add_run(sm, budget=10_000, status="running")
+    await add_episode(sm, "ep_a", status="done", cost_usd_micros=700)
+    await add_episode(sm, "ep_b", status="done", cost_usd_micros=300)
+    ledger = PgBudgetLedger(sm)
+    assert await ledger.reserve("run_1", 500)  # the killed worker's reservation
+    await ledger.settle("run_1", 0, 600)  # and spend that lags the journal (600 < 1000)
+    async with sm() as s, s.begin():
+        assert await maybe_complete_run(s, "run_1")
+    assert await totals(sm) == (0, 1000)
