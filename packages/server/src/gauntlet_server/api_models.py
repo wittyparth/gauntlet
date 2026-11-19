@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import Literal
 
+from gauntlet_core.llm.catalog import CatalogModel, RoleChoice
 from gauntlet_core.schema import (
     AgentVersion,
     Event,
@@ -37,6 +38,9 @@ __all__ = [
     "EpisodeRow",
     "EpisodeScenario",
     "Estimate",
+    "ModelCatalogOut",
+    "ModelSettingsIn",
+    "ModelSettingsOut",
     "PersonaDoc",
     "PersonaList",
     "ProjectList",
@@ -287,3 +291,17 @@ class SeedOut(_Out):
     suite_id: str
     run_id: str
     failed_episode_id: str | None
+
+
+class ModelCatalogOut(_Out):
+    models: list[CatalogModel]
+
+
+class ModelSettingsIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    roles: dict[str, RoleChoice]
+
+
+class ModelSettingsOut(_Out):
+    roles: dict[str, RoleChoice]  # resolved: workspace choice over gauntlet.toml over defaults
+    overridden: list[str]  # roles the workspace has set itself

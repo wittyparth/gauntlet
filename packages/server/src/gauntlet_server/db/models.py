@@ -46,6 +46,7 @@ __all__ = [
     "SuiteScenario",
     "Verdict",
     "Workspace",
+    "WorkspaceSettings",
     "World",
 ]
 
@@ -183,6 +184,8 @@ class Run(Base):
     budget_usd_micros: Mapped[int] = mapped_column(BigInteger)
     reserved_usd_micros: Mapped[int] = mapped_column(BigInteger, server_default="0")
     spent_usd_micros: Mapped[int] = mapped_column(BigInteger, server_default="0")
+    # resolved {role: {model, reasoning}} the run's worker must use (null: process defaults)
+    role_settings: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     baseline_of: Mapped[str | None] = mapped_column(ForeignKey("runs.id"))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = created_at_col()
@@ -295,3 +298,13 @@ class Secret(Base):
     name: Mapped[str]
     ciphertext: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = created_at_col()
+
+
+class WorkspaceSettings(Base):
+    __tablename__ = "workspace_settings"
+    workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id"), primary_key=True)
+    # {role: {model, reasoning}} chosen by the workspace; absent roles use the defaults
+    model_roles: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default=_EMPTY_OBJ)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=text("now()"), onupdate=text("now()")
+    )

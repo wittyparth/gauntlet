@@ -34,6 +34,7 @@ from .deps import AppState
 from .events import PublishingJournalStore
 from .facade import RemoteFacade
 from .jobs import load_episode_job
+from .models_gateway import gateway_for_roles
 from .services.runs import maybe_complete_run, run_update_payload
 from .stores import PgBudgetLedger, PgEpisodeQueue, PgJournalStore
 
@@ -170,11 +171,18 @@ class Worker:
                 {"id": lease.episode_id, "e": lease.epoch},
             )
 
-    def _deps(self, run_id: str) -> RunnerDeps:
+    async def _run_roles(self, run_id: str) -> dict[str, Any] | None:
+        async with self.state.sm() as s:
+            row = (
+                await s.execute(text("SELECT role_settings FROM runs WHERE id = :r"), {"r": run_id})
+            ).scalar()
+        return row if isinstance(row, dict) else None
+
+    def _deps(self, run_id: str, roles: dict[str, Any] | None = None) -> RunnerDeps:
         st = self.state
         return RunnerDeps(
             store=PublishingJournalStore(PgJournalStore(st.sm), st.publisher, run_id),
-            gateway=st.gateway,
+            gateway=gateway_for_roles(st.gateway, roles),
             budget=PgBudgetLedger(st.sm),
             http=self.http,
             url_policy=UrlPolicy(
@@ -193,7 +201,7 @@ class Worker:
         except (LookupError, ValueError) as e:
             await self._fail(lease, f"cannot load episode: {e}")
             return
-        deps = self._deps(lease.run_id)
+        deps = self._deps(lease.run_id, await self._run_roles(lease.run_id))
         try:
             out = await execute_with_attempts(job, deps, epoch=lease.epoch)
         except NonDeterminism as e:

@@ -20,7 +20,7 @@ pytestmark = pytest.mark.integration
 CONTRACT_TABLES = {
     "workspaces", "api_keys", "projects", "agents", "agent_versions", "personas", "worlds",
     "rubrics", "scenarios", "suites", "suite_scenarios", "runs", "episodes", "events",
-    "effects", "verdicts", "secrets", "events_archive", "effects_archive",
+    "effects", "verdicts", "secrets", "events_archive", "effects_archive", "workspace_settings",
 }  # fmt: skip
 
 

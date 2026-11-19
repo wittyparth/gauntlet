@@ -26,6 +26,7 @@ from ..db.models import Scenario as ScenarioRow
 from ..db.models import World as WorldRow
 from ..deps import AppState
 from ..errors import ApiError, not_found
+from .model_settings import effective_config, load_choices, resolved_roles
 
 __all__ = [
     "RunCreate",
@@ -202,11 +203,13 @@ async def create_run(
         for issue in validate_scenario(scn, spec, persona_ids=persona_ids, rubric_ids=rubric_ids):
             errors.append({"scenario_id": scn.id, "code": issue.code, "message": issue.message})
     reps = body.repetitions or suite.repetitions
+    choices = await load_choices(session, workspace_id)
+    run_cfg = effective_config(state.gateway_config, choices)
     version_model = agent_version_of(av)
     est = estimate_run_cost(
         scenarios,
         reps,
-        state.gateway_config,
+        run_cfg,
         agent_model=getattr(version_model.target, "model", None),
     )
     estimate = {"low": est.low, "expected": est.expected, "high": est.high}
@@ -232,7 +235,7 @@ async def create_run(
         scenario_versions={s.id: latest[s.id].version for s in scenarios},
         seed=seed,
         repetitions=reps,
-        model_roles={k: v.model for k, v in state.gateway_config.llm.roles.items()},
+        model_roles={k: v.model for k, v in run_cfg.llm.roles.items()},
         rubric_versions={},
         platform_version=platform_version(),
         budget_usd_micros=budget,
@@ -244,6 +247,7 @@ async def create_run(
         suite_id=suite.id,
         agent_version_id=av.id,
         manifest=manifest.model_dump(mode="json"),
+        role_settings=resolved_roles(run_cfg),
         status="queued",
         repetitions=reps,
         seed=seed,
