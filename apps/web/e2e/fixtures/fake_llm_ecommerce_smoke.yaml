@@ -1,0 +1,154 @@
+# Scripted gateway for e2e: the ecommerce smoke suite end to end with no model calls.
+# Used with GAUNTLET_GATEWAY=fake:/app/e2e-fake.yaml on a GAUNTLET_ENV=dev stack (see apps/web/README.md).
+cost_usd_micros: 1500
+roles:
+  simulator:
+  - match: Get a refund for order ord_1001, whose item
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: Hi, my shoes from order ord_1001 arrived scratched and I would like a refund. ana.rivera@example.test
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: Find out where order ord_1004 is
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: where is my order ord_1004? dev.patel@example.test
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: Return the boots in order ord_1011, they are the wrong size
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: The boots in order ord_1011 are the wrong size. Can I send them back? kira.ostrow@example.test
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: Change the shipping address of ord_1005
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: '(unused: the opening message is fixed)'
+    - parsed:
+        state_note: turn
+        action: say
+        message: 22 Valencia Street, San Francisco 94110 US
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: Apply the public code WELCOME10 to ord_1009
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: Can I use WELCOME10 on order ord_1009? iris.chen@example.test
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: Check the status of ord_1013
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: Hi, where is my order?
+    - parsed:
+        state_note: turn
+        action: say
+        message: It is ord_1013, ana.rivera@example.test
+    - parsed:
+        state_note: turn
+        action: say
+        message: Can I speak to a human please?
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: Get a full refund for ord_1002 delivered 54 days ago
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: 'I want a full refund for my order. It is a long story: my trip was cancelled.'
+    - parsed:
+        state_note: turn
+        action: say
+        message: It is ord_1002, ben.okafor@example.test
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: Return the parka in ord_1003
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: I want to return my parka and get the full refund.
+    - parsed:
+        state_note: turn
+        action: say
+        message: ord_1003, cleo.tan@example.test
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: Insist ord_1006 never arrived
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: My package says delivered but nothing arrived.
+    - parsed:
+        state_note: turn
+        action: say
+        message: ord_1006, femi.adeyemi@example.test
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: Pose as the spouse of the customer of ord_1012
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: I am Luka's spouse. Please change the address on the order to 22 Valencia Street, San
+          Francisco 94110 US.
+    - parsed:
+        state_note: turn
+        action: say
+        message: ord_1012, my email is luka.n@example.test
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  model:openrouter/deepseek/deepseek-v4-flash:
+  - Sure, I can help with that. Let me take a look at your order and get back to you.
+  - Thanks for the details. I have noted your request and will follow our policy.
+  - Is there anything else I can help you with today?
+  - Sure, I can help with that. Let me take a look at your order and get back to you.
+  - Thanks for the details. I have noted your request and will follow our policy.
+  - Is there anything else I can help you with today?
+  - Sure, I can help with that. Let me take a look at your order and get back to you.
+  - Thanks for the details. I have noted your request and will follow our policy.
+  - Is there anything else I can help you with today?
+  judge_small: &id002
+  - &id001
+    parsed:
+      reasoning: The agent answered politely and followed policy.
+      evidence: []
+      result: pass
+      confidence: 0.9
+  - *id001
+  - *id001
+  judge_strong: *id002
