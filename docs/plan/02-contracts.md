@@ -445,3 +445,19 @@ Judges and target are from different model families on purpose (self-preference)
 ### Model ruling update (2026-11-19, after live demo)
 
 Cheap reasoning models return empty content when hidden reasoning eats the output budget. Every role now sets `reasoning = "off"` (OpenRouter `reasoning: {enabled: false}`). `judge_strong` moves from `z-ai/glm-5.3-flash` (reasoning cannot be disabled) to `openrouter/google/gemini-2.5-flash-lite` ($0.10 / $0.40 per 1M). User allows slightly pricier models in the same cheap tier if they are more reliable; still never OpenAI or Anthropic.
+
+### Phase 2 rulings (2026-11-19)
+
+| Question | Ruling |
+|---|---|
+| CQ-S1 | Accepted: placement in `technique` as `+embed:<placement>`, provenance in `source` as `<project>@<pin>:<id>`. No `Attack` model change. |
+| CQ-S2 | The L7 agent defines `place`, campaign builder/runner, finding create/dedup and `verify`, exported from `gauntlet_core.security.__all__`; the lead records the names here after review. |
+| CQ-S3 | Accepted: `POST /v1/campaigns`; `runs.purpose` (`eval`, `campaign`, `verify`) and `runs.finding_id` columns. |
+| CQ-S4 | Accepted; reuse the existing `workspace_settings` table (added with the model catalog) instead of a new one. |
+| CQ-S5 | Accepted: cancelled episodes and runs have `outcome = NULL` and are excluded from stats. |
+| CQ-S6 | Accepted: `pack.yaml` may list `worlds: [...]`; single `world:` still works. |
+| CQ-S7 | Hand-curated entries allowed (at most 15, each marked `source: gauntlet-curated`, lead reviews). Objectives stay non-harmful: canary exfiltration, unauthorised tool calls, policy bypass, data leakage across users. No weapons, self-harm, or other dangerous-content payloads. |
+| CQ-S8 | The implementer verifies every OWASP/ATLAS id against the official pages by web search, recording the URL and `verified_on`; unverifiable ids are dropped. NIST AI RMF mapping deferred to P5-7. |
+| CQ-S9 | Accepted: objective `check_result {check_id: "objective", holds, evidence}`. `Scenario.attack` with an inline world is a validation error unless the scenario is marked as already placed by the campaign builder. |
+| CQ-S10 | Deferred: Phase 2 imports no dangerous-content categories; truncation/classification task added before category 13 or adaptive attacks ship. |
+| CQ-S11 | Accepted as proposed in P2-5/P2-6. |

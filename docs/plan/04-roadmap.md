@@ -38,7 +38,7 @@ Definition of done: `gauntlet run packs/ecommerce --target hosted.yaml` prints a
 | P1-12 | SUB f | Web foundation: Next.js, Animate UI setup, app shell, generated API client, auth | P1-9 |
 | P1-13 | SUB f | Web: onboarding wizard, agent overview, scenario list and viewer | P1-12 |
 | P1-14 | SUB f | Web: run console (live SSE), run report, episode viewer (transcript, tool timeline, state diff, verdicts with evidence highlighting) | P1-12 |
-| L-R1 | LEAD | Chaos test of engine on Postgres; phase review; end-to-end verification in a browser | all |
+| L-R1 | DONE | Chaos test of engine on Postgres; phase review; end-to-end verification in a browser | all |
 
 ## Phase 2: Security core
 
