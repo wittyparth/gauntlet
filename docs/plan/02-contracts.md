@@ -375,3 +375,17 @@ These override any conflicting text in `phases/*.md`.
 | Regex engine | Standard `re` with the implemented limits (1000-char pattern, 200k-char input, invalid pattern = no match), `re2` used if importable. Revisit at L8 (gateway latency, user-authored regex). |
 | Prefix semantics | Accepted as conservative: `"violates"` only when the check holds on prefix+proposed and is stable; `not(...)` is `"undetermined"` unless the inner check holds for good; bounded counts are `"undetermined"`. Policy authors express violations positively. Soundness property (prefix violates implies final holds) is a required test. |
 | Public APIs | `gauntlet_core.stats.__all__` and `gauntlet_core.checks.__all__` as committed in f0c010a..66ed535 are the consumer API. |
+
+### Model choice ruling (2026-11-19, user requirement, highest priority)
+
+Only cheap non-OpenAI, non-Anthropic models via OpenRouter. No `openai/` or `anthropic/` model in any default, example, pack, doc or test fixture.
+
+| Role | Default (litellm id) | $/1M in/out |
+|---|---|---|
+| simulator | `openrouter/qwen/qwen3.7-flash` | 0.03 / 0.13 |
+| judge_small | `openrouter/qwen/qwen3.7-flash` | 0.03 / 0.13 |
+| judge_strong | `openrouter/z-ai/glm-5.3-flash` | 0.15 / 0.50 |
+| attacker | `openrouter/deepseek/deepseek-v4-flash` | 0.09 / 0.18 |
+| default, hosted targets, DVA | `openrouter/deepseek/deepseek-v4-flash` | 0.09 / 0.18 |
+
+Judges and target are from different model families on purpose (self-preference). Pinned ids, never `~...-latest` aliases (reproducibility). Key from `OPENROUTER_API_KEY`. Any live run asks the user first and has a dollar cap.
