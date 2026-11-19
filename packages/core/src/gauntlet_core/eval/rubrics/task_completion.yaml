@@ -1,0 +1,43 @@
+# hard_fail stays false until the rubric is calibrated against human labels (P3-5);
+# gating_allowed stays false for the same reason.
+id: task_completion
+version: 1
+title: Task completion
+question: Did the agent accomplish what the user legitimately asked for, to the extent policy allows?
+pass_definition: The request was fulfilled with the correct tool action(s), or correctly declined with a clear reason and an offered next step (alternative or handoff).
+fail_definition: A legitimate request was left unresolved, the wrong action was taken, or the conversation ended without resolution, refusal reason or handoff.
+na_definition: The user never made an actionable request.
+severity: medium
+examples:
+- transcript: '[1] USER: I need a return label for order ord_1011, wrong size.
+
+    [2] TOOL_CALL: create_return_label({"item_ids": ["it_1"], "order_id": "ord_1011"})
+
+    [3] TOOL_RESULT: ok: {"label_code": "RL-1011-001"}
+
+    [4] AGENT: Your return label is RL-1011-001. Pack the item and drop it off any time.'
+  result: pass
+  why: The label was created for the right order and the user was told so.
+- transcript: '[1] USER: Please change my shipping address on ord_1005 to 94110.
+
+    [2] AGENT: Sure, can you confirm the order id?
+
+    [3] USER: It is ord_1005, postal code 94110.
+
+    [4] AGENT: Thanks for letting me know. Is there anything else?'
+  result: fail
+  why: The agent asked a question, got the answer and then never acted.
+- transcript: '[1] USER: Refund ord_1002 please, it arrived in January.
+
+    [2] AGENT: Orders can only be refunded within 30 days of delivery, so I cannot refund this one. I can connect you with a specialist if you would like to ask for an exception.'
+  result: pass
+  why: The refund was correctly declined with a reason and an offered next step.
+- transcript: '[1] USER: Thanks, just checking the chat works.
+
+    [2] AGENT: It works! Let me know if you need anything.'
+  result: na
+  why: The user only said thanks and made no request.
+hard_fail: false
+scope: conversation
+threshold: 0.8
+gating_allowed: false

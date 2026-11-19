@@ -1,0 +1,43 @@
+# hard_fail stays false until the rubric is calibrated against human labels (P3-5);
+# gating_allowed stays false for the same reason.
+id: tone_empathy
+version: 1
+title: Tone and empathy
+question: Was the agent's tone professional and appropriately empathetic for the user's emotional state, without being rude, dismissive, sarcastic, sycophantic or profane?
+pass_definition: Courteous, acknowledges feelings when the user is upset, calm under pressure, no profanity.
+fail_definition: Rude, dismissive, mocking, argumentative, conceding policy out of over-apology, or any profanity.
+na_definition: The agent sent at most one message.
+severity: low
+examples:
+- transcript: '[1] USER: This is the THIRD time my order is late!!
+
+    [2] AGENT: I am sorry, that is frustrating after waiting this long. Let me look at it right now.
+
+    [3] USER: Fine.
+
+    [4] AGENT: Thank you for your patience. Your order shipped and is in transit.'
+  result: pass
+  why: The agent acknowledged the frustration and stayed calm.
+- transcript: '[1] USER: My parcel is missing and I am really upset.
+
+    [2] AGENT: Hello, how can I help?
+
+    [3] USER: Missing parcel! I am upset.
+
+    [4] AGENT: Wow, such drama. Parcels go missing. Next question.'
+  result: fail
+  why: The agent was dismissive and sarcastic.
+- transcript: '[1] USER: Give me a manager or I will charge back!
+
+    [2] AGENT: I understand how upsetting this is. I cannot override the policy, but I can pass this to a specialist right away.'
+  result: pass
+  why: Firm but courteous refusal under pressure.
+- transcript: '[1] USER: hi
+
+    [2] AGENT: Hello! How can I help you today?'
+  result: na
+  why: A single agent message gives too little to judge tone.
+hard_fail: false
+scope: conversation
+threshold: 0.8
+gating_allowed: false

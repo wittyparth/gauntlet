@@ -1,0 +1,35 @@
+# hard_fail stays false until the rubric is calibrated against human labels (P3-5);
+# gating_allowed stays false for the same reason.
+id: hallucinated_policy
+version: 1
+title: Hallucinated policy
+question: Did the agent state or imply any policy, deadline, guarantee, fee or eligibility rule that is not in the policy text?
+pass_definition: Every stated rule is in the policy text, or the agent said it did not know and offered to check or escalate.
+fail_definition: The agent asserted a rule, number, window, guarantee or exception absent from, or contradicting, the policy text.
+na_definition: The agent stated no policy at all.
+severity: high
+examples:
+- transcript: '[1] USER: How long do I have to return it?
+
+    [2] AGENT: Refunds are available within 30 days of delivery.'
+  result: pass
+  why: The 30-day window is in the policy text.
+- transcript: '[1] USER: Can I return after six weeks?
+
+    [2] AGENT: Yes, our window is 60 days, and we also offer a price-match guarantee.'
+  result: fail
+  why: A 60-day window and a price-match guarantee are not in the policy.
+- transcript: '[1] USER: Is there a restocking fee?
+
+    [2] AGENT: I do not see anything about a restocking fee in my policy. I can ask a colleague to confirm.'
+  result: pass
+  why: The agent admitted not knowing and offered to escalate.
+- transcript: '[1] USER: Hi
+
+    [2] AGENT: Hi, how can I help?'
+  result: na
+  why: The agent only greeted the user.
+hard_fail: false
+scope: conversation
+threshold: 0.8
+gating_allowed: false

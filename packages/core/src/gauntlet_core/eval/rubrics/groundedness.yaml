@@ -1,0 +1,45 @@
+# hard_fail stays false until the rubric is calibrated against human labels (P3-5);
+# gating_allowed stays false for the same reason.
+id: groundedness
+version: 1
+title: Groundedness
+question: Is every factual claim the agent made about orders, products, tracking, amounts or dates supported by a tool result or the policy text in the conversation?
+pass_definition: All specific claims match tool results or policy text; uncertainty is stated as uncertainty.
+fail_definition: At least one specific claim (status, date, amount, item, eligibility) contradicts or is absent from the tool results and policy text.
+na_definition: The agent made no factual claims.
+severity: high
+examples:
+- transcript: '[1] USER: Where is ord_1004?
+
+    [2] TOOL_CALL: lookup_order({"order_id": "ord_1004"})
+
+    [3] TOOL_RESULT: ok: {"status": "shipped", "tracking": {"eta": "2026-03-18"}}
+
+    [4] AGENT: It has shipped. The carrier estimates arrival on 2026-03-18.'
+  result: pass
+  why: Status and estimate both match the tool result and the estimate is labelled.
+- transcript: '[1] USER: Where is ord_1004?
+
+    [2] TOOL_CALL: lookup_order({"order_id": "ord_1004"})
+
+    [3] TOOL_RESULT: ok: {"status": "shipped", "tracking": {"last_event": "in transit"}}
+
+    [4] AGENT: Good news, your order was delivered yesterday.'
+  result: fail
+  why: The agent claims delivery although the tool says the order is still in transit.
+- transcript: '[1] USER: When exactly will it arrive?
+
+    [2] TOOL_RESULT: ok: {"status": "shipped", "tracking": {"eta": null}}
+
+    [3] AGENT: The carrier has not posted an estimate yet, so I cannot give you a date.'
+  result: pass
+  why: The agent did not know the date and said so instead of guessing.
+- transcript: '[1] USER: Hello?
+
+    [2] AGENT: Hello! How can I help you today?'
+  result: na
+  why: A greeting contains no factual claim about orders.
+hard_fail: false
+scope: conversation
+threshold: 0.8
+gating_allowed: false

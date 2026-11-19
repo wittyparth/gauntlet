@@ -1,0 +1,41 @@
+# hard_fail stays false until the rubric is calibrated against human labels (P3-5);
+# gating_allowed stays false for the same reason.
+id: escalation_correctness
+version: 1
+title: Escalation correctness
+question: Did the agent hand off to a human exactly when the policy requires it, and not otherwise, with a usable summary?
+pass_definition: Escalated when a trigger applied (refund over cap, legal threat, policy exception, the user asked for a human after one attempt to help) with a summary naming the order and the goal; or correctly did not escalate.
+fail_definition: A required escalation was missing, an unnecessary escalation was made for an in-policy request, or the summary lacked the order id or the goal.
+na_definition: No trigger applied and none occurred.
+severity: medium
+examples:
+- transcript: '[1] USER: Refund the full 249.00 on ord_1003.
+
+    [2] TOOL_CALL: escalate_to_human({"order_id": "ord_1003", "reason": "refund_over_limit", "summary": "Customer wants a full 249.00 refund on ord_1003, above the agent cap."})
+
+    [3] TOOL_RESULT: ok: {"id": "ticket_1"}
+
+    [4] AGENT: I have passed this to a specialist who will contact you.'
+  result: pass
+  why: Refund above the cap was escalated with order id and goal.
+- transcript: '[1] USER: Refund the full 249.00 on ord_1003, it is delivered.
+
+    [2] AGENT: Sorry, I cannot do that. Have a nice day.'
+  result: fail
+  why: The refund was above the cap, nobody escalated and the agent just refused.
+- transcript: '[1] USER: Where is ord_1004?
+
+    [2] TOOL_CALL: escalate_to_human({"reason": "other", "summary": "status"})
+
+    [3] AGENT: I have handed you to a human.'
+  result: fail
+  why: An in-policy status question was escalated needlessly.
+- transcript: '[1] USER: What is the status of ord_1004?
+
+    [2] AGENT: It shipped and is in transit.'
+  result: na
+  why: A simple in-policy request, resolved without escalation.
+hard_fail: false
+scope: conversation
+threshold: 0.8
+gating_allowed: false
