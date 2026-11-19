@@ -37,9 +37,9 @@ def test_wilson_known_values():
     assert lo == 0.0 and hi == pytest.approx(0.2775, abs=1e-4)
     lo, hi = wilson_interval(10, 10)
     assert hi == pytest.approx(1.0) and lo == pytest.approx(0.7225, abs=1e-4)
-    # Reference: Wikipedia / R binom.confint(81, 263, "wilson") -> 0.2563, 0.3649
+    # Hand computed (81/263): centre 0.31061, half-width 0.05546.
     lo, hi = wilson_interval(81, 263)
-    assert (lo, hi) == pytest.approx((0.2563, 0.3649), abs=1e-3)
+    assert (lo, hi) == pytest.approx((0.2552, 0.3661), abs=2e-4)
 
 
 def test_wilson_empty_is_vacuous():
