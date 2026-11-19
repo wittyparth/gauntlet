@@ -7,6 +7,7 @@ COPY pyproject.toml uv.lock ./
 COPY packages/core/pyproject.toml packages/core/pyproject.toml
 COPY packages/server/pyproject.toml packages/server/pyproject.toml
 COPY packages/cli/pyproject.toml packages/cli/pyproject.toml
+COPY apps/dva/pyproject.toml apps/dva/pyproject.toml
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-install-workspace --package gauntlet-server
 COPY packages/ packages/

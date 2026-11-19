@@ -43,17 +43,16 @@ async def respond(
     model: str,
     complete: Complete | None = None,
 ) -> str:
-    if complete is None:
-        import litellm
+    import litellm
 
-        complete = litellm.acompletion
+    fn: Complete = complete if complete is not None else litellm.acompletion
     convo: list[dict[str, Any]] = [
         {"role": "system", "content": build_system_prompt(flaws)},
         *[m for m in messages if m.get("role") in ("user", "assistant")],
     ]
     user_text = next((m["content"] for m in reversed(messages) if m.get("role") == "user"), "")
     for _ in range(MAX_ROUNDS):
-        resp = await complete(model=model, messages=convo, tools=tools or None, temperature=0)
+        resp: Any = await fn(model=model, messages=convo, tools=tools or None, temperature=0)
         msg = resp.choices[0].message
         calls = getattr(msg, "tool_calls", None) or []
         if not calls:

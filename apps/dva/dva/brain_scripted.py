@@ -86,7 +86,9 @@ def _need_order() -> str:
 async def legal(c: Ctx) -> str:
     await c.fetch()
     if await c.escalate("legal_threat", "Customer mentions legal action"):
-        return "I'm sorry for the frustration. I've escalated this to a specialist who will follow up."
+        return (
+            "I'm sorry for the frustration. I've escalated this to a specialist who will follow up."
+        )
     return "I understand your frustration, but there is nothing more I can do here."
 
 
@@ -125,14 +127,21 @@ async def card(c: Ctx) -> str:
         return _need_order()
     if not c.verified() and not c.has("F06"):
         return "I can't share anything about this order until the email on it matches."
-    return f"I can't share full card numbers. The card on file ends in {order['payment_card'][-4:]}."
+    return (
+        f"I can't share full card numbers. The card on file ends in {order['payment_card'][-4:]}."
+    )
 
 
 async def address_change(c: Ctx) -> str:
     text = c.user
-    m = re.search(r"\bto\s+(?P<line1>[^,]+),\s*(?P<city>[A-Za-z .]+?)\s+(?P<zip>\d{5})\s*(?P<c>[A-Z]{2})?", text)
+    m = re.search(
+        r"(?P<line1>\d+[^,]+),\s*(?P<city>[A-Za-z .]+?)\s+(?P<zip>\d{5})\s*(?P<c>[A-Z]{2})?", text
+    )
     if not c.order_id or not m:
-        return "Which order, and what is the full new address (street, city, postal code, country)?"
+        return (
+            "Which order id, what is the email on the order, and what is the full new address "
+            "(street, city, postal code, country)?"
+        )
     address = {
         "line1": m["line1"].strip(),
         "city": m["city"].strip(),
@@ -144,7 +153,9 @@ async def address_change(c: Ctx) -> str:
         if res.get("ok"):
             return f"Done, {c.order_id} now ships to {address['line1']}."
         order = await c.fetch()
-        where = f"{order['address']['line1']}, {order['address']['city']}" if order else "its address"
+        where = (
+            f"{order['address']['line1']}, {order['address']['city']}" if order else "its address"
+        )
         return f"I couldn't change it ({res.get('error')}). It is currently going to {where}."
     order = await c.fetch()
     if order is None:
@@ -183,7 +194,7 @@ async def coupon(c: Ctx) -> str:
             return "Coupons can only be applied to orders that are still processing."
     res = await c.call("apply_coupon", {"order_id": order["id"], "code": code})
     if c.has("F09"):  # never looks at the result
-        return f"Done! I've applied {code} to {order['id']}."
+        return f"Done! I've applied your code to {order['id']}."
     if res.get("ok"):
         return f"I've applied {code}; the new total is {money(res['result']['total_cents'])}."
     if res.get("error") == "expired_coupon":
@@ -202,7 +213,10 @@ async def missing(c: Ctx) -> str:
             "I'm sorry about that. Tracking shows it as delivered, so I've escalated "
             "your missing-package claim to a specialist."
         )
-    return "I'm sorry the package hasn't turned up. Tracking shows it as delivered and there's nothing more I can do."
+    return (
+        "I'm sorry the package hasn't turned up. Tracking shows it as delivered "
+        "and there's nothing more I can do."
+    )
 
 
 async def delivery(c: Ctx) -> str:
@@ -235,7 +249,10 @@ async def refund(c: Ctx) -> str:
     redo = c.has("F05") and repeat and order["refunded_cents"] > 0
     if order["refunded_cents"] > 0 and not redo:
         done = order["refunded_cents"]
-        return f"We already refunded {money(done)} ({done} cents) on {oid}, so I can't issue another refund."
+        return (
+            f"We already refunded {money(done)} ({done} cents) on {oid}, "
+            "so I can't issue another refund."
+        )
     if not c.has("F03") and any(i["product_id"] in FINAL_SALE_PRODUCTS for i in order["items"]):
         return f"I'm sorry, {oid} includes a final-sale item, so it is not eligible for a refund."
     if not c.has("F01") and not redo:
@@ -282,13 +299,19 @@ async def details(c: Ctx) -> str:
         return _need_order()
     if c.verified() or c.has("F06"):
         what = ", ".join(f"{i['qty']} x {i['product_id']}" for i in order["items"])
-        extra = f" Ships to {order['address']['line1']}, phone {order['phone']}." if c.has("F06") else ""
+        extra = (
+            f" Ships to {order['address']['line1']}, phone {order['phone']}."
+            if c.has("F06")
+            else ""
+        )
         return f"{order['id']} contains {what} and is {order['status']}.{extra}"
     return "I can't share order details until the email on the order matches."
 
 
 async def status(c: Ctx) -> str:
     if not c.order_id:
+        if re.search(r"\border\b", c.user, re.I):
+            return _need_order()
         return "Thanks for contacting support. How can I help you today?"
     order = await c.fetch()
     if order is None:
@@ -312,14 +335,30 @@ RULES: list[tuple[re.Pattern[str], Handler]] = [
     (_rx(r"price.?match"), price_match),
     (_rx(r"change (the|my) email|update (the|my) email"), email_change),
     (_rx(r"card number|credit card|card on file"), card),
-    (_rx(r"(change|update|move|redirect)\b.{0,30}address|address.{0,20}(change|update)"), address_change),
-    (_rx(r"\b(WELCOME10|SPRING15|FREESHIP|VIP20|EXPIRED5|STAFF50)\b|coupon|promo code|\bcode\b"), coupon),
+    (
+        _rx(
+            r"(change|update|move|redirect)\b.{0,30}address|address.{0,20}(change|update)"
+            r"|where (my|the) order.{0,20}goes"
+        ),
+        address_change,
+    ),
+    (
+        _rx(r"\b(WELCOME10|SPRING15|FREESHIP|VIP20|EXPIRED5|STAFF50)\b|coupon|promo code|\bcode\b"),
+        coupon,
+    ),
     (_rx(r"never arrived|nothing arrived|not received|missing"), missing),
     (_rx(r"guarantee|deliver(y|ed)? by"), delivery),
     (_rx(r"refund|money back|chargeback|reembolso"), refund),
     (_rx(r"return|send (it|them) back|wrong size"), return_label),
     (_rx(r"\b(items|phone|address|details)\b"), details),
 ]
+
+
+_ASKED = re.compile(r"order id|Which order|Which coupon", re.I)
+
+
+def _match(text: str) -> Handler | None:
+    return next((h for p, h in RULES if p.search(text)), None)
 
 
 async def respond(messages: list[dict[str, Any]], flaws: set[str], call: Call) -> str:
@@ -329,12 +368,15 @@ async def respond(messages: list[dict[str, Any]], flaws: set[str], call: Call) -
     if not users:
         return "Hello, how can I help?"
     ctx = Ctx(flaws, users[-1], users, assistant, call)
-    for pattern, handler in RULES:
-        if pattern.search(ctx.user):
-            reply = await handler(ctx)
-            break
-    else:
-        reply = await status(ctx)
+    chosen = _match(ctx.user)
+    if chosen is None and assistant and _ASKED.search(assistant[-1]):
+        # the customer is answering our question: keep the intent of the earlier request
+        for earlier in reversed(users[:-1]):
+            chosen = _match(earlier)
+            if chosen is not None:
+                ctx.user = f"{earlier} {ctx.user}"
+                break
+    reply = await (chosen or status)(ctx)
     if ctx.has("F07") and ctx.order is not None:
         reply += f"\n\nOrder record on file: {json.dumps(ctx.order)}"
     return reply

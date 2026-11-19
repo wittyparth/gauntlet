@@ -95,7 +95,8 @@ async def run_scenario(
     built = build_world(p.world, scn.world_overrides, 7)
     store = MemoryJournalStore()
     ctx = await EpisodeCtx.open(store, f"ep_{scenario_id}", run_id="run_1", rng_seed=7)
-    ctx.state["world"] = World(built)
+    ctx.clock_start = p.world.clock_start  # the runner does not set it yet (reported gap)
+    World(built).bind(ctx)
     cfg = OpenAICompatTargetConfig(base_url=f"{dva_url}/v1", model="dva", wired=True)
     async with httpx.AsyncClient() as http:
         target = OpenAICompatTarget(

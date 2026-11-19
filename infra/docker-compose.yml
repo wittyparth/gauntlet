@@ -113,6 +113,18 @@ services:
     depends_on: *app-depends
     stop_grace_period: 30s
 
+  dva:
+    # Damn Vulnerable Agent: intentionally vulnerable. Localhost only.
+    profiles: ["dva"]
+    build: { context: .., dockerfile: infra/docker/dva.Dockerfile, target: dva }
+    image: gauntlet-dva
+    environment:
+      GAUNTLET_MOCK_BASE: http://api:8000
+      DVA_BRAIN: ${DVA_BRAIN:-llm}
+      DVA_FLAWS: ${DVA_FLAWS:-all}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+    ports: ["127.0.0.1:8100:8100"]
+
 volumes:
   pgdata:
   miniodata:
