@@ -24,6 +24,7 @@ dev = [
     "gauntlet-server",
     "respx>=0.23.1",
     "gauntlet-cli",
+    "jsonschema>=4.26.0",
 ]
 
 [tool.ruff]

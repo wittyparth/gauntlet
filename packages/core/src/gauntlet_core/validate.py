@@ -75,14 +75,64 @@ def _check_issues(check: Any, tools: Collection[str], where: str) -> list[Issue]
     return out
 
 
+def _matchers(node: Any) -> Iterator[Any]:
+    kind = node.type
+    if kind == "tool_called":
+        yield from node.args.values()
+    elif kind == "state":
+        yield node.matcher
+        yield from (node.where or {}).values()
+    elif kind == "output":
+        yield node.matcher
+    elif kind == "state_diff":
+        yield from (node.changed or {}).values()
+
+
+def _seed_issues(check: Any, world: WorldSpec, where: str, extra: Any = None) -> list[Issue]:
+    """`state` and `{ref: world:...}` nodes must name collections (and records) in the seed."""
+    out: list[Issue] = []
+    for n in walk_check(check):
+        if n.type == "state":
+            recs = world.seed.get(n.collection)
+            if recs is not None or n.collection in (extra or {}):
+                recs = [*(recs or []), *(extra or {}).get(n.collection, [])]
+            if recs is None:
+                out.append(Issue("unknown_collection", f"{where}: no collection {n.collection!r}"))
+            elif n.id is not None and n.id not in {str(r.get("id")) for r in recs}:
+                out.append(
+                    Issue("unknown_record", f"{where}: {n.collection}/{n.id} is not in the seed")
+                )
+        for m in _matchers(n):
+            ref = m.ref or ""
+            if ref.startswith("world:"):
+                coll = ref[len("world:") :].partition("/")[0]
+                if coll not in world.seed and coll not in (extra or {}):
+                    out.append(
+                        Issue(
+                            "unknown_ref_collection", f"{where}: ref to unknown collection {coll!r}"
+                        )
+                    )
+    return out
+
+
 def validate_scenario(
     scenario: Scenario,
     world: WorldSpec,
     *,
     persona_ids: Collection[str] | None = None,
     rubric_ids: Collection[str] | None = None,
+    strict: bool = False,
 ) -> list[Issue]:
+    """`strict` adds the authoring-quality rules used for generated scenarios: non-empty
+    hidden facts and `max_turns` in 1..100."""
     issues: list[Issue] = []
+    if strict:
+        if not scenario.hidden_facts:
+            issues.append(Issue("empty_hidden_facts", "hidden_facts must not be empty"))
+        if not 1 <= scenario.max_turns <= 100:
+            issues.append(Issue("bad_max_turns", f"max_turns {scenario.max_turns} not in 1..100"))
+    if isinstance(scenario.world, WorldSpec):
+        world = scenario.world
     tools = {t.name for t in world.tools}
     if isinstance(scenario.world, str) and world.id is not None and scenario.world != world.id:
         issues.append(
@@ -95,8 +145,11 @@ def validate_scenario(
             if r not in rubric_ids:
                 issues.append(Issue("unknown_rubric", f"rubric {r!r} not found"))
     issues += _check_issues(scenario.success, tools, "success")
+    extra = scenario.world_overrides
+    issues += _seed_issues(scenario.success, world, "success", extra)
     for nc in scenario.forbidden:
         issues += _check_issues(nc.check, tools, f"forbidden.{nc.id}")
+        issues += _seed_issues(nc.check, world, f"forbidden.{nc.id}", extra)
     return issues
 
 

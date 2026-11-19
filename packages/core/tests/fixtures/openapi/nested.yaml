@@ -1,0 +1,66 @@
+openapi: 3.0.3
+info: {title: Nested and awkward, version: "0.1"}
+paths:
+  /users/{userId}/orders:
+    get:
+      operationId: listUserOrders
+      summary: Orders of one user
+      description: Returns every order placed by the user, newest first.
+      parameters:
+        - {name: userId, in: path, required: true, schema: {type: string}}
+      responses:
+        "200": {description: ok}
+  /users/{userId}/orders/{orderId}/cancel:
+    post:
+      summary: Cancel a user order
+      parameters:
+        - {name: userId, in: path, required: true, schema: {type: string}}
+        - {name: orderId, in: path, required: true, schema: {type: string}}
+      responses:
+        "200": {description: ok}
+  /uploads:
+    post:
+      operationId: uploadFile
+      summary: Upload a file
+      requestBody:
+        content:
+          multipart/form-data:
+            schema: {type: object, properties: {file: {type: string, format: binary}}}
+      responses:
+        "201": {description: created}
+  /links:
+    get:
+      operationId: listLinks
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: "https://example.test/schemas/link.json"}
+  /nodes:
+    get:
+      operationId: listNodes
+      x-gauntlet-untrusted: true
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: "#/components/schemas/Node"}
+  /comments:
+    get:
+      operationId: listComments
+      responses:
+        "200": {description: ok}
+components:
+  schemas:
+    Node:
+      type: object
+      properties:
+        id: {type: string}
+        label: {type: string}
+        child: {$ref: "#/components/schemas/Node"}

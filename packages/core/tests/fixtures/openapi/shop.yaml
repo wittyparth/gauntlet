@@ -1,0 +1,164 @@
+openapi: 3.1.0
+info: {title: Shop API, version: "2.0"}
+paths:
+  /v1/products:
+    get:
+      operationId: list_products
+      summary: List products in the catalog
+      parameters:
+        - {name: category, in: query, schema: {type: string}}
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: "#/components/schemas/Product"}
+  /v1/products/{productId}:
+    get:
+      operationId: getProduct
+      parameters:
+        - {name: productId, in: path, required: true, schema: {type: string}}
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Product"}
+  /v1/orders:
+    get:
+      operationId: listOrders
+      parameters:
+        - {name: status, in: query, schema: {type: string}}
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: {$ref: "#/components/schemas/Order"}
+    post:
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customer_id]
+              properties:
+                customer_id: {type: string}
+                total_cents: {type: integer}
+  /v1/orders/{orderId}:
+    get:
+      operationId: getOrder
+      parameters:
+        - {name: orderId, in: path, required: true, schema: {type: string}}
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Order"}
+    patch:
+      operationId: updateOrder
+      parameters:
+        - {name: orderId, in: path, required: true, schema: {type: string}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: {type: string, enum: [open, paid, shipped]}
+      responses:
+        "200": {description: ok}
+    delete:
+      operationId: deleteOrder
+      parameters:
+        - {name: orderId, in: path, required: true, schema: {type: string}}
+      responses:
+        "204": {description: gone}
+  /v1/orders/{orderId}/refund:
+    post:
+      operationId: refundOrder
+      summary: Refund an order
+      description: Refunds the order to the original payment method.
+      parameters:
+        - {name: orderId, in: path, required: true, schema: {type: string}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount_cents: {type: integer}
+      responses:
+        "200": {description: ok}
+  /v1/customers:
+    get:
+      operationId: listCustomers
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: "#/components/schemas/Customer"}
+  /v1/customers/{customerId}:
+    get:
+      operationId: getCustomer
+      parameters:
+        - {name: customerId, in: path, required: true, schema: {type: string}}
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Customer"}
+  /v1/customers/{customerId}/send:
+    post:
+      operationId: sendReceipt
+      summary: Send the customer a receipt email
+      parameters:
+        - {name: customerId, in: path, required: true, schema: {type: string}}
+      responses:
+        "200": {description: ok}
+  /v1/reviews/search:
+    get:
+      operationId: searchReviews
+      summary: Search customer reviews
+      parameters:
+        - {name: q, in: query, schema: {type: string}}
+      responses:
+        "200": {description: ok}
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id: {type: string}
+        name: {type: string}
+        price_cents: {type: integer, minimum: 100, maximum: 9900}
+        in_stock: {type: boolean}
+    Order:
+      type: object
+      properties:
+        id: {type: string}
+        customer_id: {type: string}
+        status: {type: string, enum: [open, paid, shipped]}
+        total_cents: {type: integer, minimum: 500, maximum: 50000}
+        created: {type: string, format: date-time}
+    Customer:
+      type: object
+      properties:
+        id: {type: string}
+        name: {type: string}
+        email: {type: string, format: email}
+        token: {type: string, format: uuid}
