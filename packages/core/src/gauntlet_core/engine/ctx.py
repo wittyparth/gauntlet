@@ -62,6 +62,18 @@ def request_hash(request: Any) -> str:
     return hashlib.sha256(canonical.encode()).hexdigest()
 
 
+def canonical(value: Any) -> Any:
+    """Recursively sort dict keys. Stores need not preserve key order (Postgres `jsonb`
+    reorders keys), so an effect result must look the same whether it is the live value or a
+    replayed one; otherwise anything that serialises it (a model request) hashes differently
+    after a resume and the episode dies with NonDeterminism."""
+    if isinstance(value, dict):
+        return {k: canonical(value[k]) for k in sorted(value)}
+    if isinstance(value, list):
+        return [canonical(v) for v in value]
+    return value
+
+
 class EpisodeCtx:
     def __init__(
         self,
@@ -284,7 +296,7 @@ class EpisodeCtx:
             if rec.status == "done":
                 self.last_effect_ms = 0
                 self._replay_span(rec)
-                return rec.result or {}
+                return canonical(rec.result or {})
             if rec.status == "failed":
                 self._replay_span(rec)
                 err = rec.result or {}
@@ -339,7 +351,7 @@ class EpisodeCtx:
                 span=await self._close_span(frame, nested),
             )
             await self.flush([done])
-            return done.result or {}
+            return canonical(done.result or {})
         finally:
             if self._stack and self._stack[-1].key == key:
                 self._stack.pop()
