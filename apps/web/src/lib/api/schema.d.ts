@@ -632,6 +632,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/models/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Model Catalog */
+        get: operations["model_catalog_v1_models_catalog_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/settings/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Model Settings */
+        get: operations["get_model_settings_v1_settings_models_get"];
+        /**
+         * Put Model Settings
+         * @description Replaces the workspace's choices; roles not listed fall back to the defaults, so an
+         *     empty `roles` resets everything.
+         */
+        put: operations["put_model_settings_v1_settings_models_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dev/seed": {
         parameters: {
             query?: never;
@@ -866,6 +905,34 @@ export interface components {
             placement: "system_prompt" | "world_record" | "document" | "tool_result";
             /** Location */
             location: string;
+        };
+        /** CatalogModel */
+        CatalogModel: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Provider Family */
+            provider_family: string;
+            /** Input Usd Per Mtok */
+            input_usd_per_mtok: number;
+            /** Output Usd Per Mtok */
+            output_usd_per_mtok: number;
+            /** Context Length */
+            context_length: number;
+            /** Supports Reasoning Off */
+            supports_reasoning_off: boolean;
+            /**
+             * Reasoning Default
+             * @enum {string}
+             */
+            reasoning_default: "on" | "off";
+            /** Good For */
+            good_for: string[];
+            /** Description */
+            description: string;
+            /** Recommended Roles */
+            recommended_roles: string[];
         };
         /** Caution */
         Caution: {
@@ -1351,6 +1418,27 @@ export interface components {
              */
             ref_op: "eq" | "ne" | "gt" | "gte" | "lt" | "lte";
         };
+        /** ModelCatalogOut */
+        ModelCatalogOut: {
+            /** Models */
+            models: components["schemas"]["CatalogModel"][];
+        };
+        /** ModelSettingsIn */
+        ModelSettingsIn: {
+            /** Roles */
+            roles: {
+                [key: string]: components["schemas"]["RoleChoice"];
+            };
+        };
+        /** ModelSettingsOut */
+        ModelSettingsOut: {
+            /** Roles */
+            roles: {
+                [key: string]: components["schemas"]["RoleChoice"];
+            };
+            /** Overridden */
+            overridden: string[];
+        };
         /** NamedCheck */
         NamedCheck: {
             /** Id */
@@ -1520,6 +1608,17 @@ export interface components {
              * @default []
              */
             seqs: number[];
+        };
+        /** RoleChoice */
+        RoleChoice: {
+            /** Model */
+            model: string;
+            /**
+             * Reasoning
+             * @default off
+             * @enum {string}
+             */
+            reasoning: "off" | "low" | "medium" | "high" | "default";
         };
         /** RubricDoc */
         RubricDoc: {
@@ -3839,6 +3938,79 @@ export interface operations {
                 content: {
                     "application/json": unknown;
                     "text/event-stream": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    model_catalog_v1_models_catalog_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelCatalogOut"];
+                };
+            };
+        };
+    };
+    get_model_settings_v1_settings_models_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelSettingsOut"];
+                };
+            };
+        };
+    };
+    put_model_settings_v1_settings_models_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelSettingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelSettingsOut"];
                 };
             };
             /** @description Validation Error */

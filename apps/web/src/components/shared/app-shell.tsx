@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { Bot } from "@/components/animate-ui/icons/bot";
 import { List } from "@/components/animate-ui/icons/list";
 import { Play } from "@/components/animate-ui/icons/play";
+import { Settings } from "@/components/animate-ui/icons/settings";
 import { Zap } from "@/components/animate-ui/icons/zap";
 import { AccountMenu } from "@/components/shared/account-menu";
 import {
@@ -62,6 +63,23 @@ export function AppShell({ children, defaultOpen }: { children: ReactNode; defau
                     </SidebarMenuItem>
                   );
                 })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupLabel>Settings</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={pathname.startsWith("/settings/models")}
+                    tooltip="Models"
+                    render={<Link href="/settings/models" aria-current={pathname.startsWith("/settings/models") ? "page" : undefined} />}
+                  >
+                    <Settings size={16} animateOnHover />
+                    <span>Models</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

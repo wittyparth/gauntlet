@@ -159,3 +159,18 @@ export function useEpisode(episodeId: string, opts: { refetchInterval?: number |
         ),
   });
 }
+
+export function useModelCatalog() {
+  return useQuery({
+    queryKey: qk.modelCatalog,
+    staleTime: Infinity,
+    queryFn: async () => bodyOf(await client.GET("/v1/models/catalog")),
+  });
+}
+
+export function useModelSettings() {
+  return useQuery({
+    queryKey: qk.modelSettings,
+    queryFn: async () => bodyOf(await client.GET("/v1/settings/models")),
+  });
+}

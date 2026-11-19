@@ -14,4 +14,6 @@ export const qk = {
   runEpisodes: (id: string) => ["runs", id, "episodes"] as const,
   runReport: (id: string) => ["runs", id, "report"] as const,
   episode: (id: string) => ["episodes", id] as const,
+  modelCatalog: ["models", "catalog"] as const,
+  modelSettings: ["settings", "models"] as const,
 };

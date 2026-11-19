@@ -38,3 +38,7 @@ export const isDryRun = (r: S["RunOut"] | S["DryRunOut"]): r is S["DryRunOut"] =
 export const TERMINAL_RUN_STATUSES = ["done", "cancelled", "failed"] as const;
 export const isTerminalRun = (status: string) =>
   (TERMINAL_RUN_STATUSES as readonly string[]).includes(status);
+
+export type ModelCatalogEntry = S["CatalogModel"];
+export type ModelSettings = S["ModelSettingsOut"];
+export type RoleChoice = S["RoleChoice"];

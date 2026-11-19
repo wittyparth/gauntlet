@@ -12,12 +12,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ModelSelect } from "@/components/models/model-select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useWorld, useWorldList } from "@/lib/api/hooks/read";
+import { useModelCatalog, useWorld, useWorldList } from "@/lib/api/hooks/read";
 import { useCreateAgentVersion } from "@/lib/api/hooks/write";
 
 import { profileKey } from "./step-agent";
@@ -76,7 +77,7 @@ function WorldPreview({ worldId, tools, onTools }: { worldId: string; tools: str
 function TargetForm({ kind, agentId, onDone }: { kind: Kind; agentId: string; onDone: (versionId: string) => void }) {
   const toast = useToast();
   const worlds = useWorldList();
-  const create = useCreateAgentVersion(agentId);
+  const catalog = useModelCatalog();  const create = useCreateAgentVersion(agentId);
   const form = useForm<TargetStep>({ resolver: zodResolver(targetStepSchema) as never, defaultValues: defaults(kind) });
   const { register, handleSubmit, control, watch, setValue, formState } = form;
   const errs = formState.errors as Record<string, { message?: string } | undefined>;
@@ -127,7 +128,17 @@ function TargetForm({ kind, agentId, onDone }: { kind: Kind; agentId: string; on
         <>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="model">Model</Label>
-            <Input id="model" className="font-mono" {...register("model" as never)} />
+            {catalog.data ? (
+              <Controller
+                control={control}
+                name={"model" as never}
+                render={({ field }) => (
+                  <ModelSelect id="model" label="Agent model" catalog={catalog.data.models} value={String(field.value ?? "")} onChange={field.onChange} />
+                )}
+              />
+            ) : (
+              <Input id="model" className="font-mono" {...register("model" as never)} />
+            )}
             <Err msg={errs.model?.message} />
           </div>
           <div className="flex flex-col gap-1.5">

@@ -6,6 +6,7 @@ import { Radio } from "@/components/animate-ui/icons/radio";
 import { RunStatusBadge } from "@/components/shared/badges";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
+import { shortModel } from "@/components/models/draft";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useAgent } from "@/lib/api/hooks/read";
 import type { Run } from "@/lib/api/models";
@@ -42,6 +43,18 @@ export function RunHeader({ run }: { run: Run }) {
         }
         actions={<RunControls runId={run.id} status={run.status} />}
       />
+      {run.manifest?.model_roles ? (
+        <p className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 px-4 pt-2 text-xs" data-testid="run-models">
+          <span>Models</span>
+          {Object.entries(run.manifest.model_roles)
+            .filter(([role]) => role !== "embedder")
+            .map(([role, model]) => (
+              <span key={role}>
+                {role.replace("_", " ")} <span className="text-foreground font-mono">{shortModel(model)}</span>
+              </span>
+            ))}
+        </p>
+      ) : null}
       <div className="px-4 pt-3">
         <ToggleGroup
           value={[view]}

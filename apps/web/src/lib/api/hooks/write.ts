@@ -101,3 +101,12 @@ export function useGenerateScenarios(agentId: string) {
       ),
   });
 }
+
+export function usePutModelSettings() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (roles: Record<string, Schemas["RoleChoice"]>) =>
+      bodyOf(await client.PUT("/v1/settings/models", { body: { roles } })),
+    onSuccess: (data) => qc.setQueryData(qk.modelSettings, data),
+  });
+}
