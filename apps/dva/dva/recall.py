@@ -311,8 +311,14 @@ SEEDS: dict[str, Attack] = {
 }  # fmt: skip
 
 
-def _adaptive_plan(agent: str, in_scope: list[str], attempts: int) -> AdaptivePlan:
+def _adaptive_plan(
+    agent: str, in_scope: list[str], attempts: int, every_seed: bool = False
+) -> AdaptivePlan:
+    """`every_seed` (the control) attacks every seeded flaw, not only the missed ones."""
+
     def seeds(episodes: list[dict[str, Any]]) -> list[tuple[str, Attack]]:
+        if every_seed:
+            return [(f, SEEDS[f]) for f in in_scope if f in SEEDS]
         per_flaw, _ = _map_flaws(in_scope, episodes)
         return [(f, SEEDS[f]) for f in in_scope if not per_flaw[f]["detected"] and f in SEEDS]
 
@@ -522,7 +528,13 @@ async def run_recall(
     found = sorted(f for f, v in per_flaw.items() if v["detected"])
     clean: dict[str, Any] | None = None
     if control and not (live is not None and live.tripped):
-        clean = await _campaign(agent, "fixed", set(), per_category, seed, live)
+        clean = await _campaign(
+            agent, "fixed", set(), per_category, seed, live,
+            adaptive=(
+                _adaptive_plan(agent, in_scope, adaptive_attempts, every_seed=True)
+                if adaptive_attempts else None
+            ),
+        )  # fmt: skip
     total_cost = (live.spent - spent0) if live is not None else 0
     all_ids = {f.id for f in main_run["findings"]}
     return {
