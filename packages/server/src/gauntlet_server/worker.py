@@ -38,6 +38,7 @@ from .jobs import load_episode_job
 from .limits import HostLimiter, LimitedTransport
 from .models_gateway import gateway_for_roles
 from .services import calibration as _calibration
+from .services import gateway as _gateway
 from .services import policies as _policies  # noqa: F401  (registers the compile_policy job)
 from .services.adaptive import adaptive_after_episode
 from .services.finding_hooks import after_episode
@@ -124,6 +125,7 @@ class Worker:
     async def _job_loop(self, stop: asyncio.Event) -> None:
         """Claim background jobs (calibration, clustering) next to the episode loop."""
         last_drift = float("-inf")
+        last_sweep = float("-inf")
         while not stop.is_set() and not self._killed:
             free = self.job_concurrency - len(self._job_tasks)
             if free > 0:
@@ -134,6 +136,12 @@ class Worker:
                         t.add_done_callback(self._job_tasks.discard)
                 except Exception:
                     log.exception("job claim failed")
+            if time.monotonic() - last_sweep > 30:
+                last_sweep = time.monotonic()
+                try:
+                    await _gateway.expire_approvals_all(self.state)
+                except Exception:
+                    log.exception("approval expiry sweep failed")
             if self.state.settings.drift_check and time.monotonic() - last_drift > 86_400:
                 last_drift = time.monotonic()
                 try:

@@ -33,6 +33,7 @@ from .routes import (
     dev,
     docs,
     findings,
+    gateway,
     jobs,
     killswitch,
     migration,
@@ -139,6 +140,7 @@ def create_app(state: AppState | None = None) -> FastAPI:
         findings.router, attacks.router, posture.router, compare.router, stability.router,
         cassettes.router, jobs.router, review.router, calibrations.router, clusters.router,
         badges.router, badges.public, migration.router, scorecard.router, policies.router,
+        gateway.router,
     ):  # fmt: skip
         application.include_router(r)
 
