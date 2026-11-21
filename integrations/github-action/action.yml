@@ -1,0 +1,198 @@
+name: Gauntlet
+description: Run a Gauntlet suite against an agent version, gate the result and comment on the pull request.
+author: Gauntlet
+
+branding:
+  icon: shield
+  color: gray-dark
+
+inputs:
+  api-url:
+    description: Base url of the Gauntlet API, for example https://gauntlet.example.com/api.
+    required: true
+  api-key:
+    description: Gauntlet API key. Pass it from a secret; it is only ever handed to the CLI through the environment.
+    required: true
+  suite:
+    description: Suite id to run.
+    required: true
+  agent-version:
+    description: Agent version id to evaluate.
+    required: true
+  repetitions:
+    description: Repetitions per scenario.
+    required: false
+    default: "1"
+  budget-usd:
+    description: Spend cap for the run in USD.
+    required: false
+    default: "2"
+  baseline:
+    description: A run id to compare against, or `auto` for the latest completed run of the suite whose agent version label equals `baseline-label`. Empty means no comparison.
+    required: false
+    default: ""
+  baseline-label:
+    description: Agent version label that `baseline auto` looks for.
+    required: false
+    default: main
+  gates-file:
+    description: Path of the gates YAML in the repository. Built-in defaults apply when the file does not exist.
+    required: false
+    default: gauntlet-gates.yaml
+  comment:
+    description: Post or update the pull request comment (same-repository pull requests only).
+    required: false
+    default: "true"
+  sarif:
+    description: Export findings of the agent version as SARIF and upload them to code scanning.
+    required: false
+    default: "false"
+  cli-version:
+    description: Version of gauntlet-cli installed from PyPI.
+    required: false
+    default: "0.1.0"
+  timeout-min:
+    description: Minutes to wait for the run before giving up.
+    required: false
+    default: "30"
+  web-url:
+    description: Web app url when it is not the API host without its /api suffix.
+    required: false
+    default: ""
+
+outputs:
+  run-id:
+    description: Id of the Gauntlet run.
+    value: ${{ steps.run.outputs.run-id }}
+  gate-status:
+    description: pass, fail or error.
+    value: ${{ steps.gate.outputs.status }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v7
+      with:
+        python-version: "3.12"
+
+    - name: Install the Gauntlet CLI
+      shell: bash
+      env:
+        CLI_VERSION: ${{ inputs.cli-version }}
+      run: python -m pip install --disable-pip-version-check "gauntlet-cli==${CLI_VERSION}"
+
+    - name: Run the suite
+      id: run
+      shell: bash
+      env:
+        GAUNTLET_API_URL: ${{ inputs.api-url }}
+        GAUNTLET_API_KEY: ${{ inputs.api-key }}
+        INPUT_SUITE: ${{ inputs.suite }}
+        INPUT_AGENT_VERSION: ${{ inputs.agent-version }}
+        INPUT_REPS: ${{ inputs.repetitions }}
+        INPUT_BUDGET: ${{ inputs.budget-usd }}
+        INPUT_BASELINE: ${{ inputs.baseline }}
+        INPUT_BASELINE_LABEL: ${{ inputs.baseline-label }}
+        INPUT_TIMEOUT: ${{ inputs.timeout-min }}
+        INPUT_WEB_URL: ${{ inputs.web-url }}
+      run: |
+        args=(run --remote --suite "$INPUT_SUITE" --agent-version "$INPUT_AGENT_VERSION"
+              --reps "$INPUT_REPS" --budget-usd "$INPUT_BUDGET" --baseline-label "$INPUT_BASELINE_LABEL"
+              --timeout-min "$INPUT_TIMEOUT" --json)
+        if [ -n "$INPUT_BASELINE" ]; then args+=(--baseline "$INPUT_BASELINE"); fi
+        if [ -n "$INPUT_WEB_URL" ]; then args+=(--web-url "$INPUT_WEB_URL"); fi
+        set +e
+        gauntlet "${args[@]}" > gauntlet-run.json
+        code=$?
+        set -e
+        run_id=$(python -c 'import json,sys; print(json.load(open("gauntlet-run.json")).get("run_id",""))' 2>/dev/null || true)
+        echo "run-id=${run_id}" >> "$GITHUB_OUTPUT"
+        echo "exit=${code}" >> "$GITHUB_OUTPUT"
+
+    - name: Evaluate the gates
+      id: gate
+      shell: bash
+      if: steps.run.outputs.run-id != ''
+      env:
+        GAUNTLET_API_URL: ${{ inputs.api-url }}
+        GAUNTLET_API_KEY: ${{ inputs.api-key }}
+        RUN_ID: ${{ steps.run.outputs.run-id }}
+        INPUT_BASELINE: ${{ inputs.baseline }}
+        INPUT_GATES_FILE: ${{ inputs.gates-file }}
+        INPUT_WEB_URL: ${{ inputs.web-url }}
+      run: |
+        args=(gate --run "$RUN_ID" --format json --out gate-result.json --md-out gate-comment.md)
+        if [ -f "$INPUT_GATES_FILE" ]; then args+=(--gates "$INPUT_GATES_FILE"); fi
+        if [ -n "$INPUT_BASELINE" ] && [ "$INPUT_BASELINE" != "auto" ]; then args+=(--baseline "$INPUT_BASELINE"); fi
+        if [ -n "$INPUT_WEB_URL" ]; then args+=(--web-url "$INPUT_WEB_URL"); fi
+        set +e
+        gauntlet "${args[@]}" > /dev/null
+        code=$?
+        set -e
+        echo "exit=${code}" >> "$GITHUB_OUTPUT"
+        status=error
+        if [ -f gate-result.json ]; then
+          status=$(python -c 'import json; print(json.load(open("gate-result.json"))["status"])')
+        fi
+        echo "status=${status}" >> "$GITHUB_OUTPUT"
+        if [ -f gate-comment.md ]; then cat gate-comment.md >> "$GITHUB_STEP_SUMMARY"; fi
+
+    - name: Comment on the pull request
+      if: >-
+        always() && inputs.comment == 'true' && steps.gate.outputs.exit != '' &&
+        github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository
+      uses: actions/github-script@v9
+      env:
+        COMMENT_FILE: gate-comment.md
+        ACTION_PATH: ${{ github.action_path }}
+      with:
+        script: |
+          const upsert = require(`${process.env.ACTION_PATH}/scripts/upsert-comment.js`);
+          await upsert({ github, context, core, bodyFile: process.env.COMMENT_FILE });
+
+    - name: Skip the comment on pull requests from forks
+      if: >-
+        always() && inputs.comment == 'true' && github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name != github.repository
+      shell: bash
+      run: echo "::notice::Pull requests from forks have no access to secrets, so Gauntlet cannot run or comment here."
+
+    - name: Export findings as SARIF
+      if: always() && inputs.sarif == 'true' && steps.run.outputs.run-id != ''
+      shell: bash
+      env:
+        GAUNTLET_API_URL: ${{ inputs.api-url }}
+        GAUNTLET_API_KEY: ${{ inputs.api-key }}
+        INPUT_AGENT_VERSION: ${{ inputs.agent-version }}
+      run: |
+        curl --fail --silent --show-error --get \
+          --header "Authorization: Bearer ${GAUNTLET_API_KEY}" \
+          --data-urlencode "format=sarif" \
+          --data-urlencode "agent_version_id=${INPUT_AGENT_VERSION}" \
+          --output findings.sarif \
+          "${GAUNTLET_API_URL%/}/v1/findings/export"
+
+    - name: Upload SARIF
+      if: always() && inputs.sarif == 'true' && hashFiles('findings.sarif') != ''
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: findings.sarif
+        category: gauntlet
+
+    - name: Mirror the gate result
+      shell: bash
+      if: always()
+      env:
+        RUN_EXIT: ${{ steps.run.outputs.exit }}
+        GATE_EXIT: ${{ steps.gate.outputs.exit }}
+      run: |
+        # Exit code of `gauntlet gate`: 0 passed, 1 a gate failed, 3 platform error.
+        if [ -z "${GATE_EXIT}" ]; then
+          echo "::error::The run did not produce a result to gate (run step exit ${RUN_EXIT:-unknown})."
+          exit 3
+        fi
+        if [ "${GATE_EXIT}" != "0" ]; then
+          echo "::error::Gauntlet gate exited ${GATE_EXIT}."
+        fi
+        exit "${GATE_EXIT}"
