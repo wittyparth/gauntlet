@@ -230,3 +230,22 @@ async def test_episode_clock_starts_at_the_world_clock():
     results = [e for e in events if e.kind == "tool_result"]
     assert results and results[0].payload["error"] == "expired_coupon"
     assert events[0].sim_time.date().isoformat() == "2026-03-15"
+
+
+async def test_agent_latency_is_the_time_the_agent_steps_took():
+    import time
+
+    def slow(item):
+        def run(_messages):
+            time.sleep(0.03)
+            return item
+
+        return run
+
+    script = {role: [slow(i) for i in items] for role, items in good_script().items()}
+    store = MemoryJournalStore()
+    out = await execute_episode(job(), deps(FakeLLM(by_role=script), store))  # type: ignore[arg-type]
+    events = (await store.load("ep_1")).events
+    agent = [e for e in events if e.kind == "agent_message"]
+    assert agent and all(e.wall_ms >= 25 for e in agent), [e.wall_ms for e in agent]
+    assert out.latency_ms >= 25
