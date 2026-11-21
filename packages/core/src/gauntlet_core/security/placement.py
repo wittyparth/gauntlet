@@ -238,8 +238,11 @@ def place(
     else:
         raise PlacementError(f"vector {attack.vector!r} is not placeable in Phase 2")
 
+    # exclude_none: library files carry explicit `eq: null` matcher fields, which the matcher
+    # treats as "equals null" and so never match; dropping nulls restores "operator not set"
     objective = _walk(
-        attack.objective.model_dump(mode="json"), lambda s: _resolve(s, values, "objective")
+        attack.objective.model_dump(mode="json", exclude_none=True),
+        lambda s: _resolve(s, values, "objective"),
     )
     named = NamedCheck.model_validate(
         {

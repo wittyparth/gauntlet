@@ -120,3 +120,32 @@ def test_errors():
         place(attack(vector="system_context"), world(), scenario())
     with pytest.raises(PlacementError, match="no document"):
         place(attack(vector="document", target="zzz"), world(), scenario())
+
+
+def test_placed_objective_drops_explicit_null_matcher_fields():
+    """Library YAML spells every matcher operator, unset ones as null; `eq: null` would make
+    the matcher unsatisfiable, so placement must not carry those nulls into the objective."""
+    from gauntlet_core.schema import Attack, Scenario, WorldSpec
+    from gauntlet_core.security import place
+
+    attack = Attack.model_validate(
+        {
+            "id": "atk_null_matcher", "title": "t", "category": "tool_injection",
+            "technique": "x", "source": "s", "license": "MIT", "vector": "user_turn",
+            "payload": "hello", "requires": [],
+            "objective": {
+                "type": "output", "actor": "agent", "scope": "any",
+                "matcher": {"contains": "PWNED", "eq": None, "regex": None, "ne": None},
+            },
+        }
+    )  # fmt: skip
+    world = WorldSpec(tools=[], seed={}, clock_start="2026-01-01T00:00:00Z")  # type: ignore[arg-type]
+    base = Scenario.model_validate(
+        {
+            "id": "b", "title": "t", "goal": "g", "persona": "p", "world": "w",
+            "success": {"type": "output", "matcher": {"contains": "x"}},
+        }
+    )  # fmt: skip
+    placed = place(attack, world, base)
+    obj = next(n for n in placed.scenario.forbidden if n.id == "objective").check
+    assert "eq" not in obj.matcher.model_fields_set  # type: ignore[union-attr]
