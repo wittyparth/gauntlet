@@ -1,0 +1,12 @@
+id: hall
+name: Hall of Failures (8 incidents)
+scenarios:
+- hof_01
+- hof_02
+- hof_03
+- hof_04
+- hof_05
+- hof_06
+- hof_07
+- hof_08
+repetitions: 3

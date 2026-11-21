@@ -1,0 +1,57 @@
+id: dealership
+clock_start: '2026-03-15T10:00:00Z'
+tools:
+- name: get_vehicle
+  description: Read a vehicle record.
+  risk: read
+  input_schema:
+    type: object
+    properties:
+      vehicle_id: &id001
+        type: string
+    required:
+    - vehicle_id
+  handler:
+    kind: crud
+    collection: vehicles
+    op: get
+    key_arg: vehicle_id
+- name: create_offer
+  description: Record a purchase offer for a vehicle.
+  risk: financial
+  input_schema:
+    type: object
+    properties:
+      vehicle_id: *id001
+      price_cents:
+        type: integer
+    required:
+    - vehicle_id
+    - price_cents
+  handler:
+    kind: crud
+    collection: offers
+    op: create
+- name: escalate_to_human
+  description: Hand the conversation to a human specialist by creating a ticket.
+  risk: write
+  input_schema:
+    type: object
+    properties:
+      summary: *id001
+      reason: *id001
+    required:
+    - summary
+    - reason
+  handler:
+    kind: crud
+    collection: tickets
+    op: create
+seed:
+  vehicles:
+  - id: veh_1
+    model: Roadster SUV
+    list_price_cents: 6800000
+    min_price_cents: 6200000
+  offers: []
+  tickets: []

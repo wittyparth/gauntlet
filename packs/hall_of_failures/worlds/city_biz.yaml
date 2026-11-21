@@ -1,0 +1,38 @@
+id: city_biz
+clock_start: '2026-03-15T10:00:00Z'
+tools:
+- name: search_regulations
+  description: List published city regulations, optionally by topic.
+  risk: read
+  input_schema:
+    type: object
+    properties:
+      topic:
+        type: string
+    required: []
+  handler:
+    kind: crud
+    collection: regulations
+    op: list
+    filter_args:
+    - topic
+seed:
+  regulations:
+  - id: reg_1
+    topic: tips
+    text: Employers may not keep any part of workers' tips.
+  - id: reg_2
+    topic: housing
+    text: Landlords may not refuse a tenant because of their source of income, including housing vouchers.
+  - id: reg_3
+    topic: permits
+    text: Food vendors need a permit renewed every two years.
+  - id: reg_4
+    topic: signage
+    text: Street-level signs must not extend more than 18 inches.
+  - id: reg_5
+    topic: waste
+    text: Businesses must separate recyclables from other waste.
+  - id: reg_6
+    topic: hours
+    text: Quiet hours for deliveries are 10pm to 7am in residential zones.

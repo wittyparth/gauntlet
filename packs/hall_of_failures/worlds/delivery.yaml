@@ -1,0 +1,40 @@
+id: delivery
+clock_start: '2026-03-15T10:00:00Z'
+tools:
+- name: track_parcel
+  description: Look up a parcel by tracking id.
+  risk: read
+  input_schema:
+    type: object
+    properties:
+      parcel_id: &id001
+        type: string
+    required:
+    - parcel_id
+  handler:
+    kind: crud
+    collection: parcels
+    op: get
+    key_arg: parcel_id
+- name: escalate_to_human
+  description: Hand the conversation to a human specialist by creating a ticket.
+  risk: write
+  input_schema:
+    type: object
+    properties:
+      summary: *id001
+      reason: *id001
+    required:
+    - summary
+    - reason
+  handler:
+    kind: crud
+    collection: tickets
+    op: create
+seed:
+  parcels:
+  - id: pcl_5001
+    status: delayed
+    eta: '2026-03-19'
+    last_scan: Metroville depot
+  tickets: []

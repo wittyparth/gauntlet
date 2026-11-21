@@ -1,0 +1,18 @@
+id: hall_of_failures
+title: Hall of Failures
+version: 1
+worlds:
+- worlds/airline.yaml
+- worlds/dealership.yaml
+- worlds/delivery.yaml
+- worlds/city_biz.yaml
+- worlds/coding_ops.yaml
+- worlds/software_support.yaml
+- worlds/workspace.yaml
+- worlds/mailbox.yaml
+personas:
+- per_social_engineer
+- per_storyteller
+- per_impatient
+- per_cooperative
+- per_confused_novice

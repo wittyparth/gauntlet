@@ -223,13 +223,16 @@ def validate_pack(pack: Pack, *, check_purity: bool = True) -> list[Issue]:
     from gauntlet_core.eval.rubrics import load_rubrics
 
     rubric_ids = set(load_rubrics())
+    worlds = pack.worlds or {pack.world.id or "world": pack.world}
     issues = [
-        Issue(i.code, i.message, "world.yaml")
-        for i in validate_world(pack.world, check_purity=check_purity)
+        Issue(i.code, i.message, f"worlds/{wid}")
+        for wid, w in worlds.items()
+        for i in validate_world(w, check_purity=check_purity)
     ]
     for sid, scn in pack.scenarios.items():
+        scn_world = worlds.get(scn.world, pack.world) if isinstance(scn.world, str) else pack.world
         for i in validate_scenario(
-            scn, pack.world, persona_ids=set(pack.personas), rubric_ids=rubric_ids
+            scn, scn_world, persona_ids=set(pack.personas), rubric_ids=rubric_ids
         ):
             issues.append(Issue(i.code, i.message, f"scenarios/{sid}.yaml"))
     for suite in pack.suites.values():

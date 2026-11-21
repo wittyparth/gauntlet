@@ -6,7 +6,7 @@ suites/}`; an optional `seed: seed.yaml` in `pack.yaml` is merged into the world
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
@@ -37,6 +37,7 @@ class Pack:
     personas: dict[str, Persona]
     policy_text: str
     root: Path
+    worlds: dict[str, WorldSpec] = field(default_factory=dict)  # CQ-S6; `world` is the first
 
 
 def _load_dir(path: Path, model: type, issues: list[str]) -> list:
@@ -62,15 +63,23 @@ def load_pack(path: Path) -> Pack:
         root = str(path.parent.parent)
         if root not in sys.path:
             sys.path.insert(0, root)
-    try:
-        world = load_yaml(WorldSpec, path / manifest.get("world", "world.yaml"))
-    except (ValidationError, yaml.YAMLError, OSError) as e:
-        raise PackError([f"world: {str(e).splitlines()[0]}"]) from e
+    worlds: dict[str, WorldSpec] = {}
+    files = manifest.get("worlds") or [manifest.get("world", "world.yaml")]
+    for rel in files:
+        try:
+            w = load_yaml(WorldSpec, path / rel)
+        except (ValidationError, yaml.YAMLError, OSError) as e:
+            raise PackError([f"world {rel}: {str(e).splitlines()[0]}"]) from e
+        if (w.id is None and len(files) > 1) or (w.id or "") in worlds:
+            raise PackError([f"world {rel}: id missing or duplicated"])
+        worlds[w.id or ""] = w
+    world = next(iter(worlds.values()))
     seed_file = manifest.get("seed")
     if seed_file:
         try:
             seed = yaml.safe_load((path / seed_file).read_text()) or {}
             world = world.model_copy(update={"seed": {**world.seed, **seed}})
+            worlds[world.id or ""] = world
         except (yaml.YAMLError, OSError) as e:
             raise PackError([f"seed: {str(e).splitlines()[0]}"]) from e
     library = load_persona_library()
@@ -85,8 +94,8 @@ def load_pack(path: Path) -> Pack:
         if scn.id in scenarios:
             issues.append(f"scenarios: duplicate scenario id {scn.id!r}")
         scenarios[scn.id] = scn
-        if isinstance(scn.world, str) and scn.world != world.id:
-            issues.append(f"scenarios/{scn.id}: world {scn.world!r} is not the pack world")
+        if isinstance(scn.world, str) and scn.world not in worlds:
+            issues.append(f"scenarios/{scn.id}: world {scn.world!r} is not a pack world")
     suites = {s.id: s for s in _load_dir(path / "suites", Suite, issues)}
     policy_file = manifest.get("policy")
     policy = (
@@ -104,4 +113,5 @@ def load_pack(path: Path) -> Pack:
         personas=personas,
         policy_text=policy,
         root=path,
+        worlds=worlds,
     )
