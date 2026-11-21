@@ -37,6 +37,8 @@ class Settings:
     job_concurrency: int = 2
     drift_check: bool = False  # worker re-checks calibrations daily (P3-5)
     auto_cluster_min: int = 5  # failed episodes that trigger a cluster job (P3-6)
+    cluster_embedder: str = "hash"  # "hash" (offline, free) or "gateway" (catalog model, opt-in)
+    attribute_with_llm: bool = True  # root-cause fallback through judge_small
     lease_s: int = 60
     poll_interval_s: float = 1.0
     allow_private_targets: bool = False
@@ -75,6 +77,9 @@ class Settings:
             job_concurrency=_int(e, "WORKER_JOB_CONCURRENCY", 2),
             drift_check=(e.get("GAUNTLET_DRIFT_CHECK") or "").lower() in ("1", "true", "yes"),
             auto_cluster_min=_int(e, "GAUNTLET_AUTO_CLUSTER_MIN", 5),
+            cluster_embedder=e.get("GAUNTLET_CLUSTER_EMBEDDER") or "hash",
+            attribute_with_llm=(e.get("GAUNTLET_ATTRIBUTE_WITH_LLM") or "true").lower()
+            in ("1", "true", "yes"),
             lease_s=_int(e, "LEASE_SECONDS", 60),
             poll_interval_s=float(e.get("POLL_INTERVAL_S") or 1.0),
             allow_private_targets=(e.get("GAUNTLET_ALLOW_PRIVATE_TARGETS") or "").lower()

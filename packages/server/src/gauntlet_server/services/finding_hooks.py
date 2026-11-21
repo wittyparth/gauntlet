@@ -6,6 +6,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from gauntlet_core.eval.cluster import attribute_by_rules, hint_for
 from gauntlet_core.schema import Attack, Scenario, WorldSpec
 from gauntlet_core.security import (
     AttemptResult,
@@ -13,6 +14,7 @@ from gauntlet_core.security import (
     file_forbidden_findings,
     result_from_events,
 )
+from gauntlet_core.world import build_trajectory, build_world
 from sqlalchemy import select, text
 from sqlalchemy.dialects.postgresql import insert
 
@@ -80,22 +82,48 @@ async def after_episode(sm: Sessionmaker, episode_id: str, outcome: str) -> None
             return  # these runs are accounted for by finalize_finding_run
         await s.execute(text("SELECT pg_advisory_xact_lock(hashtext(:k))"), {"k": f"findings:{ws}"})
         store = PgFindingStore(s, ws)
+        created: list[str] = []
         if result.objective_held:
-            await _file_attack(s, store, run, scn, result, ws)
+            fid = await _file_attack(s, store, run, scn, result, ws)
+            if fid:
+                created.append(fid)
         for filing in await file_forbidden_findings(
             store, scn, events, agent_version_id=run.agent_version_id, episode_id=episode_id
         ):
             await link_episode(s, filing.finding.id, episode_id, "evidence", [])
             if filing.created:
+                created.append(filing.finding.id)
                 await audit(
                     s, ws, "system", "finding.created", "finding", filing.finding.id,
                     {"episode_id": episode_id, "category": filing.finding.category},
                 )  # fmt: skip
 
+        if created:
+            hint = _root_cause_hint(scn, world, events, int(ep.rng_seed), episode_id)
+            for fid in created:
+                frow = await s.get(FindingRow, fid, populate_existing=True)
+                if hint and frow is not None and not frow.doc.get("root_cause_hint"):
+                    frow.doc = {**frow.doc, "root_cause_hint": hint}
+
+
+def _root_cause_hint(
+    scn: Scenario, world: WorldSpec, events: list[Any], rng_seed: int, episode_id: str
+) -> str | None:
+    """`Finding.root_cause_hint` from the deterministic attribution rules (no model call)."""
+    try:
+        built = build_world(world, scn.world_overrides, rng_seed)
+        traj = build_trajectory(episode_id, scn, events, built)
+        checks = [dict(e.payload) for e in events if e.kind == "check_result"]
+        attribution = attribute_by_rules(traj, checks)
+    except Exception:
+        log.warning("attribution failed for %s", episode_id, exc_info=True)
+        return None
+    return hint_for(attribution) if attribution else None
+
 
 async def _file_attack(
     s: Any, store: PgFindingStore, run: Run, scn: Scenario, result: AttemptResult, ws: str
-) -> None:
+) -> str | None:
     assert scn.attack is not None
     arow = await s.get(AttackRow, scn.attack.attack)
     base_world_id = scn.tags.get("base_world")
@@ -106,7 +134,7 @@ async def _file_attack(
         log.warning(
             "cannot file finding for %s: attack or base documents are missing", result.episode_id
         )
-        return
+        return None
     attack = Attack.model_validate(arow.doc)
     filing = await file_finding(
         store, attack, result,
@@ -138,3 +166,4 @@ async def _file_attack(
                 s, ws, "system", "finding.status_changed", "finding", fid,
                 {"from": frm, "to": "open"},
             )  # fmt: skip
+    return fid if filing.created else None

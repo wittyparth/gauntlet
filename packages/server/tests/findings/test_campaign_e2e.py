@@ -58,6 +58,7 @@ async def test_campaign_finds_dedups_exports_pins_and_verifies(client, state):
         assert len(findings) == 1
         f = findings[0]
         assert f["severity"] == "critical" and f["status"] == "open"  # financial tool in chain
+        assert f["root_cause_hint"]  # attribution rules name a cause (P3-6)
         detail = (await client.get(f"/v1/findings/{f['id']}")).json()
         assert len(detail["episodes"]) == 2
         assert {e["role"] for e in detail["episodes"]} == {"evidence", "variant"}

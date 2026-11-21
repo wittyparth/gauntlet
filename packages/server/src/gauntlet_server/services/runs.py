@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import random
 from datetime import UTC, datetime
 from importlib.metadata import PackageNotFoundError, version
@@ -342,7 +343,9 @@ async def set_run_status(session: AsyncSession, run: Run, action: str) -> None:
         run.status = "running"
 
 
-async def maybe_complete_run(session: AsyncSession, run_id: str) -> bool:
+async def maybe_complete_run(
+    session: AsyncSession, run_id: str, *, auto_cluster_min: int | None = None
+) -> bool:
     """`done` once no episode is queued or leased (never overrides a cancelled run).
 
     Completing also reconciles the budget ledger with the journal. A worker killed between
@@ -372,4 +375,22 @@ async def maybe_complete_run(session: AsyncSession, run_id: str) -> bool:
 
     await finalize_finding_run(session, run_id)
     await auto_quarantine_for_run(session, run_id)
+    if auto_cluster_min is not None:
+        failed = (
+            await session.execute(
+                text(
+                    "SELECT count(*) FROM episodes WHERE run_id = :r AND status = 'done' "
+                    "AND outcome = 'failed'"
+                ),
+                {"r": run_id},
+            )
+        ).scalar()
+        if int(failed or 0) >= auto_cluster_min:  # failure clustering, P3-6
+            await session.execute(
+                text(
+                    "INSERT INTO jobs (id, workspace_id, kind, payload) SELECT :id, workspace_id, "
+                    "'cluster', CAST(:p AS jsonb) FROM runs WHERE id = :r"
+                ),
+                {"id": new_id("job"), "p": json.dumps({"run_id": run_id}), "r": run_id},
+            )
     return True

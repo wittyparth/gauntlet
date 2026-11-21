@@ -393,7 +393,9 @@ class Worker:
                     {"r": lease.run_id},
                 )
             await adaptive_after_episode(s, lease.episode_id)  # may add one more repetition
-            await maybe_complete_run(s, lease.run_id)
+            await maybe_complete_run(
+                s, lease.run_id, auto_cluster_min=self.state.settings.auto_cluster_min
+            )
         await self._publish_episode(lease)
         await self._publish_run(lease.run_id)
 
@@ -419,7 +421,9 @@ class Worker:
         await self.queue.finish(lease, "platform_error", "error")
         async with self.state.sm() as s, s.begin():
             await adaptive_after_episode(s, lease.episode_id)
-            await maybe_complete_run(s, lease.run_id)
+            await maybe_complete_run(
+                s, lease.run_id, auto_cluster_min=self.state.settings.auto_cluster_min
+            )
         await self._publish_episode(lease)
         await self._publish_run(lease.run_id)
 

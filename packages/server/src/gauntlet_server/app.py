@@ -26,6 +26,7 @@ from .routes import (
     audit,
     calibrations,
     cassettes,
+    clusters,
     compare,
     core,
     dev,
@@ -132,7 +133,7 @@ def create_app(state: AppState | None = None) -> FastAPI:
         core.router, docs.router, runs.router, models.router, dev.router, facade_router,
         targets.router, audit.router, killswitch.router, settings.router,
         findings.router, attacks.router, posture.router, compare.router, stability.router,
-        cassettes.router, jobs.router, review.router, calibrations.router,
+        cassettes.router, jobs.router, review.router, calibrations.router, clusters.router,
     ):  # fmt: skip
         application.include_router(r)
 
