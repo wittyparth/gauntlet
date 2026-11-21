@@ -130,3 +130,39 @@ async def test_agent_live_with_a_changed_agent_diverges_and_records_where(client
     assert len(notes) == 1 and notes[0]["payload"]["first_live_seq"] == notes[0]["seq"]
     assert done["status"] == "done"
     assert json.dumps(notes[0]["payload"])
+
+
+async def test_agent_live_replay_is_refused_for_wired_targets(client, sm):
+    seed = await seeded(client)
+    agent = (
+        await client.post("/v1/agents", json={"project_id": seed["project_id"], "name": "W"})
+    ).json()
+    ver = await client.post(
+        f"/v1/agents/{agent['id']}/versions",
+        json={
+            "label": "wired",
+            "target": {
+                "kind": "openai_compat",
+                "base_url": "http://agent.test/v1",
+                "model": "m",
+                "wired": True,
+            },
+            "profile": {"purpose": "orders"},
+            "world_id": "ecommerce",
+        },
+    )
+    assert ver.status_code == 201, ver.text
+    ep = seed["failed_episode_id"]
+    r = await client.post(
+        f"/v1/episodes/{ep}/replay",
+        json={"mode": "agent_live", "agent_version_id": ver.json()["id"]},
+    )
+    assert r.status_code == 422, r.text
+    assert r.json()["error"]["code"] == "agent_live_unsupported_for_wired"
+    async with sm() as s:  # nothing was created
+        runs = (
+            await s.execute(text("SELECT count(*) FROM runs WHERE purpose = 'replay'"))
+        ).scalar()
+    assert runs == 0
+    strict = await client.post(f"/v1/episodes/{ep}/replay", json={"mode": "strict"})
+    assert strict.status_code == 200  # strict replay of any recording still works

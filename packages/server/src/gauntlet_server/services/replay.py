@@ -73,6 +73,13 @@ async def _agent_live(
         if av is None or av.workspace_id != ws:
             raise not_found("agent version", body.agent_version_id)
         version = agent_version_of(av)
+    if getattr(version.target, "wired", False):
+        raise ApiError(
+            422,
+            "agent_live_unsupported_for_wired",
+            "agent_live replay does not support wired targets: the api facade is not "
+            "journal-aware yet (use strict replay of the recording)",
+        )
     budget = min(body.budget_usd_micros or DEFAULT_BUDGET, state.settings.max_run_budget_usd_micros)
     if budget <= 0:
         raise ApiError(422, "budget_too_low", "budget must be positive")
