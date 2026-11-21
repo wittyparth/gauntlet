@@ -1,7 +1,7 @@
 """MCP scanner rules MCP-001..MCP-011 over a `tools/list` result (pure; no I/O).
 
-The rules match shapes (patterns, structure), not specific wording. MCP-012 is reserved for pin
-mismatch (rug pull, P4-3).
+The rules match shapes (patterns, structure), not specific wording. MCP-012 (pin mismatch, a rug
+pull) runs only when a pin store is supplied.
 """
 
 from __future__ import annotations
@@ -32,6 +32,7 @@ MCP_RULES: dict[str, tuple[str, str]] = {
     "MCP-009": ("Unauthenticated remote server", "mcp"),
     "MCP-010": ("Cleartext transport", "mcp"),
     "MCP-011": ("Large attack surface", "excessive_agency"),
+    "MCP-012": ("Tool definition changed since it was approved (pin mismatch)", "mcp"),
 }
 
 _INSTRUCTION = [
@@ -244,10 +245,30 @@ def _transport(t: TransportInfo) -> list[ScanFinding]:
     return out
 
 
+def _pin_mismatches(listing: dict[str, Any], pins: Any, server: str) -> list[ScanFinding]:
+    tools = [t for t in listing.get("tools") or [] if isinstance(t, dict) and "name" in t]
+    report = pins.check(server, tools)
+    out: list[ScanFinding] = []
+    for st in report.tools:
+        if st.status == "changed":
+            out.append(
+                _f("MCP-012", "critical", "definition differs from the approved pin",
+                   st.tool, f"pinned {st.pinned_hash} current {st.hash}")
+            )  # fmt: skip
+    return out
+
+
 def scan_mcp_tools(
-    listing: dict[str, Any], *, transport: TransportInfo | None = None
+    listing: dict[str, Any],
+    *,
+    transport: TransportInfo | None = None,
+    pins: Any = None,
+    server: str = "server",
 ) -> list[ScanFinding]:
+    """`pins` is a `gauntlet_core.gateway.mcp.pins.PinStore`; `server` names this listing in it."""
     out = _per_item(listing) + _names(listing)
+    if pins is not None:
+        out += _pin_mismatches(listing, pins, server)
     tools = listing.get("tools") or []
     if len(tools) > 50:
         out.append(

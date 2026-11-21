@@ -15,6 +15,7 @@ dependencies = [
 
 [project.optional-dependencies]
 cluster = ["scikit-learn>=1.4"]
+mcp = ["mcp>=2.0"]
 
 [build-system]
 requires = ["hatchling"]

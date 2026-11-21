@@ -902,6 +902,9 @@ dependencies = [
 cluster = [
     { name = "scikit-learn" },
 ]
+mcp = [
+    { name = "mcp" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -913,13 +916,14 @@ requires-dist = [
     { name = "aiosqlite", specifier = ">=0.20" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "litellm", specifier = ">=1.50" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=2.0" },
     { name = "pydantic", specifier = ">=2.8" },
     { name = "pyyaml", specifier = ">=6" },
     { name = "scikit-learn", marker = "extra == 'cluster'", specifier = ">=1.4" },
     { name = "starlette", specifier = ">=0.40" },
     { name = "uvicorn", specifier = ">=0.30" },
 ]
-provides-extras = ["cluster"]
+provides-extras = ["cluster", "mcp"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "respx", specifier = ">=0.23.1" }]
