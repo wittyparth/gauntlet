@@ -481,3 +481,14 @@ Cheap reasoning models return empty content when hidden reasoning eats the outpu
 | LLM mutations | Offline library build step: `gateway.complete("generator", ...)` with a JSONL cache is accepted (not episode effects). |
 | MCP SDK | `mcp` 2.x client API. |
 | Library | 297 attacks (AgentDojo 74, InjecAgent 46, garak 130, promptfoo 47), licences in `attacks/NOTICES.md`; dangerous-content filter test is mandatory for every future import. |
+
+### sec-2 review rulings (2026-11-21)
+
+| Question | Ruling |
+|---|---|
+| `runs.attack` | Accepted (bool; kill switch targets runs containing attack scenarios regardless of `purpose`). |
+| SARIF fingerprint | `partialFingerprints["gauntlet/v1"]` is canonical. |
+| Honeytools in DVA SQL/email worlds | Accepted (`admin_purge_tables`, `admin_forward_all_mail`). |
+| Worker findings | Filed unshrunk (1/1); replay/shrink sets reproducibility. Accepted for Phase 2. |
+| DVA in compose | Follow-up: install `apps/dva` into the api/worker images so the SQL and email worlds run in compose. |
+| Recall | Scripted-brain recall (1.00) proves the pipeline only; real recall is measured live at L-R2 with user-approved spend. |

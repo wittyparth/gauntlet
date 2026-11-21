@@ -47,15 +47,15 @@ Definition of done: an attack suite against DVA produces findings with determini
 | ID | Owner | Task | Depends |
 |---|---|---|---|
 | L7 | DONE | Security core: objectives, injection harness, taint markers, attacker loop, shrinking, finding creation and dedup, verify | L5, L6 |
-| P2-1 | SUB g | Threat taxonomy file with OWASP LLM / agentic and MITRE ATLAS mapping; attack YAML schema loader | L7 |
-| P2-2 | SUB g | Attack library import: garak, promptfoo, AgentDojo, InjecAgent probes normalised to `Attack` with source and licence; target 100+ across categories 1 to 8, 11 | P2-1 |
-| P2-3 | SUB g | Mutation engine: paraphrase, translate, encode, roleplay wrap, split across turns, embed in document | P2-1 |
-| P2-4 | SUB h | Ownership verification for remote targets, scope controls, audit log of attack runs, kill switch | P1-9 |
-| P2-5 | SUB h | Findings API, lifecycle, replay, regression pinning into a `security-regression` suite, SARIF and markdown export | L7 |
-| P2-6 | SUB h | Security posture report (coverage heatmap data, top findings, tool permission review) | P2-5 |
-| P2-7 | SUB i | Hall of Failures pack: 8 incident-derived scenarios (Air Canada, Chevrolet, DPD, MyCity, Replit, Cursor, Slack AI, EchoLeak), sources verified and cited neutrally | L7 |
-| P2-8 | SUB i | MCP scanner v1 and agent linter v1 as CLI commands (`gauntlet scan mcp`, `gauntlet lint`) | P2-1 |
-| P2-9 | SUB i | DVA: SQL agent and email assistant with planted vulnerabilities; recall script | P1-11 |
+| P2-1 | DONE | Threat taxonomy file with OWASP LLM / agentic and MITRE ATLAS mapping; attack YAML schema loader | L7 |
+| P2-2 | DONE | Attack library import: garak, promptfoo, AgentDojo, InjecAgent probes normalised to `Attack` with source and licence; target 100+ across categories 1 to 8, 11 | P2-1 |
+| P2-3 | DONE | Mutation engine: paraphrase, translate, encode, roleplay wrap, split across turns, embed in document | P2-1 |
+| P2-4 | DONE | Ownership verification for remote targets, scope controls, audit log of attack runs, kill switch | P1-9 |
+| P2-5 | DONE | Findings API, lifecycle, replay, regression pinning into a `security-regression` suite, SARIF and markdown export | L7 |
+| P2-6 | DONE | Security posture report (coverage heatmap data, top findings, tool permission review) | P2-5 |
+| P2-7 | DONE | Hall of Failures pack: 8 incident-derived scenarios (Air Canada, Chevrolet, DPD, MyCity, Replit, Cursor, Slack AI, EchoLeak), sources verified and cited neutrally | L7 |
+| P2-8 | DONE | MCP scanner v1 and agent linter v1 as CLI commands (`gauntlet scan mcp`, `gauntlet lint`) | P2-1 |
+| P2-9 | DONE | DVA: SQL agent and email assistant with planted vulnerabilities; recall script | P1-11 |
 | P2-10 | SUB j | Web: findings inbox and detail, campaign launch, coverage heatmap, posture report page | P2-5 |
 | L-R2 | LEAD | Phase review; measure recall and precision on DVA; publishable checkpoint | all |
 
