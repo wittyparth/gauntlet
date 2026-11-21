@@ -87,3 +87,14 @@ def test_one_statement_only_and_errors_are_reported_not_raised():
 )
 def test_handlers_are_pure(fn, q):
     assert_pure(fn, view(), {"query": q}, NOW)
+
+
+def test_blob_values_are_json_safe():
+    """Found in the live recall run: an LLM-written `SELECT x'4142'` returned raw bytes, which
+    crashed the facade's JSON response. Every handler result must be JSON-serialisable."""
+    import json
+
+    out = run("SELECT x'4142' AS b, randomblob(2) AS r")
+    assert out.error is None
+    json.dumps(out.result)
+    assert out.result["rows"][0]["b"] == "4142"

@@ -62,13 +62,22 @@ def _authorizer(action: int, a: str | None, b: str | None, *_: Any) -> int:
     return sqlite3.SQLITE_DENY
 
 
+def _json_safe(v: Any) -> Any:
+    """sqlite BLOBs come back as bytes; the world speaks JSON, so render them as hex."""
+    return v.hex() if isinstance(v, bytes) else v
+
+
+def _row(names: list[str], row: Any) -> dict[str, Any]:
+    return {n: _json_safe(v) for n, v in zip(names, row, strict=True)}
+
+
 def _diff(conn: sqlite3.Connection, initial: dict[str, list[Json]]) -> list[PatchOp]:
     ops: list[PatchOp] = []
     for t, before_rows in initial.items():
         try:
             cur = conn.execute(f'SELECT * FROM "{t}"')
             names = [d[0] for d in cur.description]
-            after = [dict(zip(names, row, strict=True)) for row in cur.fetchall()]
+            after = [_row(names, row) for row in cur.fetchall()]
         except sqlite3.Error:  # the table was dropped: every row is gone
             after = []
         old = {str(r["id"]): r for r in before_rows}
@@ -113,7 +122,7 @@ def _run(view: WorldView, args: Json, *, safe: bool) -> ToolOutcome:
         return ToolOutcome(error=f"sql_error: {msg}")
     finally:
         conn.close()
-    rows = [dict(zip(names, r, strict=True)) for r in fetched[:MAX_ROWS]]
+    rows = [_row(names, r) for r in fetched[:MAX_ROWS]]
     result = {
         "columns": names,
         "rows": rows,
