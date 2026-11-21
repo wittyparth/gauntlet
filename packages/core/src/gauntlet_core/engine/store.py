@@ -42,6 +42,20 @@ class JournalStore(Protocol):
         (CQ-B9, hard-cores 1.7a). Returns the new attempt. Raises StaleLease on a wrong epoch."""
         ...
 
+    async def replace_tail(
+        self,
+        episode_id: str,
+        epoch: int,
+        *,
+        from_seq: int,
+        drop_effects: Sequence[str] = (),
+        events: Sequence[Event] = (),
+    ) -> None:
+        """Atomically delete events with seq >= `from_seq` and the named effect records, then
+        append `events` (which must start at `from_seq`). Used only by `agent_live` replay when
+        the recording stops matching (hard-cores 1.6a). Raises StaleLease on a wrong epoch."""
+        ...
+
 
 class BudgetLedger(Protocol):
     async def reserve(self, run_id: str, usd_micros: int) -> bool: ...
@@ -86,6 +100,27 @@ class MemoryJournalStore:
         )
         j.events, j.effects, j.attempt = [], {}, j.attempt + 1
         return j.attempt
+
+    async def replace_tail(
+        self,
+        episode_id: str,
+        epoch: int,
+        *,
+        from_seq: int,
+        drop_effects: Sequence[str] = (),
+        events: Sequence[Event] = (),
+    ) -> None:
+        if self.crash_before_append is not None and self.appends >= self.crash_before_append:
+            raise SimulatedCrash
+        j = self._get(episode_id)
+        if epoch != j.epoch:
+            raise StaleLease(f"{episode_id}: epoch {epoch} != {j.epoch}")
+        if [e.seq for e in events] != list(range(from_seq, from_seq + len(events))):
+            raise SeqConflict(f"{episode_id}: events do not start at seq {from_seq}")
+        j.events[from_seq:] = list(events)
+        for key in drop_effects:
+            j.effects.pop(key, None)
+        self.appends += 1
 
     def archived(self, episode_id: str, attempt: int) -> JournalSnapshot:
         return self._archive[(episode_id, attempt)]

@@ -153,6 +153,47 @@ class SqliteJournalStore:
             "UPDATE episodes SET next_seq = ? WHERE id = ?", (next_seq + len(events), episode_id)
         )
 
+    async def replace_tail(
+        self,
+        episode_id: str,
+        epoch: int,
+        *,
+        from_seq: int,
+        drop_effects: Sequence[str] = (),
+        events: Sequence[Event] = (),
+    ) -> None:
+        if [e.seq for e in events] != list(range(from_seq, from_seq + len(events))):
+            raise SeqConflict(f"{episode_id}: events do not start at seq {from_seq}")
+        async with self._lock:
+            await self._conn.execute("BEGIN IMMEDIATE")
+            try:
+                c = self._conn
+                await c.execute("INSERT OR IGNORE INTO episodes (id) VALUES (?)", (episode_id,))
+                cur = await c.execute("SELECT epoch FROM episodes WHERE id = ?", (episode_id,))
+                row = await cur.fetchone()
+                assert row is not None
+                if int(row[0]) != epoch:
+                    raise StaleLease(f"{episode_id}: epoch {epoch} != {row[0]}")
+                await c.execute(
+                    "DELETE FROM events WHERE episode_id = ? AND seq >= ?", (episode_id, from_seq)
+                )
+                await c.executemany(
+                    "DELETE FROM effects WHERE episode_id = ? AND key = ?",
+                    [(episode_id, k) for k in drop_effects],
+                )
+                await c.executemany(
+                    "INSERT INTO events (episode_id, seq, kind, doc) VALUES (?, ?, ?, ?)",
+                    [(episode_id, e.seq, e.kind, e.model_dump_json()) for e in events],
+                )
+                await c.execute(
+                    "UPDATE episodes SET next_seq = ? WHERE id = ?",
+                    (from_seq + len(events), episode_id),
+                )
+                await c.execute("COMMIT")
+            except BaseException:
+                await self._conn.execute("ROLLBACK")
+                raise
+
     async def abandon_attempt(self, episode_id: str, epoch: int) -> int:
         async with self._lock:
             await self._conn.execute("BEGIN IMMEDIATE")

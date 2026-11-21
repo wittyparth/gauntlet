@@ -15,6 +15,7 @@ from .errors import (
 )
 from .queue import EpisodeLease, EpisodeQueue, MemoryEpisodeQueue
 from .redact import redact
+from .replay import fork_for_agent_live
 from .sqlite_store import SqliteJournalStore
 from .store import (
     BudgetLedger,
@@ -51,6 +52,7 @@ __all__ = [
     "TargetError",
     "UserSimulator",
     "dump_cassette",
+    "fork_for_agent_live",
     "load_cassette",
     "redact",
     "request_hash",

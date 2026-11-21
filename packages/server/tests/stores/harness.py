@@ -109,6 +109,22 @@ class CrashingStore:
     async def abandon_attempt(self, episode_id: str, epoch: int) -> int:
         return await self.inner.abandon_attempt(episode_id, epoch)
 
+    async def replace_tail(
+        self,
+        episode_id: str,
+        epoch: int,
+        *,
+        from_seq: int,
+        drop_effects: Sequence[str] = (),
+        events: Sequence[Event] = (),
+    ) -> None:
+        if self.crash_before_append is not None and self.appends >= self.crash_before_append:
+            raise SimulatedCrash
+        await self.inner.replace_tail(
+            episode_id, epoch, from_seq=from_seq, drop_effects=drop_effects, events=events
+        )
+        self.appends += 1
+
 
 def event(seq: int, kind: str = "user_message", **payload: Any) -> Event:
     return Event(

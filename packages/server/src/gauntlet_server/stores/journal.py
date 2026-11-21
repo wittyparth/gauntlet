@@ -144,6 +144,42 @@ class PgJournalStore:
                 {"c": added_cost, "id": ep},
             )
 
+    async def replace_tail(
+        self,
+        episode_id: str,
+        epoch: int,
+        *,
+        from_seq: int,
+        drop_effects: Sequence[str] = (),
+        events: Sequence[Event] = (),
+    ) -> None:
+        """Drop the recorded tail and append the divergence events in one transaction
+        (`agent_live` replay, hard-cores 1.6a)."""
+        if [e.seq for e in events] != list(range(from_seq, from_seq + len(events))):
+            raise SeqConflict(f"{episode_id}: events do not start at seq {from_seq}")
+        async with self._sm() as s, s.begin():
+            row = (
+                await s.execute(
+                    text("SELECT epoch FROM episodes WHERE id = :id FOR UPDATE"), {"id": episode_id}
+                )
+            ).first()
+            if row is None or row[0] != epoch:
+                raise StaleLease(f"{episode_id}: epoch {epoch} is not current")
+            await s.execute(
+                text("DELETE FROM events WHERE episode_id = :id AND seq >= :seq"),
+                {"id": episode_id, "seq": from_seq},
+            )
+            if drop_effects:
+                await s.execute(
+                    text("DELETE FROM effects WHERE episode_id = :id AND key = ANY(:keys)"),
+                    {"id": episode_id, "keys": list(drop_effects)},
+                )
+            await self._write(s, episode_id, events, ())
+            await s.execute(
+                text("UPDATE episodes SET next_seq = :n WHERE id = :id"),
+                {"n": from_seq + len(events), "id": episode_id},
+            )
+
     async def abandon_attempt(self, episode_id: str, epoch: int) -> int:
         """Archive the current journal under its attempt number, start a fresh one (CQ-B9).
         Returns the new attempt."""

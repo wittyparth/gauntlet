@@ -13,6 +13,10 @@ Design (docs/plan/03-hard-cores.md section 1):
   records a *span* (events and per-kind effect ordinals produced inside it); replaying the
   outer effect advances the cursors by the span and tells the replay hooks about the events
   (docs/plan/03-hard-cores.md section 1.7a).
+* `mode="agent_live"` replays a recording against a new agent version (section 1.6a): the
+  copied top-level effects (simulator, judges) replay by *position among top-level effects of
+  their kind* while the recording keeps matching; `target` effects and everything nested in
+  them run live; the first mismatch drops the rest of the recording and goes live (`_diverge`).
 """
 
 from __future__ import annotations
@@ -24,7 +28,7 @@ import time
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, Literal
 
 from gauntlet_core.schema import Cost, EffectKind, EffectRecord, Event, EventDraft, Json
 
@@ -36,11 +40,14 @@ from .errors import (
     PermanentEffectError,
     TargetError,
 )
+from .live import AgentLiveMixin, canonical, is_diverged_note, ordinal
 from .redact import redact
+from .replay import is_recorded
 from .store import BudgetLedger, JournalSnapshot, JournalStore
 
 EffectFn = Callable[[], Awaitable[tuple[Json, Cost | None]]]
 ReplayHook = Callable[[Sequence[Event]], None]
+Mode = Literal["live", "strict", "agent_live"]
 
 _ERROR_TYPES: dict[str, type[PermanentEffectError]] = {
     "TargetError": TargetError,
@@ -62,19 +69,7 @@ def request_hash(request: Any) -> str:
     return hashlib.sha256(canonical.encode()).hexdigest()
 
 
-def canonical(value: Any) -> Any:
-    """Recursively sort dict keys. Stores need not preserve key order (Postgres `jsonb`
-    reorders keys), so an effect result must look the same whether it is the live value or a
-    replayed one; otherwise anything that serialises it (a model request) hashes differently
-    after a resume and the episode dies with NonDeterminism."""
-    if isinstance(value, dict):
-        return {k: canonical(value[k]) for k in sorted(value)}
-    if isinstance(value, list):
-        return [canonical(v) for v in value]
-    return value
-
-
-class EpisodeCtx:
+class EpisodeCtx(AgentLiveMixin):
     def __init__(
         self,
         *,
@@ -87,6 +82,7 @@ class EpisodeCtx:
         budget: BudgetLedger | None = None,
         secrets: tuple[str, ...] = (),
         replay_only: bool = False,
+        mode: Mode = "live",
         clock_start: datetime | None = None,
     ) -> None:
         self.episode_id = episode_id
@@ -96,7 +92,11 @@ class EpisodeCtx:
         self._store = store
         self._budget = budget
         self._secrets = secrets
-        self._replay_only = replay_only  # strict cassette replay: a live effect is an error
+        self.mode: Mode = "strict" if replay_only else mode
+        self._replay_only = self.mode == "strict"  # a live effect is an error
+        self._agent_live = self.mode == "agent_live"
+        self._diverged = False
+        self._top: dict[str, int] = {}  # agent_live: recorded top-level effects consumed per kind
         self._persisted: list[Event] = list(journal.events)
         self._effects: dict[str, EffectRecord] = dict(journal.effects)
         self._events: list[Event] = []  # events of this execution, in order (replayed + new)
@@ -105,6 +105,14 @@ class EpisodeCtx:
         self._stack: list[_Frame] = []  # effects in flight, outermost first
         self._hooks: list[ReplayHook] = []
         self._rng_n = 0
+        self._recorded: dict[str, list[str]] = {}  # agent_live: kind -> recorded keys, in order
+        self._reserved: set[str] = set()  # agent_live: keys live effects must not take
+        if self._agent_live:
+            for key, rec in sorted(self._effects.items(), key=lambda kv: ordinal(kv[0])):
+                if is_recorded(rec):
+                    self._recorded.setdefault(rec.kind, []).append(key)
+                    self._reserved.add(key)
+        self._has_recording = bool(self._reserved)
         self.live_effects = 0  # effects actually executed in this run (not replayed)
         self.spent = Cost()
         self.last_effect_ms = 0
@@ -147,6 +155,8 @@ class EpisodeCtx:
     async def emit(self, *drafts: EventDraft) -> list[Event]:
         out: list[Event] = []
         for d in drafts:
+            if self._agent_live:
+                await self._agent_live_emit_check(d)
             seq = len(self._events)
             if seq < len(self._persisted):
                 recorded = self._persisted[seq]
@@ -217,6 +227,8 @@ class EpisodeCtx:
         if len(skipped) != n:
             raise NonDeterminism(f"{self.episode_id} effect {rec.key}: span events missing")
         self._events.extend(skipped)
+        if self._agent_live and any(is_diverged_note(e) for e in skipped):
+            self._diverged = True
         for kind, count in (span.get("ordinals") or {}).items():
             self._ordinals[kind] = self._ordinals.get(kind, 0) + int(count)
         if skipped:
@@ -266,6 +278,8 @@ class EpisodeCtx:
 
     def _next_key(self, kind: str) -> str:
         n = self._ordinals.get(kind, 0)
+        while f"{kind}:{n}" in self._reserved:  # agent_live: a recorded effect owns this key
+            n += 1
         self._ordinals[kind] = n + 1
         return f"{kind}:{n}"
 
@@ -284,8 +298,14 @@ class EpisodeCtx:
         `nested=True` says other processes may append nested work to this episode while `fn`
         runs (a wired agent calling the api facade): the journal tail is reloaded afterwards.
         """
-        key = self._next_key(kind)
         rhash = request_hash(redact(request, self._secrets))
+        if self._agent_live and kind != "target" and not self._stack:
+            self._absorb_note()  # a live target effect may own a note at this position
+            if not self._diverged:
+                replayed = await self._replay_recorded(kind, rhash)
+                if replayed is not None:
+                    return replayed
+        key = self._next_key(kind)
         rec = self._effects.get(key)
 
         if rec is not None:
@@ -302,7 +322,9 @@ class EpisodeCtx:
                 err = rec.result or {}
                 cls = _ERROR_TYPES.get(err.get("type", ""), PermanentEffectError)
                 raise cls(err.get("code", "error"), err.get("message", ""))
-            if self._has_nested_records():  # 1.7a: nested work cannot be re-attributed
+            if self._agent_live and kind == "target" and retry_safe:
+                await self._rollback_nested()  # the target always runs live: redo it cleanly
+            elif self._has_nested_records():  # 1.7a: nested work cannot be re-attributed
                 raise IndeterminateEffect(f"{self.episode_id} effect {key}: nested work recorded")
             if not retry_safe:  # pending, and we cannot know whether it happened
                 raise IndeterminateEffect(f"{self.episode_id} effect {key}")

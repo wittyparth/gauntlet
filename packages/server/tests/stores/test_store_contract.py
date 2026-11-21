@@ -174,3 +174,23 @@ async def test_zombie_worker_is_fenced_off(backend: Harness):
     with pytest.raises(StaleLease):
         await run_episode(ctx, scenario(), Agent(Counter()), Sim(TURNS))
     assert (await backend.store.load(EP)).events == []
+
+
+async def test_replace_tail_swaps_the_tail_atomically(backend: Harness):
+    await backend.new_episode(EP)
+    await backend.store.append(
+        EP, 0, events=[event(0), event(1), event(2)], effects=[effect("llm:0"), effect("llm:1")]
+    )
+    await backend.store.replace_tail(
+        EP, 0, from_seq=1, drop_effects=["llm:1"], events=[event(1, "sim_note", n="x")]
+    )
+    j = await backend.store.load(EP)
+    assert [(e.seq, e.kind) for e in j.events] == [(0, "user_message"), (1, "sim_note")]
+    assert set(j.effects) == {"llm:0"}
+    await backend.store.append(EP, 0, events=[event(2)])  # next_seq follows the new tail
+    with pytest.raises(SeqConflict):
+        await backend.store.replace_tail(EP, 0, from_seq=1, events=[event(5)])
+    await backend.claim(EP)
+    with pytest.raises(StaleLease):
+        await backend.store.replace_tail(EP, 0, from_seq=0)
+    assert len((await backend.store.load(EP)).events) == 3

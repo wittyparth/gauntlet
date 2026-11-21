@@ -73,3 +73,16 @@ class PublishingJournalStore:
 
     async def abandon_attempt(self, episode_id: str, epoch: int) -> int:
         return await self._inner.abandon_attempt(episode_id, epoch)
+
+    async def replace_tail(
+        self,
+        episode_id: str,
+        epoch: int,
+        *,
+        from_seq: int,
+        drop_effects: Sequence[str] = (),
+        events: Sequence[Event] = (),
+    ) -> None:
+        await self._inner.replace_tail(
+            episode_id, epoch, from_seq=from_seq, drop_effects=drop_effects, events=events
+        )
