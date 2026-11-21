@@ -309,8 +309,17 @@ class Worker:
         await self.queue.finish(lease, out.outcome, out.termination)  # StaleLease: dropped
         async with self.state.sm() as s, s.begin():
             await s.execute(
-                text("UPDATE episodes SET world_fidelity = :w WHERE id = :id"),
-                {"w": out.world_fidelity, "id": lease.episode_id},
+                text(
+                    "UPDATE episodes SET world_fidelity = :w, latency_ms = :lat, "
+                    "tokens_in = :tin, tokens_out = :tout WHERE id = :id"
+                ),
+                {
+                    "w": out.world_fidelity,
+                    "lat": out.latency_ms,
+                    "tin": out.cost.input_tokens,
+                    "tout": out.cost.output_tokens,
+                    "id": lease.episode_id,
+                },
             )
             for v in out.verdicts:
                 await s.execute(

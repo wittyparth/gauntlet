@@ -149,11 +149,6 @@ async def get_report(
     return await run_report(s, await _run(s, auth, run_id))
 
 
-@router.get("/runs/{run_id}/compare", status_code=501)
-async def compare(run_id: str, baseline: str, _: AuthCtx = Depends(auth_ctx)) -> None:
-    raise ApiError(501, "not_implemented", "run comparison arrives in Phase 3")
-
-
 @router.post("/episodes/{episode_id}/rejudge", status_code=501)
 async def rejudge(episode_id: str, _: AuthCtx = Depends(auth_ctx)) -> None:
     raise ApiError(501, "not_implemented", "rejudge arrives in Phase 3")

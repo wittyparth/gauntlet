@@ -27,6 +27,7 @@ from ..db.models import World as WorldRow
 from ..deps import AppState
 from ..errors import ApiError, not_found
 from .audit import audit
+from .compare import check_baseline
 from .model_settings import effective_config, load_choices, resolved_roles
 from .ownership import target_host
 from .scope import enforce_attack_run, is_attack_run
@@ -51,6 +52,7 @@ class RunCreate(BaseModel):
     budget_usd_micros: int
     seed: int | None = None
     include_drafts: bool = False
+    baseline_run_id: str | None = None
 
 
 def platform_version() -> str:
@@ -240,6 +242,13 @@ async def create_run(
             session, state, workspace_id, version_model, scenarios,
             episodes=len(scenarios) * reps, budget_usd_micros=budget,
         )  # fmt: skip
+    if body.baseline_run_id is not None:
+        base = await session.get(Run, body.baseline_run_id)
+        if base is None or base.workspace_id != workspace_id:
+            raise not_found("run", body.baseline_run_id)
+        check_baseline(None, base)
+        if base.suite_id != suite.id:
+            raise ApiError(422, "suite_mismatch", "baseline and run must use the same suite")
     seed = body.seed if body.seed is not None else random.Random().randrange(2**31)
     rid = run_id or new_id("run")
     manifest = RunManifest(
@@ -270,6 +279,7 @@ async def create_run(
         purpose=purpose,
         finding_id=finding_id,
         attack=attack,
+        baseline_of=body.baseline_run_id,
     )
     session.add(run)
     await session.flush()

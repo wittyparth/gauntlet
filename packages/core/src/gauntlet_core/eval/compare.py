@@ -198,6 +198,8 @@ def compare_runs(
         )
     flips.sort(key=lambda f: (_ORDER[f.status], f.scenario_id))
 
+    if a.suite_id != b.suite_id:
+        cautions.append("different_suites")
     if a.repetitions and b.repetitions and a.repetitions != b.repetitions:
         cautions.append(f"repetitions_differ:{a.repetitions}/{b.repetitions}")
     if a.judge_model != b.judge_model:

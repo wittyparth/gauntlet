@@ -227,6 +227,9 @@ class Episode(Base):
     priority: Mapped[int] = mapped_column(Integer, server_default="0")
     rng_seed: Mapped[int] = mapped_column(BigInteger, server_default="0")
     world_fidelity: Mapped[str] = mapped_column(server_default="full")
+    latency_ms: Mapped[int | None] = mapped_column(Integer)  # agent-side time, set at finish
+    tokens_in: Mapped[int | None] = mapped_column(Integer)
+    tokens_out: Mapped[int | None] = mapped_column(Integer)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = created_at_col()

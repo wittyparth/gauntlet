@@ -230,7 +230,8 @@ def _facts(ctx: EpisodeCtx, world: World) -> tuple[tuple[str, ...], list[Verdict
     sim_tools = {n for n, t in world.built.tools.items() if isinstance(t.handler, LLMSimHandler)}
     fidelity = "full"
     for e in ctx.trajectory_so_far:
-        latency += e.wall_ms
+        if e.kind in ("agent_message", "tool_result"):  # agent-side time, not the simulator's
+            latency += e.wall_ms
         if e.kind == "check_result":
             p = e.payload
             if p["holds"] != (p["check_id"] == "success"):

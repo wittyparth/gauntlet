@@ -16,7 +16,7 @@ from ..db.models import Scenario as ScenarioRow
 from ..errors import not_found
 from ..jobs import load_episode_inputs
 
-__all__ = ["episode_detail", "episode_row_json", "run_report"]
+__all__ = ["episode_detail", "episode_row_json", "run_report", "run_report_and_records"]
 
 
 async def _events(s: AsyncSession, episode_id: str) -> list[Event]:
@@ -47,6 +47,12 @@ def episode_row_json(e: Episode) -> dict[str, Any]:
 
 
 async def run_report(s: AsyncSession, run: Run) -> RunReport:
+    return (await run_report_and_records(s, run))[0]
+
+
+async def run_report_and_records(
+    s: AsyncSession, run: Run
+) -> tuple[RunReport, list[EpisodeRecord]]:
     manifest = RunManifest.model_validate(run.manifest)
     eps = (
         (
@@ -93,13 +99,17 @@ async def run_report(s: AsyncSession, run: Run) -> RunReport:
                 e.outcome or "platform_error",
                 e.termination,
                 int(e.cost_usd_micros),
-                sum(ev.wall_ms for ev in events),
+                int(e.latency_ms)
+                if e.latency_ms is not None
+                else sum(
+                    ev.wall_ms for ev in events if ev.kind in ("agent_message", "tool_result")
+                ),
                 e.world_fidelity,
                 tuple(reasons),
             )
         )
     cfg = manifest.agent_version.target
-    return aggregate_run(
+    report = aggregate_run(
         run.id,
         records,
         verdicts,
@@ -111,6 +121,7 @@ async def run_report(s: AsyncSession, run: Run) -> RunReport:
         wired=bool(getattr(cfg, "wired", False)),
         rubrics=load_rubrics(),
     )
+    return report, records
 
 
 async def episode_detail(
