@@ -688,6 +688,392 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/targets/verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Verifications */
+        get: operations["list_verifications_v1_targets_verifications_get"];
+        put?: never;
+        /** Create Verification */
+        post: operations["create_verification_v1_targets_verifications_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/targets/verifications/{vid}/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Check */
+        post: operations["check_v1_targets_verifications__vid__check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/targets/verifications/{vid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Verification */
+        delete: operations["delete_verification_v1_targets_verifications__vid__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Audit */
+        get: operations["list_audit_v1_audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/audit/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Audit Verify */
+        get: operations["audit_verify_v1_audit_verify_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/killswitch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Killswitch */
+        get: operations["get_killswitch_v1_killswitch_get"];
+        put?: never;
+        /**
+         * Engage
+         * @description Engaging also cancels queued attack episodes and attack runs at once; leased episodes
+         *     are cancelled by their workers within the poll interval.
+         */
+        post: operations["engage_v1_killswitch_post"];
+        /** Release */
+        delete: operations["release_v1_killswitch_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/settings/attack-scope": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Scope */
+        get: operations["get_scope_v1_settings_attack_scope_get"];
+        /** Put Scope */
+        put: operations["put_scope_v1_settings_attack_scope_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/findings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Findings */
+        get: operations["list_findings_v1_findings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/findings/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Findings */
+        get: operations["export_findings_v1_findings_export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/findings/{finding_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Finding Route */
+        get: operations["get_finding_route_v1_findings__finding_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Finding */
+        patch: operations["patch_finding_v1_findings__finding_id__patch"];
+        trace?: never;
+    };
+    "/v1/findings/{finding_id}/replay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Replay */
+        post: operations["replay_v1_findings__finding_id__replay_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/findings/{finding_id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify Route */
+        post: operations["verify_route_v1_findings__finding_id__verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/findings/{finding_id}/pin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pin */
+        post: operations["pin_v1_findings__finding_id__pin_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/findings/{finding_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Finding */
+        get: operations["export_finding_v1_findings__finding_id__export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/attacks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Attacks */
+        get: operations["list_attacks_v1_attacks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/attacks/{attack_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Attack */
+        get: operations["get_attack_v1_attacks__attack_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/attacks/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Attacks */
+        post: operations["import_attacks_v1_attacks_import_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/security/taxonomy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Taxonomy */
+        get: operations["get_taxonomy_v1_security_taxonomy_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/campaigns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Campaign */
+        post: operations["create_campaign_v1_campaigns_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/campaigns/{campaign_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Campaign */
+        get: operations["get_campaign_v1_campaigns__campaign_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agents/{agent_id}/versions/{version_id}/posture": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Posture
+         * @description JSON by default; `format=md` returns the same data as a markdown report.
+         */
+        get: operations["posture_v1_agents__agent_id__versions__version_id__posture_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agents/{agent_id}/versions/{version_id}/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Coverage */
+        get: operations["coverage_v1_agents__agent_id__versions__version_id__coverage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/healthz": {
         parameters: {
             query?: never;
@@ -851,6 +1237,50 @@ export interface components {
             /** Created At */
             created_at: string | null;
         };
+        /** Attack */
+        Attack: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Category */
+            category: string;
+            /** Technique */
+            technique: string;
+            /** Source */
+            source: string;
+            /** License */
+            license: string;
+            /**
+             * Vector
+             * @enum {string}
+             */
+            vector: "user_turn" | "document" | "tool_result" | "tool_description" | "system_context";
+            /** Payload */
+            payload: string | string[];
+            /** Objective */
+            objective: components["schemas"]["All"] | components["schemas"]["Any_"] | components["schemas"]["Not"] | components["schemas"]["ToolCalled"] | components["schemas"]["Sequence"] | components["schemas"]["State"] | components["schemas"]["StateDiffCheck"] | components["schemas"]["Output"] | components["schemas"]["CanaryLeaked"] | components["schemas"]["Egress"] | components["schemas"]["TaintedCall"] | components["schemas"]["Detector"] | components["schemas"]["Judge"];
+            /**
+             * Requires
+             * @default []
+             */
+            requires: string[];
+            /**
+             * Severity
+             * @default high
+             * @enum {string}
+             */
+            severity: "low" | "medium" | "high" | "critical";
+            /** Target */
+            target?: string | null;
+        };
+        /** AttackListOut */
+        AttackListOut: {
+            /** Items */
+            items: components["schemas"]["Attack"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
         /** AttackRef */
         AttackRef: {
             /** Attack */
@@ -863,10 +1293,120 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** AttackScope */
+        AttackScope: {
+            /** Allowed Categories */
+            allowed_categories?: string[] | null;
+            /**
+             * Max Episodes Per Run
+             * @default 2000
+             */
+            max_episodes_per_run: number;
+            /**
+             * Max Run Budget Usd Micros
+             * @default 20000000
+             */
+            max_run_budget_usd_micros: number;
+            /**
+             * Adaptive Enabled
+             * @default true
+             */
+            adaptive_enabled: boolean;
+            /**
+             * Max Concurrent Attack Runs
+             * @default 2
+             */
+            max_concurrent_attack_runs: number;
+        };
+        /** AuditList */
+        AuditList: {
+            /** Items */
+            items: components["schemas"]["AuditRow"][];
+        };
+        /** AuditRow */
+        AuditRow: {
+            /** Id */
+            id: string;
+            /** Ts */
+            ts: string;
+            /** Actor */
+            actor: string;
+            /** Action */
+            action: string;
+            /** Subject Type */
+            subject_type: string;
+            /** Subject Id */
+            subject_id: string;
+            /** Detail */
+            detail: {
+                [key: string]: unknown;
+            };
+            /** Hash */
+            hash: string;
+        };
         /** BulkIds */
         BulkIds: {
             /** Ids */
             ids: string[];
+        };
+        /** CampaignCreate */
+        CampaignCreate: {
+            /** Agent Version Id */
+            agent_version_id: string;
+            /** World Id */
+            world_id: string;
+            /** Benign Scenario Ids */
+            benign_scenario_ids: string[];
+            /** Categories */
+            categories?: string[] | null;
+            /** Attack Ids */
+            attack_ids?: string[] | null;
+            /**
+             * Mutations
+             * @default []
+             */
+            mutations: (string | string[])[];
+            /**
+             * Mode
+             * @default static
+             * @enum {string}
+             */
+            mode: "static" | "adaptive";
+            /**
+             * Repetitions
+             * @default 1
+             */
+            repetitions: number;
+            /** Budget Usd Micros */
+            budget_usd_micros: number;
+            /**
+             * Max Attacks
+             * @default 100
+             */
+            max_attacks: number;
+            /**
+             * Seed
+             * @default 0
+             */
+            seed: number;
+        };
+        /** CampaignOut */
+        CampaignOut: {
+            /** Campaign Id */
+            campaign_id: string;
+            run: components["schemas"]["RunOut"];
+            /** Attack Count */
+            attack_count: number;
+            /** Skipped */
+            skipped: components["schemas"]["Skipped"][];
+        };
+        /** CampaignStatus */
+        CampaignStatus: {
+            /** Campaign Id */
+            campaign_id: string;
+            run: components["schemas"]["RunOut"];
+            /** Progress */
+            progress: components["schemas"]["CategoryProgress"][];
         };
         /** CanaryLeaked */
         CanaryLeaked: {
@@ -934,6 +1474,36 @@ export interface components {
             /** Recommended Roles */
             recommended_roles: string[];
         };
+        /** CategoryOut */
+        CategoryOut: {
+            /** Id */
+            id: string;
+            /** Number */
+            number: number;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Owasp Llm */
+            owasp_llm: string[];
+            /** Owasp Agentic */
+            owasp_agentic: string[];
+            /** Atlas */
+            atlas: string[];
+            /** Phase Scope */
+            phase_scope: string;
+            /** Dangerous */
+            dangerous: boolean;
+        };
+        /** CategoryProgress */
+        CategoryProgress: {
+            /** Category */
+            category: string;
+            /** Attempts */
+            attempts: number;
+            /** Successes */
+            successes: number;
+        };
         /** Caution */
         Caution: {
             /** Self Preference */
@@ -955,6 +1525,30 @@ export interface components {
              */
             adaptive_sampling: boolean;
         };
+        /** ChainReport */
+        ChainReport: {
+            /** Ok */
+            ok: boolean;
+            /** Checked */
+            checked: number;
+            /** First Bad Id */
+            first_bad_id?: string | null;
+        };
+        /** ComplianceRow */
+        ComplianceRow: {
+            /** Framework */
+            framework: string;
+            /** Id */
+            id: string;
+            /** Categories */
+            categories: string[];
+            /** Attempts */
+            attempts: number;
+            /** Findings */
+            findings: number;
+            /** Covered */
+            covered: boolean;
+        };
         /** Cost */
         Cost: {
             /**
@@ -974,6 +1568,30 @@ export interface components {
             output_tokens: number;
             /** Model */
             model?: string | null;
+        };
+        /** CoverageCell */
+        CoverageCell: {
+            /** Category */
+            category: string;
+            /** Vector */
+            vector: string;
+            /** Attempts */
+            attempts: number;
+            /** Successes */
+            successes: number;
+            /** Rate */
+            rate: number;
+            /** Ci Low */
+            ci_low: number;
+            /** Ci High */
+            ci_high: number;
+        };
+        /** CoverageOut */
+        CoverageOut: {
+            /** Agent Version Id */
+            agent_version_id: string;
+            /** Coverage */
+            coverage: components["schemas"]["CoverageCell"][];
         };
         /** CrudHandler */
         CrudHandler: {
@@ -996,6 +1614,19 @@ export interface components {
              * @default []
              */
             filter_args: string[];
+        };
+        /** DataExposure */
+        DataExposure: {
+            /** Canary Id */
+            canary_id: string;
+            /** Kind */
+            kind: string;
+            /** Placement */
+            placement: string;
+            /** Planted Episodes */
+            planted_episodes: number;
+            /** Leaked Episodes */
+            leaked_episodes: number;
         };
         /** Detector */
         Detector: {
@@ -1277,6 +1908,121 @@ export interface components {
             /** New */
             new?: unknown;
         };
+        /** FindingDetailOut */
+        FindingDetailOut: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Category */
+            category: string;
+            /** Severity */
+            severity: string;
+            /** Status */
+            status: string;
+            /** Agent Version Id */
+            agent_version_id: string;
+            /** Attack Id */
+            attack_id: string | null;
+            /** Reproducibility */
+            reproducibility: [
+                number,
+                number
+            ];
+            /** Dedup Key */
+            dedup_key: string;
+            /** Root Cause Hint */
+            root_cause_hint: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            reproducer: components["schemas"]["Scenario"];
+            suggested_policy: components["schemas"]["PolicyRule"] | null;
+            /** Episodes */
+            episodes: components["schemas"]["FindingEpisodeOut"][];
+            /** Notes */
+            notes: components["schemas"]["NoteOut"][];
+        };
+        /** FindingEpisodeOut */
+        FindingEpisodeOut: {
+            /** Episode Id */
+            episode_id: string;
+            /** Role */
+            role: string;
+            /** Evidence Seqs */
+            evidence_seqs: number[];
+        };
+        /** FindingExportJson */
+        FindingExportJson: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Category */
+            category: string;
+            /** Severity */
+            severity: string;
+            /** Status */
+            status: string;
+            /** Agent Version Id */
+            agent_version_id: string;
+            /** Attack Id */
+            attack_id: string | null;
+            /** Reproducibility */
+            reproducibility: [
+                number,
+                number
+            ];
+            /** Dedup Key */
+            dedup_key: string;
+            /** Root Cause Hint */
+            root_cause_hint: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            reproducer: components["schemas"]["Scenario"];
+            /** Episodes */
+            episodes: components["schemas"]["FindingEpisodeOut"][];
+        };
+        /** FindingListOut */
+        FindingListOut: {
+            /** Items */
+            items: components["schemas"]["FindingSummaryOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** FindingSummaryOut */
+        FindingSummaryOut: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Category */
+            category: string;
+            /** Severity */
+            severity: string;
+            /** Status */
+            status: string;
+            /** Agent Version Id */
+            agent_version_id: string;
+            /** Attack Id */
+            attack_id: string | null;
+            /** Reproducibility */
+            reproducibility: [
+                number,
+                number
+            ];
+            /** Dedup Key */
+            dedup_key: string;
+            /** Root Cause Hint */
+            root_cause_hint: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1341,6 +2087,17 @@ export interface components {
              */
             wired: boolean;
         };
+        /** ImportOut */
+        ImportOut: {
+            /** Imported */
+            imported: number;
+            /** By Source */
+            by_source: {
+                [key: string]: number;
+            };
+            /** Issues */
+            issues: number;
+        };
         /** InjectionSpec */
         InjectionSpec: {
             /** Attack */
@@ -1373,6 +2130,40 @@ export interface components {
         KeyIn: {
             /** Name */
             name: string;
+        };
+        /** KillEngage */
+        KillEngage: {
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "workspace" | "run";
+            /** Run Id */
+            run_id?: string | null;
+            /** Reason */
+            reason: string;
+        };
+        /** KillRow */
+        KillRow: {
+            /** Id */
+            id: string;
+            /** Scope */
+            scope: string;
+            /** Run Id */
+            run_id: string | null;
+            /** Reason */
+            reason: string;
+            /** Engaged By */
+            engaged_by: string;
+            /** Engaged At */
+            engaged_at: string;
+        };
+        /** KillState */
+        KillState: {
+            /** Engaged */
+            engaged: boolean;
+            /** Switches */
+            switches: components["schemas"]["KillRow"][];
         };
         /** LLMSimHandler */
         LLMSimHandler: {
@@ -1463,6 +2254,19 @@ export interface components {
             /** Check */
             check: components["schemas"]["All"] | components["schemas"]["Any_"] | components["schemas"]["Not"] | components["schemas"]["ToolCalled"] | components["schemas"]["Sequence"] | components["schemas"]["State"] | components["schemas"]["StateDiffCheck"] | components["schemas"]["Output"] | components["schemas"]["CanaryLeaked"] | components["schemas"]["Egress"] | components["schemas"]["TaintedCall"] | components["schemas"]["Detector"] | components["schemas"]["Judge"];
         };
+        /** NoteOut */
+        NoteOut: {
+            /** Ts */
+            ts: string;
+            /** Actor */
+            actor: string;
+            /** Note */
+            note: string;
+            /** From Status */
+            from_status?: string | null;
+            /** To Status */
+            to_status?: string | null;
+        };
         /** OpenAICompatTargetConfig */
         OpenAICompatTargetConfig: {
             /**
@@ -1552,6 +2356,97 @@ export interface components {
             /** Next Cursor */
             next_cursor: string | null;
         };
+        /** PinOut */
+        PinOut: {
+            /** Suite Id */
+            suite_id: string;
+            /** Scenario Id */
+            scenario_id: string;
+        };
+        /** PolicyRule */
+        PolicyRule: {
+            /** Id */
+            id: string;
+            /** Description */
+            description: string;
+            /**
+             * Severity
+             * @default high
+             * @enum {string}
+             */
+            severity: "low" | "medium" | "high" | "critical";
+            /** When */
+            when: components["schemas"]["All"] | components["schemas"]["Any_"] | components["schemas"]["Not"] | components["schemas"]["ToolCalled"] | components["schemas"]["Sequence"] | components["schemas"]["State"] | components["schemas"]["StateDiffCheck"] | components["schemas"]["Output"] | components["schemas"]["CanaryLeaked"] | components["schemas"]["Egress"] | components["schemas"]["TaintedCall"] | components["schemas"]["Detector"] | components["schemas"]["Judge"];
+            /**
+             * Action
+             * @default block
+             * @enum {string}
+             */
+            action: "block" | "require_approval" | "redact" | "log";
+            /** Message */
+            message?: string | null;
+            /**
+             * Strict
+             * @default false
+             */
+            strict: boolean;
+        };
+        /** PostureFinding */
+        PostureFinding: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Category */
+            category: string;
+            /** Severity */
+            severity: string;
+            /** Status */
+            status: string;
+            /** Reproducibility */
+            reproducibility: [
+                number,
+                number
+            ];
+        };
+        /** PostureOut */
+        PostureOut: {
+            /** Agent Version Id */
+            agent_version_id: string;
+            /** Generated At */
+            generated_at: string;
+            /** Grade */
+            grade: string;
+            /** Grade Basis */
+            grade_basis: string[];
+            summary: components["schemas"]["Summary"];
+            /** Coverage */
+            coverage: components["schemas"]["CoverageCell"][];
+            /** Top Findings */
+            top_findings: components["schemas"]["PostureFinding"][];
+            /** Tool Review */
+            tool_review: components["schemas"]["ToolReview"][];
+            /** Data Exposure */
+            data_exposure: components["schemas"]["DataExposure"][];
+            previous: components["schemas"]["Previous"] | null;
+            /** Recommendations */
+            recommendations: components["schemas"]["Recommendation"][];
+            /** Compliance */
+            compliance: components["schemas"]["ComplianceRow"][];
+        };
+        /** Previous */
+        Previous: {
+            /** Version Id */
+            version_id: string;
+            /** Grade */
+            grade: string;
+            /** New */
+            new: number;
+            /** Fixed */
+            fixed: number;
+            /** Unchanged */
+            unchanged: number;
+        };
         /** ProjectIn */
         ProjectIn: {
             /** Name */
@@ -1583,6 +2478,15 @@ export interface components {
             /** Entrypoint */
             entrypoint: string;
         };
+        /** Recommendation */
+        Recommendation: {
+            /** Priority */
+            priority: number;
+            /** Text */
+            text: string;
+            /** Finding Ids */
+            finding_ids: string[];
+        };
         /** RecordChange */
         RecordChange: {
             /** Collection */
@@ -1608,6 +2512,13 @@ export interface components {
              * @default []
              */
             seqs: number[];
+        };
+        /** ReplayBody */
+        ReplayBody: {
+            /** Budget Usd Micros */
+            budget_usd_micros?: number | null;
+            /** Agent Version Id */
+            agent_version_id?: string | null;
         };
         /** RoleChoice */
         RoleChoice: {
@@ -1797,6 +2708,13 @@ export interface components {
             spent_usd_micros: number;
             /** Baseline Of */
             baseline_of: string | null;
+            /**
+             * Purpose
+             * @default eval
+             */
+            purpose: string;
+            /** Finding Id */
+            finding_id?: string | null;
             counts: components["schemas"]["RunCounts"];
             /** Created At */
             created_at: string;
@@ -2016,6 +2934,13 @@ export interface components {
              */
             strict: boolean;
         };
+        /** Skipped */
+        Skipped: {
+            /** Attack Id */
+            attack_id: string;
+            /** Reason */
+            reason: string;
+        };
         /** State */
         State: {
             /**
@@ -2076,6 +3001,13 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** StatusPatch */
+        StatusPatch: {
+            /** Status */
+            status: string;
+            /** Note */
+            note?: string | null;
+        };
         /** Suite */
         Suite: {
             /** Id */
@@ -2121,6 +3053,21 @@ export interface components {
             /** Created At */
             created_at: string;
         };
+        /** Summary */
+        Summary: {
+            /** Open By Severity */
+            open_by_severity: {
+                [key: string]: number;
+            };
+            /** Verified */
+            verified: number;
+            /** Accepted Risk */
+            accepted_risk: number;
+            /** Attacks Run */
+            attacks_run: number;
+            /** Attack Success Rate */
+            attack_success_rate: number;
+        };
         /** TaintedCall */
         TaintedCall: {
             /**
@@ -2135,6 +3082,13 @@ export interface components {
             tool: string;
             /** Risk */
             risk?: string[] | null;
+        };
+        /** TaxonomyOut */
+        TaxonomyOut: {
+            /** Verified On */
+            verified_on: string;
+            /** Categories */
+            categories: components["schemas"]["CategoryOut"][];
         };
         /** ToolCalled */
         ToolCalled: {
@@ -2160,6 +3114,23 @@ export interface components {
             count: components["schemas"]["IntRange"];
             /** Ok */
             ok?: boolean | null;
+        };
+        /** ToolReview */
+        ToolReview: {
+            /** Tool */
+            tool: string;
+            /** Risk */
+            risk: string;
+            /** Calls */
+            calls: number;
+            /** Tainted Calls */
+            tainted_calls: number;
+            /** Honeytool Calls */
+            honeytool_calls: number;
+            /** Over Privileged */
+            over_privileged: boolean;
+            /** Reasons */
+            reasons: string[];
         };
         /** ToolSpec */
         ToolSpec: {
@@ -2256,6 +3227,46 @@ export interface components {
             /** Model */
             model?: string | null;
             cost?: components["schemas"]["Cost"] | null;
+        };
+        /** VerificationCreate */
+        VerificationCreate: {
+            /** Host */
+            host: string;
+            /**
+             * Method
+             * @enum {string}
+             */
+            method: "dns" | "http";
+        };
+        /** VerificationList */
+        VerificationList: {
+            /** Items */
+            items: components["schemas"]["VerificationOut"][];
+        };
+        /** VerificationOut */
+        VerificationOut: {
+            /** Id */
+            id: string;
+            /** Host */
+            host: string;
+            /** Method */
+            method: string;
+            /** Status */
+            status: string;
+            /** Token */
+            token: string;
+            /** Instructions */
+            instructions: {
+                [key: string]: string;
+            };
+            /** Verified At */
+            verified_at?: string | null;
+            /** Expires At */
+            expires_at?: string | null;
+            /** Last Checked At */
+            last_checked_at?: string | null;
+            /** Detail */
+            detail?: string | null;
         };
         /** VersionIn */
         VersionIn: {
@@ -4048,6 +5059,826 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SeedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_verifications_v1_targets_verifications_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VerificationList"];
+                };
+            };
+        };
+    };
+    create_verification_v1_targets_verifications_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerificationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VerificationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_v1_targets_verifications__vid__check_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                vid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VerificationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_verification_v1_targets_verifications__vid__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                vid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_audit_v1_audit_get: {
+        parameters: {
+            query?: {
+                action?: string | null;
+                subject_type?: string | null;
+                subject_id?: string | null;
+                from_?: string | null;
+                to?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    audit_verify_v1_audit_verify_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChainReport"];
+                };
+            };
+        };
+    };
+    get_killswitch_v1_killswitch_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KillState"];
+                };
+            };
+        };
+    };
+    engage_v1_killswitch_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KillEngage"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KillState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    release_v1_killswitch_delete: {
+        parameters: {
+            query?: {
+                scope?: "workspace" | "run";
+                run_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KillState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_scope_v1_settings_attack_scope_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttackScope"];
+                };
+            };
+        };
+    };
+    put_scope_v1_settings_attack_scope_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttackScope"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttackScope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_findings_v1_findings_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                severity?: string | null;
+                category?: string | null;
+                agent_version_id?: string | null;
+                q?: string | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_findings_v1_findings_export_get: {
+        parameters: {
+            query?: {
+                format?: "sarif" | "json";
+                status?: string | null;
+                agent_version_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingExportJson"] | components["schemas"]["FindingExportJson"][] | {
+                        [key: string]: unknown;
+                    } | string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_finding_route_v1_findings__finding_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_finding_v1_findings__finding_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatusPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replay_v1_findings__finding_id__replay_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReplayBody"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_route_v1_findings__finding_id__verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReplayBody"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pin_v1_findings__finding_id__pin_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PinOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_finding_v1_findings__finding_id__export_get: {
+        parameters: {
+            query?: {
+                format?: "md" | "json" | "sarif";
+            };
+            header?: never;
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingExportJson"] | components["schemas"]["FindingExportJson"][] | {
+                        [key: string]: unknown;
+                    } | string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_attacks_v1_attacks_get: {
+        parameters: {
+            query?: {
+                category?: string | null;
+                vector?: string | null;
+                source?: string | null;
+                q?: string | null;
+                requires?: string | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttackListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_attack_v1_attacks__attack_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attack_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Attack"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_attacks_v1_attacks_import_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportOut"];
+                };
+            };
+        };
+    };
+    get_taxonomy_v1_security_taxonomy_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxonomyOut"];
+                };
+            };
+        };
+    };
+    create_campaign_v1_campaigns_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CampaignCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_campaign_v1_campaigns__campaign_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    posture_v1_agents__agent_id__versions__version_id__posture_get: {
+        parameters: {
+            query?: {
+                compare_to?: string | null;
+                format?: "json" | "md";
+            };
+            header?: never;
+            path: {
+                agent_id: string;
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostureOut"] | string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    coverage_v1_agents__agent_id__versions__version_id__coverage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                agent_id: string;
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverageOut"];
                 };
             };
             /** @description Validation Error */
