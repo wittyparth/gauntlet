@@ -64,8 +64,8 @@ def _load_inputs(pack_dir: Path, target: Path) -> tuple[Pack, AgentFile]:
 
 
 def run(
-    pack: Annotated[Path, typer.Argument(help="Pack directory.")],
-    target: Annotated[Path, typer.Option("--target", help="agent.yaml.")],
+    pack: Annotated[Path | None, typer.Argument(help="Pack directory.")] = None,
+    target: Annotated[Path | None, typer.Option("--target", help="agent.yaml.")] = None,
     suite: Annotated[str | None, typer.Option(help="Suite id (default: smoke, else all).")] = None,
     reps: Annotated[int | None, typer.Option(help="Repetitions per scenario.")] = None,
     budget_usd: Annotated[float, typer.Option("--budget-usd", help="Spend cap in USD.")] = 2.0,
@@ -83,14 +83,57 @@ def run(
     adaptive: Annotated[
         bool, typer.Option("--adaptive", help="Stop a scenario early once its outcome is clear.")
     ] = False,
+    remote: Annotated[
+        bool, typer.Option("--remote", help="Run on a Gauntlet server instead of locally.")
+    ] = False,
+    api_url: Annotated[
+        str, typer.Option("--api-url", envvar="GAUNTLET_API_URL", help="Server (--remote).")
+    ] = "http://localhost:8000",
+    api_key: Annotated[
+        str | None, typer.Option("--api-key", envvar="GAUNTLET_API_KEY", help="API key (--remote).")
+    ] = None,
+    agent_version: Annotated[
+        str | None, typer.Option("--agent-version", help="Agent version id (--remote).")
+    ] = None,
+    baseline: Annotated[
+        str | None, typer.Option("--baseline", help="Baseline run id, or auto (--remote).")
+    ] = None,
+    baseline_label: Annotated[
+        str, typer.Option("--baseline-label", help="Version label --baseline auto looks for.")
+    ] = "main",
+    wait: Annotated[
+        bool, typer.Option("--wait/--no-wait", help="Wait for the run to finish (--remote).")
+    ] = True,
+    timeout_min: Annotated[
+        float, typer.Option("--timeout-min", help="Give up waiting after this long (--remote).")
+    ] = 30.0,
+    web_url: Annotated[
+        str | None, typer.Option("--web-url", help="Web app url when not the api host.")
+    ] = None,
     fake_llm: Annotated[Path | None, typer.Option("--fake-llm", hidden=True)] = None,
 ) -> None:
     """Run PACK against the agent in --target and print a report.
+
+    With --remote the run happens on a server: `gauntlet run --remote --suite S
+    --agent-version V` creates it, polls until it ends and prints the run url (exit 3 on
+    timeout or a failed or cancelled run).
 
     Exit codes: 0 run completed (and --fail-under met, if given); 1 --fail-under not met;
     2 usage or validation error; 3 platform failure (budget exhausted before completion, zero
     counted episodes, runner crash); 130 interrupted (journals intact, use --resume).
     """
+    if remote:
+        from .remote import run_remote
+
+        run_remote(
+            api_url=api_url, api_key=api_key, suite=suite, agent_version=agent_version,
+            reps=reps, budget_usd=budget_usd, baseline=baseline, baseline_label=baseline_label,
+            wait=wait, timeout_min=timeout_min, web_url=web_url, seed=seed if seed else None,
+            adaptive=adaptive, json_out=json_out,
+        )  # fmt: skip
+        return
+    if pack is None or target is None:
+        raise _die("usage: gauntlet run PACK --target agent.yaml  (or --remote)")
     pack_obj, agent = _load_inputs(pack, target)
     try:
         cfg = load_config(config)

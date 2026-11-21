@@ -7,6 +7,7 @@ import typer
 from .commands.attacks import attacks_app
 from .commands.cassette import cassette_app
 from .commands.demo import demo_app
+from .commands.gate import gate
 from .commands.init import init
 from .commands.lint import lint
 from .commands.rejudge import rejudge
@@ -34,6 +35,7 @@ app.add_typer(scan_app, name="scan")
 app.add_typer(cassette_app, name="cassette")
 app.command()(replay)
 app.command()(rejudge)
+app.command()(gate)
 app.command()(lint)
 
 if __name__ == "__main__":  # pragma: no cover
