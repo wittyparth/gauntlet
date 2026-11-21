@@ -15,6 +15,7 @@ import os
 import random
 import signal
 import socket
+import time
 from typing import Any
 
 import httpx
@@ -36,6 +37,7 @@ from .facade import RemoteFacade
 from .jobs import load_episode_job
 from .limits import HostLimiter, LimitedTransport
 from .models_gateway import gateway_for_roles
+from .services import calibration as _calibration
 from .services.adaptive import adaptive_after_episode
 from .services.finding_hooks import after_episode
 from .services.jobs import run_job
@@ -120,6 +122,7 @@ class Worker:
 
     async def _job_loop(self, stop: asyncio.Event) -> None:
         """Claim background jobs (calibration, clustering) next to the episode loop."""
+        last_drift = float("-inf")
         while not stop.is_set() and not self._killed:
             free = self.job_concurrency - len(self._job_tasks)
             if free > 0:
@@ -130,6 +133,12 @@ class Worker:
                         t.add_done_callback(self._job_tasks.discard)
                 except Exception:
                     log.exception("job claim failed")
+            if self.state.settings.drift_check and time.monotonic() - last_drift > 86_400:
+                last_drift = time.monotonic()
+                try:
+                    await _calibration.check_drift_all(self.state)
+                except Exception:
+                    log.exception("drift check failed")
             delay = self.poll_s * (1 + random.random() * 0.25)
             with contextlib.suppress(TimeoutError):
                 await asyncio.wait_for(stop.wait(), timeout=delay)
