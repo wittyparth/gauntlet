@@ -311,6 +311,11 @@ async def run_clustering(state: AppState, run_id: str) -> dict[str, Any]:
                 )
             )
         s.add_all(rows)
+        if gateway.usd:  # model spend (naming, attribution) is charged to the run's budget
+            await s.execute(
+                text("UPDATE runs SET spent_usd_micros = spent_usd_micros + :c WHERE id = :r"),
+                {"c": gateway.usd, "r": run_id},
+            )
         await s.commit()
     return {
         "run_id": run_id,
