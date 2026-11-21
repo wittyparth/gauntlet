@@ -13,6 +13,7 @@ dependencies = [
     "redis>=5",
     "dnspython>=2.6",
     "tldextract>=5",
+    "aiobotocore>=3.10.0",
 ]
 
 [tool.uv.sources]

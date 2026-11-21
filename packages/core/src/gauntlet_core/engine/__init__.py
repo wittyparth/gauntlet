@@ -1,7 +1,7 @@
 """Durable episode execution. See docs/plan/03-hard-cores.md section 1."""
 
 from .cassette import dump_cassette, load_cassette, store_from_cassette
-from .ctx import EpisodeCtx, request_hash
+from .ctx import EpisodeCtx, Mode, request_hash
 from .episode import EpisodeResult, Finalizer, SimTurn, Target, UserSimulator, run_episode
 from .errors import (
     BudgetExhausted,
@@ -41,6 +41,7 @@ __all__ = [
     "MemoryBudgetLedger",
     "MemoryEpisodeQueue",
     "MemoryJournalStore",
+    "Mode",
     "NonDeterminism",
     "PermanentEffectError",
     "SeqConflict",

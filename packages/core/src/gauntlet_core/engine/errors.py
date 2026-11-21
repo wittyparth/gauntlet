@@ -16,7 +16,22 @@ class SeqConflict(EngineError):
 
 
 class NonDeterminism(EngineError):
-    """Re-execution diverged from the journal. Always a platform bug."""
+    """Re-execution diverged from the journal. Always a platform bug (or, replaying a cassette
+    under `verify_payloads`, the first point where the replay differs from the recording).
+
+    `seq` is the journal position where the replay stood; `expected` and `got` describe the
+    recorded and the produced side when known."""
+
+    def __init__(
+        self,
+        message: str = "",
+        *,
+        seq: int | None = None,
+        expected: object = None,
+        got: object = None,
+    ) -> None:
+        super().__init__(message)
+        self.seq, self.expected, self.got = seq, expected, got
 
 
 class IndeterminateEffect(EngineError):

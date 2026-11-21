@@ -83,6 +83,7 @@ class EpisodeCtx(AgentLiveMixin):
         secrets: tuple[str, ...] = (),
         replay_only: bool = False,
         mode: Mode = "live",
+        verify_payloads: bool = False,
         clock_start: datetime | None = None,
     ) -> None:
         self.episode_id = episode_id
@@ -93,6 +94,7 @@ class EpisodeCtx(AgentLiveMixin):
         self._budget = budget
         self._secrets = secrets
         self.mode: Mode = "strict" if replay_only else mode
+        self._verify_payloads = verify_payloads  # replay checks event payloads, not just kinds
         self._replay_only = self.mode == "strict"  # a live effect is an error
         self._agent_live = self.mode == "agent_live"
         self._diverged = False
@@ -163,8 +165,20 @@ class EpisodeCtx(AgentLiveMixin):
                 if recorded.kind != d.kind or recorded.actor != d.actor:
                     raise NonDeterminism(
                         f"{self.episode_id} seq {seq}: journal has {recorded.kind}/"
-                        f"{recorded.actor}, execution produced {d.kind}/{d.actor}"
+                        f"{recorded.actor}, execution produced {d.kind}/{d.actor}",
+                        seq=seq,
+                        expected={"kind": recorded.kind, "actor": recorded.actor},
+                        got={"kind": d.kind, "actor": d.actor},
                     )
+                if self._verify_payloads:
+                    got = redact(d.model_dump()["payload"], self._secrets)
+                    if got != recorded.payload:
+                        raise NonDeterminism(
+                            f"{self.episode_id} seq {seq}: {d.kind} payload differs",
+                            seq=seq,
+                            expected=recorded.payload,
+                            got=got,
+                        )
                 ev = recorded
             else:
                 data = d.model_dump()
@@ -311,7 +325,10 @@ class EpisodeCtx(AgentLiveMixin):
         if rec is not None:
             if rec.request_hash != rhash:
                 raise NonDeterminism(
-                    f"{self.episode_id} effect {key}: request differs from the recorded one"
+                    f"{self.episode_id} effect {key}: request differs from the recorded one",
+                    seq=len(self._events),
+                    expected=rec.request_hash,
+                    got=rhash,
                 )
             if rec.status == "done":
                 self.last_effect_ms = 0
@@ -329,7 +346,12 @@ class EpisodeCtx(AgentLiveMixin):
             if not retry_safe:  # pending, and we cannot know whether it happened
                 raise IndeterminateEffect(f"{self.episode_id} effect {key}")
         elif self._replay_only:
-            raise NonDeterminism(f"{self.episode_id} effect {key}: not in cassette")
+            raise NonDeterminism(
+                f"{self.episode_id} effect {key}: not in cassette",
+                seq=len(self._events),
+                expected=None,
+                got=rhash,
+            )
 
         reserved = 0
         if self._budget is not None and est_usd_micros > 0:

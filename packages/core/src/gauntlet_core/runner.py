@@ -20,6 +20,7 @@ from gauntlet_core.engine import (
     Finalizer,
     IndeterminateEffect,
     JournalStore,
+    Mode,
     PermanentEffectError,
     Target,
     UserSimulator,
@@ -257,9 +258,12 @@ async def execute_episode(
     *,
     epoch: int = 0,
     replay_only: bool = False,
+    mode: Mode = "live",
+    verify_payloads: bool = False,
     sim: UserSimulator | None = None,
 ) -> EpisodeOutcome:
-    """Run, resume or replay one episode. Raises StaleLease, IndeterminateEffect and
+    """Run, resume or replay one episode (`mode="agent_live"`: replay a recording against this
+    job's agent version, see engine/live.py). Raises StaleLease, IndeterminateEffect and
     NonDeterminism to the caller."""
     scn = job.scenario
     ctx = await EpisodeCtx.open(
@@ -271,6 +275,8 @@ async def execute_episode(
         budget=deps.budget,
         secrets=tuple(job.secrets.values()),
         replay_only=replay_only,
+        mode=mode,
+        verify_payloads=verify_payloads,
         clock_start=job.world.clock_start,
     )
     if deps.on_event:
@@ -366,6 +372,7 @@ async def execute_with_attempts(
     *,
     epoch: int = 0,
     replay_only: bool = False,
+    mode: Mode = "live",
     sim: UserSimulator | None = None,
 ) -> EpisodeOutcome:
     """`execute_episode` plus the abandon-attempt path (hard-cores 1.3 and 1.7a): when resuming
@@ -374,7 +381,9 @@ async def execute_with_attempts(
     Raises StaleLease and NonDeterminism to the caller."""
     while True:
         try:
-            extra = {"sim": sim} if sim is not None else {}
+            extra: dict[str, Any] = {"sim": sim} if sim is not None else {}
+            if mode != "live":
+                extra["mode"] = mode
             return await execute_episode(job, deps, epoch=epoch, replay_only=replay_only, **extra)
         except IndeterminateEffect as exc:
             if replay_only:
