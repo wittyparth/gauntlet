@@ -431,7 +431,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Runs */
+        /**
+         * List Runs
+         * @description Imported cassettes live in `purpose=import` runs, hidden unless asked for with
+         *     `purpose=import` or `include_imports=true` (CQ-R11).
+         */
         get: operations["list_runs_v1_runs_get"];
         put?: never;
         /**
@@ -541,40 +545,6 @@ export interface paths {
         get: operations["get_report_v1_runs__run_id__report_get"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/runs/{run_id}/compare": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Compare */
-        get: operations["compare_v1_runs__run_id__compare_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/episodes/{episode_id}/rejudge": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Rejudge */
-        post: operations["rejudge_v1_episodes__episode_id__rejudge_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1074,6 +1044,490 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/runs/{run_id}/baseline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Baseline */
+        put: operations["put_baseline_v1_runs__run_id__baseline_put"];
+        post?: never;
+        /** Delete Baseline */
+        delete: operations["delete_baseline_v1_runs__run_id__baseline_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/runs/{run_id}/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Compare
+         * @description Compare against `baseline`, default the run's own `baseline_of`. Changes nothing.
+         */
+        get: operations["get_compare_v1_runs__run_id__compare_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/episodes/{episode_id}/diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Episode Diff
+         * @description Align this episode's trajectory with `against` (the baseline side).
+         */
+        get: operations["get_episode_diff_v1_episodes__episode_id__diff_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/runs/{run_id}/findings-delta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Findings Delta
+         * @description New security findings of the run versus its baseline (the CI gate's input).
+         */
+        get: operations["get_findings_delta_v1_runs__run_id__findings_delta_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/scenarios/{scenario_id}/quarantine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Quarantine
+         * @description Quarantined scenarios keep running but leave the headline rate, pass^k, comparisons
+         *     and gates.
+         */
+        post: operations["post_quarantine_v1_scenarios__scenario_id__quarantine_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/scenarios/{scenario_id}/stability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Stability */
+        get: operations["get_stability_v1_scenarios__scenario_id__stability_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/episodes/{episode_id}/cassette": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Cassette
+         * @description The episode's journal as JSON Lines: a manifest header, then events, then effects.
+         */
+        get: operations["get_cassette_v1_episodes__episode_id__cassette_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/episodes/{episode_id}/cassette/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Archive */
+        post: operations["post_archive_v1_episodes__episode_id__cassette_archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/cassettes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Cassette
+         * @description Import a cassette (NDJSON body, at most 20 MB) as a finished episode of a
+         *     `purpose=import` run.
+         */
+        post: operations["post_cassette_v1_cassettes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/episodes/{episode_id}/replay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Replay
+         * @description `strict`: replay in-process and report whether it is identical (200). `agent_live`:
+         *     create a replay run that follows the recording until the agent diverges (201).
+         */
+        post: operations["post_replay_v1_episodes__episode_id__replay_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/episodes/{episode_id}/rejudge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Rejudge
+         * @description Re-run the judges for `rubrics` (default: the scenario's) and replace those verdict
+         *     rows. The journal is untouched; the episode outcome is recomputed.
+         */
+        post: operations["post_rejudge_v1_episodes__episode_id__rejudge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Job */
+        get: operations["get_job_v1_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/review/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Queue */
+        get: operations["get_queue_v1_review_queue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/review/labels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Label */
+        post: operations["post_label_v1_review_labels_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/review/items/{episode_id}/{rubric_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Review Item
+         * @description Blind by default; `reveal=true` shows the judge verdict only after the caller labelled.
+         */
+        get: operations["get_review_item_v1_review_items__episode_id___rubric_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/rubrics/{rubric_id}/golden": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Golden */
+        get: operations["get_golden_v1_rubrics__rubric_id__golden_get"];
+        put?: never;
+        /** Post Golden */
+        post: operations["post_golden_v1_rubrics__rubric_id__golden_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/rubrics/{rubric_id}/calibrate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Calibrate */
+        post: operations["post_calibrate_v1_rubrics__rubric_id__calibrate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/rubrics/{rubric_id}/calibrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Calibrations */
+        get: operations["list_calibrations_v1_rubrics__rubric_id__calibrations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/calibrations/{calibration_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Calibration */
+        get: operations["get_calibration_v1_calibrations__calibration_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/calibrations/check-drift": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Check Drift */
+        post: operations["post_check_drift_v1_calibrations_check_drift_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/runs/{run_id}/cluster": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Cluster
+         * @description Idempotent per run: running it again replaces the run's clusters.
+         */
+        post: operations["post_cluster_v1_runs__run_id__cluster_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/runs/{run_id}/clusters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Clusters */
+        get: operations["get_clusters_v1_runs__run_id__clusters_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agents/{agent_id}/badge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Badge
+         * @description Creates the agent's badge token, or rotates it: the old url stops working at once.
+         */
+        post: operations["post_badge_v1_agents__agent_id__badge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/runs/{run_id}/migration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Migration
+         * @description Is it safe to move from the baseline run's agent version to this run's?
+         */
+        get: operations["get_migration_v1_runs__run_id__migration_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/migrations/pareto": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Pareto */
+        get: operations["get_pareto_v1_migrations_pareto_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agents/{agent_id}/versions/{version_id}/scorecard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Scorecard */
+        get: operations["get_scorecard_v1_agents__agent_id__versions__version_id__scorecard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/healthz": {
         parameters: {
             query?: never;
@@ -1237,6 +1691,13 @@ export interface components {
             /** Created At */
             created_at: string | null;
         };
+        /** ArchiveOut */
+        ArchiveOut: {
+            /** Key */
+            key: string;
+            /** Url */
+            url: string;
+        };
         /** Attack */
         Attack: {
             /** Id */
@@ -1344,10 +1805,85 @@ export interface components {
             /** Hash */
             hash: string;
         };
+        /** BadgeLink */
+        BadgeLink: {
+            /** Url */
+            url: string;
+            /** Markdown */
+            markdown: string;
+        };
+        /** BadgeOut */
+        BadgeOut: {
+            /** Token */
+            token: string;
+            /** Url */
+            url: string;
+            /** Markdown */
+            markdown: string;
+        };
+        /** BaselineIn */
+        BaselineIn: {
+            /** Baseline Run Id */
+            baseline_run_id: string;
+        };
         /** BulkIds */
         BulkIds: {
             /** Ids */
             ids: string[];
+        };
+        /** CalibrateIn */
+        CalibrateIn: {
+            /** Version */
+            version?: number | null;
+            /** Taus */
+            taus?: number[] | null;
+        };
+        /** CalibrateOut */
+        CalibrateOut: {
+            /** Calibration Id */
+            calibration_id: string;
+            /** Job Id */
+            job_id: string;
+        };
+        /** CalibrationList */
+        CalibrationList: {
+            /** Items */
+            items: components["schemas"]["CalibrationOut"][];
+        };
+        /** CalibrationOut */
+        CalibrationOut: {
+            /** Id */
+            id: string;
+            /** Rubric Id */
+            rubric_id: string;
+            /** Rubric Version */
+            rubric_version: number;
+            /** Judge Models */
+            judge_models: {
+                [key: string]: unknown;
+            };
+            /** Status */
+            status: string;
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+            /** Golden Count */
+            golden_count: number;
+            /** Gating Allowed */
+            gating_allowed: boolean;
+            /** Threshold */
+            threshold: number | null;
+            /** Stale */
+            stale: boolean;
+            /** Error */
+            error: string | null;
+            /** Cost Usd Micros */
+            cost_usd_micros: number;
+            /** Created At */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
         };
         /** CampaignCreate */
         CampaignCreate: {
@@ -1534,6 +2070,98 @@ export interface components {
             /** First Bad Id */
             first_bad_id?: string | null;
         };
+        /** ClusterOut */
+        ClusterOut: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: number;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Suspected Cause */
+            suspected_cause: string;
+            /** Root Cause */
+            root_cause: string;
+            /** Root Cause Share */
+            root_cause_share: number;
+            /** Size */
+            size: number;
+            /** Episode Ids */
+            episode_ids: string[];
+            /** Scenario Ids */
+            scenario_ids: string[];
+            /** Exemplar Episode Id */
+            exemplar_episode_id: string | null;
+            /** Max Severity */
+            max_severity: string | null;
+        };
+        /** ClusterStarted */
+        ClusterStarted: {
+            /** Job Id */
+            job_id: string;
+        };
+        /** ClustersOut */
+        ClustersOut: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "none" | "queued" | "running" | "done" | "failed";
+            /** Clusters */
+            clusters: components["schemas"]["ClusterOut"][];
+            /** Unclustered */
+            unclustered: string[];
+        };
+        /** CompareParams */
+        CompareParams: {
+            /** Resamples */
+            resamples: number;
+            /** Seed */
+            seed: number;
+        };
+        /** CompareReport */
+        CompareReport: {
+            /** Run Id */
+            run_id: string;
+            /** Baseline Id */
+            baseline_id: string;
+            /** Suite Id */
+            suite_id: string;
+            /** Margin */
+            margin: number;
+            /**
+             * Verdict
+             * @enum {string}
+             */
+            verdict: "regression" | "improvement" | "no_detectable_change" | "inconclusive";
+            /** Delta */
+            delta: number;
+            /** Ci Low */
+            ci_low: number;
+            /** Ci High */
+            ci_high: number;
+            /** P Value */
+            p_value: number;
+            /** Detectable Effect Text */
+            detectable_effect_text: string | null;
+            /** Shared Scenarios */
+            shared_scenarios: number;
+            /** Only In Run */
+            only_in_run: string[];
+            /** Only In Baseline */
+            only_in_baseline: string[];
+            /** Flips */
+            flips: components["schemas"]["Flip"][];
+            /** Dimension Deltas */
+            dimension_deltas: components["schemas"]["DimensionDelta"][];
+            cost: components["schemas"]["CostDelta"];
+            latency: components["schemas"]["LatencyDelta"];
+            /** Cautions */
+            cautions: string[];
+            params: components["schemas"]["CompareParams"];
+        };
         /** ComplianceRow */
         ComplianceRow: {
             /** Framework */
@@ -1568,6 +2196,15 @@ export interface components {
             output_tokens: number;
             /** Model */
             model?: string | null;
+        };
+        /** CostDelta */
+        CostDelta: {
+            /** Baseline Per Episode Usd Micros */
+            baseline_per_episode_usd_micros: number;
+            /** Run Per Episode Usd Micros */
+            run_per_episode_usd_micros: number;
+            /** Delta Pct */
+            delta_pct: number | null;
         };
         /** CoverageCell */
         CoverageCell: {
@@ -1645,6 +2282,61 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** DiffRow */
+        DiffRow: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "same" | "changed" | "only_a" | "only_b";
+            /** A Seq */
+            a_seq: number | null;
+            /** B Seq */
+            b_seq: number | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "user_message" | "agent_message" | "tool_call";
+            /** Summary A */
+            summary_a: string | null;
+            /** Summary B */
+            summary_b: string | null;
+            /** Similarity */
+            similarity?: number | null;
+        };
+        /** Dimension */
+        Dimension: {
+            /** Criterion */
+            criterion: string;
+            /** Score */
+            score: number | null;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "low" | "medium" | "high" | "critical";
+            /** Gating Allowed */
+            gating_allowed: boolean;
+        };
+        /** DimensionDelta */
+        DimensionDelta: {
+            /** Criterion */
+            criterion: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "low" | "medium" | "high" | "critical";
+            /** Score Baseline */
+            score_baseline: number;
+            /** Score Run */
+            score_run: number;
+            /** Delta */
+            delta: number;
+            /** Gating Allowed */
+            gating_allowed: boolean;
+        };
         /** DimensionStats */
         DimensionStats: {
             /** Criterion */
@@ -1667,6 +2359,15 @@ export interface components {
             /** Gating Allowed */
             gating_allowed: boolean;
         };
+        /** Divergence */
+        Divergence: {
+            /** Seq */
+            seq: number;
+            /** Expected */
+            expected?: unknown;
+            /** Got */
+            got?: unknown;
+        };
         /** DocumentSpec */
         DocumentSpec: {
             /** Id */
@@ -1681,6 +2382,15 @@ export interface components {
              */
             trusted: boolean;
             injection?: components["schemas"]["InjectionSpec"] | null;
+        };
+        /** DriftOut */
+        DriftOut: {
+            /** Stale */
+            stale: string[];
+            /** Enqueued */
+            enqueued: string[];
+            /** Skipped */
+            skipped: string[];
         };
         /** DryRunOut */
         DryRunOut: {
@@ -2023,6 +2733,83 @@ export interface components {
             /** Updated At */
             updated_at: string;
         };
+        /** FindingsDeltaOut */
+        FindingsDeltaOut: {
+            /** Baseline Id */
+            baseline_id: string;
+            /** New By Severity */
+            new_by_severity: {
+                [key: string]: number;
+            };
+            /** New */
+            new: components["schemas"]["NewFinding"][];
+        };
+        /** Flip */
+        Flip: {
+            /** Scenario Id */
+            scenario_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "newly_failing" | "newly_passing" | "flaky" | "stable";
+            /** Rate Baseline */
+            rate_baseline: number;
+            /** Rate Run */
+            rate_run: number;
+            /** N Baseline */
+            n_baseline: number;
+            /** N Run */
+            n_run: number;
+            /** P Value */
+            p_value?: number | null;
+            /**
+             * Single Trial
+             * @default false
+             */
+            single_trial: boolean;
+            /** Episode Baseline */
+            episode_baseline?: string | null;
+            /** Episode Run */
+            episode_run?: string | null;
+        };
+        /** GoldenIn */
+        GoldenIn: {
+            /** Episode Ids */
+            episode_ids: string[];
+        };
+        /** GoldenOut */
+        GoldenOut: {
+            /** Accepted */
+            accepted: string[];
+            /** Needs Adjudication */
+            needs_adjudication: string[];
+            /** Missing */
+            missing: string[];
+        };
+        /** GoldenSummary */
+        GoldenSummary: {
+            /** Rubric Id */
+            rubric_id: string;
+            /** Items */
+            items: number;
+            /** By Class */
+            by_class: {
+                [key: string]: number;
+            };
+            /** Labelers */
+            labelers: number;
+            /** Labeler Kappa */
+            labeler_kappa: components["schemas"]["LabelerKappa"][];
+            /** Needs Adjudication */
+            needs_adjudication: string[];
+            /** Ready */
+            ready: boolean;
+            /** Readiness */
+            readiness: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -2087,17 +2874,6 @@ export interface components {
              */
             wired: boolean;
         };
-        /** ImportOut */
-        ImportOut: {
-            /** Imported */
-            imported: number;
-            /** By Source */
-            by_source: {
-                [key: string]: number;
-            };
-            /** Issues */
-            issues: number;
-        };
         /** InjectionSpec */
         InjectionSpec: {
             /** Attack */
@@ -2115,6 +2891,44 @@ export interface components {
             min?: number | null;
             /** Max */
             max?: number | null;
+        };
+        /** ItemOut */
+        ItemOut: {
+            /** Episode Id */
+            episode_id: string;
+            rubric: components["schemas"]["Rubric"];
+            /** Scenario Id */
+            scenario_id: string;
+            /** Scenario Title */
+            scenario_title: string;
+            /** Goal */
+            goal: string;
+            /** Transcript */
+            transcript: string;
+            /** My Label */
+            my_label: string | null;
+            judge?: components["schemas"]["Verdict"] | null;
+        };
+        /** JobOut */
+        JobOut: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Status */
+            status: string;
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+            /** Error */
+            error: string | null;
+            /** Attempts */
+            attempts: number;
+            /** Created At */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
         };
         /** Judge */
         Judge: {
@@ -2175,6 +2989,83 @@ export interface components {
             /** Instructions */
             instructions: string;
         };
+        /** LabelIn */
+        LabelIn: {
+            /** Episode Id */
+            episode_id: string;
+            /** Rubric Id */
+            rubric_id: string;
+            /**
+             * Result
+             * @enum {string}
+             */
+            result: "pass" | "fail" | "na";
+            /** Note */
+            note?: string | null;
+        };
+        /** LabelOut */
+        LabelOut: {
+            /** Id */
+            id: string;
+            /** Episode Id */
+            episode_id: string;
+            /** Rubric Id */
+            rubric_id: string;
+            /** Rubric Version */
+            rubric_version: number | null;
+            /** Result */
+            result: string;
+            /** Labeler */
+            labeler: string;
+            /** Note */
+            note: string | null;
+            /** Is Golden */
+            is_golden: boolean;
+            /** Outcome Before */
+            outcome_before: string | null;
+            /** Outcome After */
+            outcome_after: string | null;
+        };
+        /** LabelerKappa */
+        LabelerKappa: {
+            /** Labelers */
+            labelers: [
+                string,
+                string
+            ];
+            /** Shared */
+            shared: number;
+            /** Kappa */
+            kappa: number;
+        };
+        /** LatencyDelta */
+        LatencyDelta: {
+            /** P50 Baseline Ms */
+            p50_baseline_ms: number | null;
+            /** P50 Run Ms */
+            p50_run_ms: number | null;
+            /** P95 Baseline Ms */
+            p95_baseline_ms: number | null;
+            /** P95 Run Ms */
+            p95_run_ms: number | null;
+        };
+        /** LatestRun */
+        LatestRun: {
+            /** Id */
+            id: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Pass Rate */
+            pass_rate: number | null;
+            /** Ci Low */
+            ci_low: number | null;
+            /** Ci High */
+            ci_high: number | null;
+            /** Pass Hat K */
+            pass_hat_k: components["schemas"]["ReliabilityPoint"][];
+            /** Counted */
+            counted: number;
+        };
         /**
          * Matcher
          * @description A value test. Every key that is set must hold. `ref` resolves a comparison value.
@@ -2208,6 +3099,25 @@ export interface components {
              * @enum {string}
              */
             ref_op: "eq" | "ne" | "gt" | "gte" | "lt" | "lte";
+        };
+        /** MigrationReport */
+        MigrationReport: {
+            compare: components["schemas"]["CompareReport"];
+            baseline: components["schemas"]["VersionSummary"];
+            candidate: components["schemas"]["VersionSummary"];
+            /**
+             * Recommendation
+             * @enum {string}
+             */
+            recommendation: "safe_to_migrate" | "review" | "do_not_migrate";
+            /** Reasons */
+            reasons: string[];
+            /** Cost Change Pct */
+            cost_change_pct: number | null;
+            /** Latency P95 Change Pct */
+            latency_p95_change_pct: number | null;
+            /** Cautions */
+            cautions: string[];
         };
         /** ModelCatalogOut */
         ModelCatalogOut: {
@@ -2243,6 +3153,17 @@ export interface components {
             severity: "low" | "medium" | "high" | "critical";
             /** Check */
             check: components["schemas"]["All"] | components["schemas"]["Any_"] | components["schemas"]["Not"] | components["schemas"]["ToolCalled"] | components["schemas"]["Sequence"] | components["schemas"]["State"] | components["schemas"]["StateDiffCheck"] | components["schemas"]["Output"] | components["schemas"]["CanaryLeaked"] | components["schemas"]["Egress"] | components["schemas"]["TaintedCall"] | components["schemas"]["Detector"] | components["schemas"]["Judge"];
+        };
+        /** NewFinding */
+        NewFinding: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Severity */
+            severity: string;
+            /** Category */
+            category: string;
         };
         /** Not */
         Not: {
@@ -2321,6 +3242,44 @@ export interface components {
              * @enum {string}
              */
             scope: "any" | "last" | "all";
+        };
+        /** ParetoOut */
+        ParetoOut: {
+            /** Suite Id */
+            suite_id: string;
+            /** Metrics */
+            metrics: string[];
+            /** Points */
+            points: components["schemas"]["ParetoResult"][];
+            /** Cautions */
+            cautions: string[];
+        };
+        /** ParetoResult */
+        ParetoResult: {
+            /** Run Id */
+            run_id: string;
+            /** Agent Version Id */
+            agent_version_id: string;
+            /** Label */
+            label: string;
+            /** Model */
+            model?: string | null;
+            /** Pass Rate */
+            pass_rate: number | null;
+            /** Ci Low */
+            ci_low: number | null;
+            /** Ci High */
+            ci_high: number | null;
+            /** Cost Per Episode Usd Micros */
+            cost_per_episode_usd_micros: number;
+            /** Latency P95 Ms */
+            latency_p95_ms: number | null;
+            /** On Frontier */
+            on_frontier: boolean;
+            /** Dominated By */
+            dominated_by: string[];
+            /** Dominance Supported */
+            dominance_supported: boolean;
         };
         /** PersonaDoc */
         PersonaDoc: {
@@ -2478,6 +3437,52 @@ export interface components {
             /** Entrypoint */
             entrypoint: string;
         };
+        /** QuarantineIn */
+        QuarantineIn: {
+            /** On */
+            on: boolean;
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+        };
+        /** QuarantineOut */
+        QuarantineOut: {
+            /** Scenario Id */
+            scenario_id: string;
+            /** Quarantined */
+            quarantined: boolean;
+            /** Reason */
+            reason: string | null;
+            /** Quarantined At */
+            quarantined_at: string | null;
+        };
+        /** QueueItem */
+        QueueItem: {
+            /** Episode Id */
+            episode_id: string;
+            /** Rubric Id */
+            rubric_id: string;
+            /** Rubric Version */
+            rubric_version: number | null;
+            /** Scenario Id */
+            scenario_id: string;
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "disagreement" | "uncertain" | "random";
+        };
+        /** QueueOut */
+        QueueOut: {
+            /** Rubric Id */
+            rubric_id: string;
+            /** Labeler */
+            labeler: string;
+            /** Items */
+            items: components["schemas"]["QueueItem"][];
+        };
         /** Recommendation */
         Recommendation: {
             /** Priority */
@@ -2513,12 +3518,79 @@ export interface components {
              */
             seqs: number[];
         };
+        /** RejudgeIn */
+        RejudgeIn: {
+            /** Rubrics */
+            rubrics?: string[] | null;
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+        };
+        /** RejudgeOut */
+        RejudgeOut: {
+            /** Episode Id */
+            episode_id: string;
+            /** Rubrics */
+            rubrics: string[];
+            /** Outcome Before */
+            outcome_before: string | null;
+            /** Outcome After */
+            outcome_after: string | null;
+            /** Verdicts */
+            verdicts: components["schemas"]["Verdict"][];
+            /** Cost Usd Micros */
+            cost_usd_micros: number;
+        };
+        /** ReliabilityPoint */
+        ReliabilityPoint: {
+            /** K */
+            k: number;
+            /** Value */
+            value: number;
+            /** Ci Low */
+            ci_low: number;
+            /** Ci High */
+            ci_high: number;
+            /** Scenarios */
+            scenarios: number;
+        };
         /** ReplayBody */
         ReplayBody: {
             /** Budget Usd Micros */
             budget_usd_micros?: number | null;
             /** Agent Version Id */
             agent_version_id?: string | null;
+        };
+        /** ReplayIn */
+        ReplayIn: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "strict" | "agent_live";
+            /** Agent Version Id */
+            agent_version_id?: string | null;
+            /** Budget Usd Micros */
+            budget_usd_micros?: number | null;
+        };
+        /** ReplayOut */
+        ReplayOut: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "strict" | "agent_live";
+            /** Identical */
+            identical?: boolean | null;
+            /** Events */
+            events?: number | null;
+            divergence?: components["schemas"]["Divergence"] | null;
+            /** Run Id */
+            run_id?: string | null;
+            /** Episode Id */
+            episode_id?: string | null;
         };
         /** RoleChoice */
         RoleChoice: {
@@ -2530,6 +3602,58 @@ export interface components {
              * @enum {string}
              */
             reasoning: "off" | "low" | "medium" | "high" | "default";
+        };
+        /** Rubric */
+        Rubric: {
+            /** Id */
+            id: string;
+            /**
+             * Version
+             * @default 1
+             */
+            version: number;
+            /** Title */
+            title: string;
+            /** Question */
+            question: string;
+            /** Pass Definition */
+            pass_definition: string;
+            /** Fail Definition */
+            fail_definition: string;
+            /** Na Definition */
+            na_definition?: string | null;
+            /**
+             * Severity
+             * @default medium
+             * @enum {string}
+             */
+            severity: "low" | "medium" | "high" | "critical";
+            /**
+             * Hard Fail
+             * @default false
+             */
+            hard_fail: boolean;
+            /**
+             * Scope
+             * @default conversation
+             * @enum {string}
+             */
+            scope: "conversation" | "step";
+            /**
+             * Examples
+             * @default []
+             */
+            examples: components["schemas"]["RubricExample"][];
+            /**
+             * Threshold
+             * @default 0.8
+             */
+            threshold: number;
+            /**
+             * Gating Allowed
+             * @default false
+             */
+            gating_allowed: boolean;
         };
         /** RubricDoc */
         RubricDoc: {
@@ -2638,6 +3762,13 @@ export interface components {
              * @default false
              */
             include_drafts: boolean;
+            /** Baseline Run Id */
+            baseline_run_id?: string | null;
+            /**
+             * Adaptive
+             * @default false
+             */
+            adaptive: boolean;
         };
         /** RunList */
         RunList: {
@@ -2715,6 +3846,11 @@ export interface components {
             purpose: string;
             /** Finding Id */
             finding_id?: string | null;
+            /**
+             * Adaptive
+             * @default false
+             */
+            adaptive: boolean;
             counts: components["schemas"]["RunCounts"];
             /** Created At */
             created_at: string;
@@ -2759,6 +3895,34 @@ export interface components {
             /** Failures */
             failures: components["schemas"]["FailureRef"][];
             caution: components["schemas"]["Caution"];
+            /**
+             * Reliability
+             * @default []
+             */
+            reliability: components["schemas"]["ReliabilityPoint"][];
+            /**
+             * Quarantined
+             * @default []
+             */
+            quarantined: string[];
+            /**
+             * Human Overridden
+             * @default 0
+             */
+            human_overridden: number;
+        };
+        /** RunStability */
+        RunStability: {
+            /** Run Id */
+            run_id: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Counted */
+            counted: number;
+            /** Rate */
+            rate: number | null;
+            /** Flaky */
+            flaky: boolean;
         };
         /** Scenario */
         Scenario: {
@@ -2873,6 +4037,41 @@ export interface components {
             };
             /** Episode Ids */
             episode_ids: string[];
+            /**
+             * Flaky
+             * @default false
+             */
+            flaky: boolean;
+            /** Flakiness */
+            flakiness?: number | null;
+            /**
+             * Quarantined
+             * @default false
+             */
+            quarantined: boolean;
+            /** Posterior Mean */
+            posterior_mean?: number | null;
+        };
+        /** Scorecard */
+        Scorecard: {
+            latest_run: components["schemas"]["LatestRun"] | null;
+            /** Dimensions */
+            dimensions: components["schemas"]["Dimension"][];
+            security: components["schemas"]["SecuritySummary"] | null;
+            /** Cost Per 1000 Episodes Usd */
+            cost_per_1000_episodes_usd: number | null;
+            /** Latency P95 Ms */
+            latency_p95_ms: number | null;
+            /** Quarantined Scenarios */
+            quarantined_scenarios: number;
+            /** Trend */
+            trend: components["schemas"]["TrendPoint"][];
+            badge: components["schemas"]["BadgeLink"] | null;
+            /** Generated At */
+            generated_at: string;
+            /** Caveats */
+            caveats: string[];
+            agent_version: components["schemas"]["AgentVersionOut"];
         };
         /** SecretIn */
         SecretIn: {
@@ -2899,6 +4098,17 @@ export interface components {
         SecretPut: {
             /** Name */
             name: string;
+        };
+        /** SecuritySummary */
+        SecuritySummary: {
+            /** Grade */
+            grade: string;
+            /** Open Findings By Severity */
+            open_findings_by_severity: {
+                [key: string]: number;
+            };
+            /** Coverage Pct */
+            coverage_pct: number;
         };
         /** SeedOut */
         SeedOut: {
@@ -2940,6 +4150,20 @@ export interface components {
             attack_id: string;
             /** Reason */
             reason: string;
+        };
+        /** StabilityOut */
+        StabilityOut: {
+            /** Scenario Id */
+            scenario_id: string;
+            /** Agent Version Id */
+            agent_version_id: string | null;
+            /** Quarantined */
+            quarantined: boolean;
+            /** Quarantine Reason */
+            quarantine_reason: string | null;
+            /** Runs */
+            runs: components["schemas"]["RunStability"][];
+            suggestion: components["schemas"]["Suggestion"] | null;
         };
         /** State */
         State: {
@@ -2989,6 +4213,28 @@ export interface components {
              */
             only: boolean;
         };
+        /** StateDiffCompare */
+        StateDiffCompare: {
+            /** Only A */
+            only_a: components["schemas"]["StateKey"][];
+            /** Only B */
+            only_b: components["schemas"]["StateKey"][];
+            /** Differing */
+            differing: components["schemas"]["StateKey"][];
+        };
+        /** StateKey */
+        StateKey: {
+            /** Collection */
+            collection: string;
+            /** Id */
+            id: string;
+            /** Path */
+            path: string;
+            /** Value A */
+            value_a?: unknown;
+            /** Value B */
+            value_b?: unknown;
+        };
         /** StaticHandler */
         StaticHandler: {
             /**
@@ -3007,6 +4253,16 @@ export interface components {
             status: string;
             /** Note */
             note?: string | null;
+        };
+        /** Suggestion */
+        Suggestion: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "flaky" | "simulator_errors";
+            /** Reason */
+            reason: string;
         };
         /** Suite */
         Suite: {
@@ -3166,6 +4422,28 @@ export interface components {
              */
             honeytool: boolean;
         };
+        /** TrajectoryDiff */
+        TrajectoryDiff: {
+            /** Rows */
+            rows: components["schemas"]["DiffRow"][];
+            /** First Divergence */
+            first_divergence: [
+                number | null,
+                number | null
+            ] | null;
+            state_diff: components["schemas"]["StateDiffCompare"];
+            /** Truncated */
+            truncated: boolean;
+        };
+        /** TrendPoint */
+        TrendPoint: {
+            /** Run Id */
+            run_id: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Pass Rate */
+            pass_rate: number | null;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -3227,6 +4505,8 @@ export interface components {
             /** Model */
             model?: string | null;
             cost?: components["schemas"]["Cost"] | null;
+            /** Small Result */
+            small_result?: ("pass" | "fail" | "na" | "error") | null;
         };
         /** VerificationCreate */
         VerificationCreate: {
@@ -3277,6 +4557,41 @@ export interface components {
             profile: components["schemas"]["AgentProfile"];
             /** World Id */
             world_id?: string | null;
+        };
+        /** VersionSummary */
+        VersionSummary: {
+            /** Agent Version Id */
+            agent_version_id: string;
+            /** Label */
+            label: string;
+            /** Model */
+            model: string | null;
+            /** Pass Rate */
+            pass_rate: number | null;
+            /** Ci Low */
+            ci_low: number | null;
+            /** Ci High */
+            ci_high: number | null;
+            /** Pass Hat 3 */
+            pass_hat_3: number | null;
+            /** Open Findings By Severity */
+            open_findings_by_severity: {
+                [key: string]: number;
+            };
+            /** Attack Success Rate */
+            attack_success_rate: number | null;
+            /** Cost Per Episode Usd Micros */
+            cost_per_episode_usd_micros: number;
+            /** Cost Per 1000 Episodes Usd */
+            cost_per_1000_episodes_usd: number;
+            /** Latency P50 Ms */
+            latency_p50_ms: number | null;
+            /** Latency P95 Ms */
+            latency_p95_ms: number | null;
+            /** Tokens Per Episode */
+            tokens_per_episode: number | null;
+            /** Episodes */
+            episodes: number;
         };
         /** WhoAmI */
         WhoAmI: {
@@ -3379,6 +4694,32 @@ export interface components {
              * @default []
              */
             documents: components["schemas"]["DocumentSpec"][];
+        };
+        /** ImportOut */
+        gauntlet_server__routes__attacks__ImportOut: {
+            /** Imported */
+            imported: number;
+            /** By Source */
+            by_source: {
+                [key: string]: number;
+            };
+            /** Issues */
+            issues: number;
+        };
+        /** ImportOut */
+        gauntlet_server__services__cassettes__ImportOut: {
+            /** Run Id */
+            run_id: string;
+            /** Episode Id */
+            episode_id: string;
+            /** Scenario Id */
+            scenario_id: string;
+            /** Scenario Version */
+            scenario_version: number;
+            /** Agent Version Id */
+            agent_version_id: string;
+            /** Events */
+            events: number;
         };
         ErrorEnvelope: {
             error: {
@@ -4548,6 +5889,8 @@ export interface operations {
                 agent_version_id?: string | null;
                 suite_id?: string | null;
                 status?: string | null;
+                purpose?: string | null;
+                include_imports?: boolean;
             };
             header?: never;
             path?: never;
@@ -4798,70 +6141,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    compare_v1_runs__run_id__compare_get: {
-        parameters: {
-            query: {
-                baseline: string;
-            };
-            header?: never;
-            path: {
-                run_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-            /** @description Successful Response */
-            501: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-        };
-    };
-    rejudge_v1_episodes__episode_id__rejudge_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                episode_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-            /** @description Successful Response */
-            501: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
                 };
             };
         };
@@ -5736,7 +7015,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ImportOut"];
+                    "application/json": components["schemas"]["gauntlet_server__routes__attacks__ImportOut"];
                 };
             };
         };
@@ -5879,6 +7158,910 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CoverageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_baseline_v1_runs__run_id__baseline_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BaselineIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_baseline_v1_runs__run_id__baseline_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_compare_v1_runs__run_id__compare_get: {
+        parameters: {
+            query?: {
+                baseline?: string | null;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompareReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_episode_diff_v1_episodes__episode_id__diff_get: {
+        parameters: {
+            query: {
+                against: string;
+            };
+            header?: never;
+            path: {
+                episode_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrajectoryDiff"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_findings_delta_v1_runs__run_id__findings_delta_get: {
+        parameters: {
+            query?: {
+                baseline?: string | null;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingsDeltaOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_quarantine_v1_scenarios__scenario_id__quarantine_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuarantineIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuarantineOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_stability_v1_scenarios__scenario_id__stability_get: {
+        parameters: {
+            query?: {
+                agent_version_id?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StabilityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_cassette_v1_episodes__episode_id__cassette_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                episode_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_archive_v1_episodes__episode_id__cassette_archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                episode_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArchiveOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_cassette_v1_cassettes_post: {
+        parameters: {
+            query?: {
+                agent_version_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/x-ndjson": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["gauntlet_server__services__cassettes__ImportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_replay_v1_episodes__episode_id__replay_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                episode_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplayIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplayOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_rejudge_v1_episodes__episode_id__rejudge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                episode_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["RejudgeIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejudgeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_job_v1_jobs__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_queue_v1_review_queue_get: {
+        parameters: {
+            query: {
+                rubric: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_label_v1_review_labels_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LabelIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_review_item_v1_review_items__episode_id___rubric_id__get: {
+        parameters: {
+            query?: {
+                reveal?: boolean;
+            };
+            header?: never;
+            path: {
+                episode_id: string;
+                rubric_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_golden_v1_rubrics__rubric_id__golden_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rubric_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoldenSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_golden_v1_rubrics__rubric_id__golden_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rubric_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoldenIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoldenOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_calibrate_v1_rubrics__rubric_id__calibrate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rubric_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CalibrateIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalibrateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_calibrations_v1_rubrics__rubric_id__calibrations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rubric_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalibrationList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_calibration_v1_calibrations__calibration_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                calibration_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalibrationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_check_drift_v1_calibrations_check_drift_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DriftOut"];
+                };
+            };
+        };
+    };
+    post_cluster_v1_runs__run_id__cluster_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClusterStarted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_clusters_v1_runs__run_id__clusters_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClustersOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_badge_v1_agents__agent_id__badge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                agent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BadgeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_migration_v1_runs__run_id__migration_get: {
+        parameters: {
+            query: {
+                baseline: string;
+                force?: boolean;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MigrationReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_pareto_v1_migrations_pareto_get: {
+        parameters: {
+            query: {
+                run_ids: string;
+                metrics?: string;
+                force?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParetoOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_scorecard_v1_agents__agent_id__versions__version_id__scorecard_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                agent_id: string;
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Scorecard"];
                 };
             };
             /** @description Validation Error */

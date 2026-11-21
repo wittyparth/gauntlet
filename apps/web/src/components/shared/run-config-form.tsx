@@ -57,6 +57,7 @@ export function RunConfigForm({
             repetitions: parsed.data.repetitions,
             budget_usd_micros: budgetMicros(parsed.data.budget_dollars),
             include_drafts: false,
+            adaptive: false,
           }
         : null,
     [parsed, agentVersionId],

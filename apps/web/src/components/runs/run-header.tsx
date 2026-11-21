@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 
 import { Radio } from "@/components/animate-ui/icons/radio";
+import { BaselinePicker } from "@/components/compare/baseline-picker";
 import { RunStatusBadge } from "@/components/shared/badges";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +42,12 @@ export function RunHeader({ run }: { run: Run }) {
             ) : null}
           </div>
         }
-        actions={<RunControls runId={run.id} status={run.status} />}
+        actions={
+          <>
+            {run.status === "done" ? <BaselinePicker runId={run.id} suiteId={run.suite_id} /> : null}
+            <RunControls runId={run.id} status={run.status} />
+          </>
+        }
       />
       {run.manifest?.model_roles ? (
         <p className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 px-4 pt-2 text-xs" data-testid="run-models">

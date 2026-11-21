@@ -5,6 +5,9 @@ import Link from "next/link";
 import { ChevronLeft } from "@/components/animate-ui/icons/chevron-left";
 import { ChevronRight } from "@/components/animate-ui/icons/chevron-right";
 import { EpisodeStatusBadge, OutcomeBadge } from "@/components/shared/badges";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { useToast } from "@/components/shared/use-toast";
+import { useRejudgeEpisode } from "@/lib/api/hooks/rubrics";
 import { CopyId } from "@/components/shared/copy-id";
 import { Money } from "@/components/shared/live-number";
 import { PageHeader } from "@/components/shared/page-header";
@@ -29,6 +32,8 @@ export function EpisodeHeader({
   const turns = episode.events.filter((e) => e.kind === "user_message").length;
   const ms = episode.events.reduce((n, e) => n + e.wall_ms, 0);
   const goal = episode.scenario.goal;
+  const toast = useToast();
+  const rejudge = useRejudgeEpisode(episode.id);
   return (
     <>
       <PageHeader
@@ -50,6 +55,17 @@ export function EpisodeHeader({
         }
         actions={
           <>
+            {episode.status === "done" ? (
+              <ConfirmDialog
+                trigger={<Button variant="outline" size="sm">Re-judge</Button>}
+                title="Re-judge this episode?"
+                description="The judges run again on the recorded trajectory. This costs model calls and can change the outcome; human labels are kept."
+                confirmLabel="Re-judge"
+                onConfirm={() =>
+                  void toast.promise(rejudge.mutateAsync(), { loading: "Re-judging", success: "Episode re-judged", error: "Could not re-judge" }).catch(() => undefined)
+                }
+              />
+            ) : null}
             <Button variant="outline" size="sm" disabled={!prevId} render={prevId ? <Link href={`/episodes/${prevId}`} /> : undefined} aria-label="Previous episode">
               <ChevronLeft size={14} /> Prev
             </Button>

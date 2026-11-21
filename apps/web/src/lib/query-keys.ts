@@ -31,3 +31,17 @@ export const qkSec = {
   audit: (filters: object = {}) => ["security", "audit", filters] as const,
   auditVerify: ["security", "audit-verify"] as const,
 };
+
+export const qkQ = {
+  compare: (runId: string, baseline: string) => ["compare", runId, baseline] as const,
+  diff: (episodeId: string, against: string) => ["compare", "diff", episodeId, against] as const,
+  clusters: (runId: string) => ["runs", runId, "clusters"] as const,
+  reviewQueue: (rubric: string) => ["review", "queue", rubric] as const,
+  reviewItem: (episodeId: string, rubric: string, reveal: boolean) => ["review", "item", episodeId, rubric, reveal] as const,
+  rubrics: ["rubrics"] as const,
+  rubric: (id: string) => ["rubrics", id] as const,
+  calibrations: (id: string) => ["rubrics", id, "calibrations"] as const,
+  migration: (runId: string, baseline: string, force: boolean) => ["migration", runId, baseline, force] as const,
+  pareto: (runIds: string[]) => ["migration", "pareto", runIds] as const,
+  scorecard: (agentId: string, versionId: string) => ["scorecard", agentId, versionId] as const,
+};

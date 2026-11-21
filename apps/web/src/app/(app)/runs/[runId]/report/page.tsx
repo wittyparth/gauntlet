@@ -4,6 +4,8 @@ import Link from "next/link";
 import { use, useEffect } from "react";
 
 import { useRunLive } from "@/components/runs/run-live-context";
+import { ClusterList } from "@/components/runs/cluster-list";
+import { ReliabilityChart } from "@/components/runs/reliability-chart";
 import { ReportFailures } from "@/components/runs/report-failures";
 import { ReportScenarioTable } from "@/components/runs/report-scenario-table";
 import { ReportSummary } from "@/components/runs/report-summary";
@@ -75,7 +77,11 @@ export default function RunReportPage({ params }: { params: Promise<{ runId: str
               <DataTable columns={dimColumns} data={report.data.dimensions} getRowId={(d) => d.criterion} rowTestId="dimension-row" />
             </div>
           ) : null}
+          {report.data.reliability.length > 0 ? (
+            <ReliabilityChart series={[{ key: "run", name: "This run", points: report.data.reliability, color: "var(--primary)" }]} />
+          ) : null}
           <ReportScenarioTable report={report.data} runId={runId} failing={failing} />
+          <ClusterList runId={runId} />
           <ReportFailures report={report.data} episodes={eps.data?.items ?? []} titles={titles} />
         </>
       ) : null}
