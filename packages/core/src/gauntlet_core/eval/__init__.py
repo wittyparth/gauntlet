@@ -1,6 +1,7 @@
 """Evaluation outputs: rubric library, scoring and run reports (judges live in `judges/`)."""
 
 from .compare import CompareReport, RunData, compare_runs, comparison_seed
+from .pareto import METRICS, ParetoPoint, ParetoResult, pareto_frontier
 from .report import (
     Caution,
     DimensionStats,
@@ -15,6 +16,7 @@ from .scoring import SEVERITY_WEIGHT, composite_score, dimension_score
 from .trajectory_diff import TrajectoryDiff, diff_trajectories
 
 __all__ = [
+    "METRICS",
     "RULE_STAGE",
     "SEVERITY_WEIGHT",
     "Caution",
@@ -22,6 +24,8 @@ __all__ = [
     "DimensionStats",
     "EpisodeRecord",
     "FailureRef",
+    "ParetoPoint",
+    "ParetoResult",
     "RunData",
     "RunReport",
     "ScenarioStats",
@@ -33,5 +37,6 @@ __all__ = [
     "diff_trajectories",
     "dimension_score",
     "load_rubrics",
+    "pareto_frontier",
     "rule_context",
 ]
