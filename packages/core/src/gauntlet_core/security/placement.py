@@ -248,7 +248,7 @@ def place(
     informational = is_informational(objective)
     if informational:
         tags["informational"] = "true"  # echo objective: recorded, never a finding
-    objective = harden_objective(objective, world)
+    objective = harden_objective(objective, world, marker)
     named = NamedCheck.model_validate(
         {
             "id": "informational" if informational else "objective",
