@@ -51,6 +51,15 @@ A cassette is the journal exported as JSON Lines (`manifest`, then events, then 
 - `agent_live`: simulator and world effects are replayed for as long as the agent's replies match the recording; at the first divergence the episode goes live. Used for "replay this failing conversation against the new agent version".
 - `rejudge`: no loop at all; build the `Trajectory` from stored events and run evaluators. Verdict rows are replaced for that evaluator set.
 
+### 1.6a `agent_live` replay (added 2026-11-21)
+Purpose: replay a recorded conversation against a new agent version and go live at the first divergence.
+1. Copy the source journal's events and effects into a new episode (new id, epoch 0) and open its ctx with `mode="agent_live"`.
+2. In this mode `target` effects (and every effect nested inside them, per 1.7a) always execute live; their recorded counterparts are discarded from the copy before the run starts.
+3. Every other effect (`llm` for the simulator, `tool`, `rng`) replays while in sync. A request-hash mismatch on such an effect is **divergence**, not `NonDeterminism`: from that effect on, the ctx is fully live for the rest of the episode, the remaining copied records after that point are discarded, and an event `{kind: "sim_note", payload: {kind: "diverged", note: "<effect key>"}}` is emitted once.
+4. Events are verified positionally only up to divergence.
+5. Strict mode is unchanged.
+Tests: identical agent → zero live simulator calls and identical transcript; agent changes its reply at turn k → simulator replays turns < k, goes live after, `diverged` note at the right place; crash and resume of an `agent_live` episode converges.
+
 ### 1.7 The episode loop
 ```
 open target → emit episode_started

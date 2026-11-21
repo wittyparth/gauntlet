@@ -492,3 +492,19 @@ Cheap reasoning models return empty content when hidden reasoning eats the outpu
 | Worker findings | Filed unshrunk (1/1); replay/shrink sets reproducibility. Accepted for Phase 2. |
 | DVA in compose | Follow-up: install `apps/dva` into the api/worker images so the SQL and email worlds run in compose. |
 | Recall | Scripted-brain recall (1.00) proves the pipeline only; real recall is measured live at L-R2 with user-approved spend. |
+
+### Phase 3 rulings (2026-11-21)
+
+| Question | Ruling |
+|---|---|
+| CQ-R1 | Import only `gauntlet_core.stats.__all__` (`compare_runs`, `flip_table`/`classify_flip`, `pass_hat_k`/`suite_pass_hat_k`/`reliability_curve`, `sequential_decision`, `cohens_kappa`/`judge_agreement`, `wilson_estimate`, `suite_pass_rate`). Add names there if missing; never reimplement. |
+| CQ-R2 | Calibration state lives in a `calibrations` table. `Rubric.threshold` / `gating_allowed` in the document are defaults; `effective_rubric(rubric, latest_calibration)` returns a copy with calibrated values. Use `gauntlet_core.judges.calibrate`. |
+| CQ-R3 | Accepted: generic `jobs` table + Postgres job queue in P3-5; P3-6 depends on P3-5. |
+| CQ-R4 | Accepted (additive columns and tables as listed). |
+| CQ-R5 | `agent_live` replay is L2 core work, designed in `03-hard-cores.md` 1.6a, done first in the Phase 3 core batch and reviewed by the lead. |
+| CQ-R6 | Accepted: human labels are `verdicts` rows with `stage="human"` that override judge verdicts; `episodes.outcome` is recomputed; the journal is never modified; reports count human-overridden episodes. |
+| CQ-R7 | `EMBED_DIM=1536`; offline `HashEmbedder` is the default embedder (no spend); a catalog embedding model is opt-in. |
+| CQ-R8 | Accepted: `gauntlet run --remote` belongs to P3-4. |
+| CQ-R9 | Accepted: `/badge/{token}.svg`, unauthenticated, exposes only a pass-rate string or grade letter; tokens revocable. |
+| CQ-R10 | Accepted as proposed. |
+| CQ-R11 | Imported episodes live in runs with `purpose=import`, hidden from the default run list behind a filter, included in reports only when explicitly selected. |
