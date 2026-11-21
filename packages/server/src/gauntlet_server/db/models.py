@@ -139,6 +139,9 @@ class Scenario(_Versioned, Base):
     doc: Mapped[dict[str, Any]] = mapped_column(JSONB)
     status: Mapped[str] = mapped_column(server_default="draft")
     source: Mapped[str] = mapped_column(server_default="pack")
+    quarantined: Mapped[bool] = mapped_column(server_default="false")
+    quarantine_reason: Mapped[str | None] = mapped_column(Text)
+    quarantined_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = created_at_col()
 
 
@@ -190,6 +193,7 @@ class Run(Base):
     purpose: Mapped[str] = mapped_column(server_default="eval")
     finding_id: Mapped[str | None]
     attack: Mapped[bool] = mapped_column(server_default="false")  # placed attack scenarios inside
+    adaptive: Mapped[bool] = mapped_column(server_default="false")  # sequential stopping (P3-2)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = created_at_col()
 

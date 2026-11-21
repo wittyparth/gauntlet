@@ -36,6 +36,7 @@ from .facade import RemoteFacade
 from .jobs import load_episode_job
 from .limits import HostLimiter, LimitedTransport
 from .models_gateway import gateway_for_roles
+from .services.adaptive import adaptive_after_episode
 from .services.finding_hooks import after_episode
 from .services.killswitch import KILL_PREFIX, cancel_attack_runs, engaged_keys, killswitch_engaged
 from .services.ownership import covering_verification, is_remote, target_host
@@ -345,6 +346,7 @@ class Worker:
                     ),
                     {"r": lease.run_id},
                 )
+            await adaptive_after_episode(s, lease.episode_id)  # may add one more repetition
             await maybe_complete_run(s, lease.run_id)
         await self._publish_episode(lease)
         await self._publish_run(lease.run_id)
@@ -370,6 +372,7 @@ class Worker:
         await ctx.flush()
         await self.queue.finish(lease, "platform_error", "error")
         async with self.state.sm() as s, s.begin():
+            await adaptive_after_episode(s, lease.episode_id)
             await maybe_complete_run(s, lease.run_id)
         await self._publish_episode(lease)
         await self._publish_run(lease.run_id)

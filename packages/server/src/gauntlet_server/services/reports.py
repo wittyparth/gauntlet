@@ -15,6 +15,7 @@ from ..db.models import Event as EventRow
 from ..db.models import Scenario as ScenarioRow
 from ..errors import not_found
 from ..jobs import load_episode_inputs
+from .stability import quarantined_ids
 
 __all__ = ["episode_detail", "episode_row_json", "run_report", "run_report_and_records"]
 
@@ -120,6 +121,9 @@ async def run_report_and_records(
         target_kind=cfg.kind,
         wired=bool(getattr(cfg, "wired", False)),
         rubrics=load_rubrics(),
+        quarantined=await quarantined_ids(s, run.workspace_id),
+        adaptive=run.adaptive,
+        repetitions=run.repetitions,
     )
     return report, records
 

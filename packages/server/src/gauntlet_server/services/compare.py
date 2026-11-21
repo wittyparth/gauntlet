@@ -17,6 +17,7 @@ from ..db.models import Episode, Run
 from ..errors import ApiError, not_found
 from ..jobs import load_episode_inputs
 from .reports import _events, run_report_and_records
+from .stability import quarantined_ids
 
 __all__ = ["check_baseline", "compare_for_run", "episode_diff", "set_baseline"]
 
@@ -61,6 +62,7 @@ async def run_data(s: AsyncSession, run: Run) -> RunData:
         report=report,
         agent_label=manifest.agent_version.label,
         model=getattr(cfg, "model", None),
+        quarantined=frozenset(await quarantined_ids(s, run.workspace_id)),
         rubric_versions=dict(manifest.rubric_versions),
         repetitions=manifest.repetitions,
         judge_model=manifest.model_roles.get("judge_small"),

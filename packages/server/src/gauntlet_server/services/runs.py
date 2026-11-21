@@ -9,6 +9,7 @@ from typing import Any
 
 from gauntlet_core.estimate import estimate_run_cost
 from gauntlet_core.eval import load_rubrics
+from gauntlet_core.eval.stability import initial_repetitions
 from gauntlet_core.ids import new_id
 from gauntlet_core.runner import derive_episode_seed
 from gauntlet_core.schema import AgentVersion, RunManifest, Scenario, WorldSpec
@@ -53,6 +54,7 @@ class RunCreate(BaseModel):
     seed: int | None = None
     include_drafts: bool = False
     baseline_run_id: str | None = None
+    adaptive: bool = False
 
 
 def platform_version() -> str:
@@ -106,6 +108,7 @@ async def run_json(
         "baseline_of": run.baseline_of,
         "purpose": run.purpose,
         "finding_id": run.finding_id,
+        "adaptive": run.adaptive,
         "counts": await run_counts(session, run.id),
         "created_at": _iso(run.created_at),
         "finished_at": _iso(run.finished_at),
@@ -223,6 +226,12 @@ async def create_run(
         agent_model=getattr(version_model.target, "model", None),
     )
     estimate = {"low": est.low, "expected": est.expected, "high": est.high}
+    first = initial_repetitions(reps) if body.adaptive else reps  # adaptive: three to start
+    if body.adaptive:
+        low = estimate_run_cost(
+            scenarios, first, run_cfg, agent_model=getattr(version_model.target, "model", None)
+        ).low
+        estimate = {"low": low, "expected": round(0.6 * est.expected), "high": est.high}
     warnings = list(est.warnings)
     if budget < est.low:
         warnings.append("budget is below the low cost estimate; the run may stop early")
@@ -231,7 +240,7 @@ async def create_run(
             "valid": not errors,
             "errors": errors,
             "warnings": warnings,
-            "episode_count": len(scenarios) * reps,
+            "episode_count": len(scenarios) * first,
             "estimate_usd_micros": estimate,
         }, 200
     if errors:
@@ -280,6 +289,7 @@ async def create_run(
         finding_id=finding_id,
         attack=attack,
         baseline_of=body.baseline_run_id,
+        adaptive=body.adaptive,
     )
     session.add(run)
     await session.flush()
@@ -291,7 +301,7 @@ async def create_run(
         )  # fmt: skip
     n = 0
     for scn in scenarios:
-        for rep in range(reps):
+        for rep in range(first):
             session.add(
                 Episode(
                     id=episode_ids[n] if episode_ids else new_id("ep"),
@@ -358,6 +368,8 @@ async def maybe_complete_run(session: AsyncSession, run_id: str) -> bool:
         {"r": run_id},
     )
     from .findings import finalize_finding_run  # replay and verify runs update their finding
+    from .stability import auto_quarantine_for_run
 
     await finalize_finding_run(session, run_id)
+    await auto_quarantine_for_run(session, run_id)
     return True

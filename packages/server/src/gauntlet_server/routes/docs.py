@@ -249,6 +249,9 @@ async def put_scenario(
         doc=doc,
         status="approved" if keeps_approval else "draft",
         source=body.get("source", prev.source),
+        quarantined=prev.quarantined,  # a new version stays quarantined until someone lifts it
+        quarantine_reason=prev.quarantine_reason,
+        quarantined_at=prev.quarantined_at,
     )
     s.add(row)
     await s.commit()

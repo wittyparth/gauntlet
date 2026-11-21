@@ -229,6 +229,7 @@ class RunOut(_Out):
     baseline_of: str | None
     purpose: str = "eval"
     finding_id: str | None = None
+    adaptive: bool = False
     counts: RunCounts
     created_at: str
     finished_at: str | None
