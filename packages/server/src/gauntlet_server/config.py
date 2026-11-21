@@ -40,6 +40,12 @@ class Settings:
     verification_ttl_days: int = 90
     attacks_disabled: bool = False  # ops lever: reject every attack run at the API
     kill_poll_s: float = 1.0
+    s3_endpoint_url: str = ""  # "" = no object store (cassette archive answers 503)
+    s3_access_key: str = ""
+    s3_secret_key: str = ""
+    s3_bucket: str = ""
+    s3_region: str = "us-east-1"
+    s3_public_endpoint_url: str = ""  # the name browsers use for presigned urls
     local_target_hosts: frozenset[str] = field(
         default_factory=lambda: frozenset({"dva", "dva-sql", "dva-email", "localhost", "127.0.0.1"})
     )
@@ -71,6 +77,12 @@ class Settings:
             attacks_disabled=(e.get("GAUNTLET_ATTACKS_DISABLED") or "").lower()
             in ("1", "true", "yes"),
             kill_poll_s=float(e.get("GAUNTLET_KILL_POLL_S") or 1.0),
+            s3_endpoint_url=e.get("S3_ENDPOINT_URL", ""),
+            s3_access_key=e.get("S3_ACCESS_KEY", ""),
+            s3_secret_key=e.get("S3_SECRET_KEY", ""),
+            s3_bucket=e.get("S3_BUCKET", ""),
+            s3_region=e.get("S3_REGION") or "us-east-1",
+            s3_public_endpoint_url=e.get("S3_PUBLIC_ENDPOINT_URL", ""),
             local_target_hosts=frozenset(h.strip() for h in hosts.split(",") if h.strip()),
         )
 

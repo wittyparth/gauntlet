@@ -8,7 +8,9 @@ from typing import Any
 
 import httpx
 from fastapi import Depends, Request
+from gauntlet_core.judges import JudgeCache, MemoryJudgeCache
 from gauntlet_core.llm import Gateway, GatewayConfig
+from gauntlet_core.objectstore import ObjectStore
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .auth import AuthCtx, authenticate
@@ -31,6 +33,8 @@ class AppState:
     redis: Any = None  # redis.asyncio.Redis (SSE subscribes through it)
     http: httpx.AsyncClient | None = None
     sse_ping_s: float = 15.0
+    object_store: ObjectStore | None = None  # cassette archive (S3 or a directory)
+    judge_cache: JudgeCache = field(default_factory=MemoryJudgeCache)  # rejudge, per process
     closers: list[Callable[[], Awaitable[None]]] = field(default_factory=list)
 
     async def aclose(self) -> None:

@@ -13,11 +13,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..db.models import Episode, Run
 from ..db.models import Event as EventRow
 from ..db.models import Scenario as ScenarioRow
+from ..db.models import Verdict as VerdictRow
 from ..errors import not_found
 from ..jobs import load_episode_inputs
 from .stability import quarantined_ids
 
-__all__ = ["episode_detail", "episode_row_json", "run_report", "run_report_and_records"]
+__all__ = [
+    "episode_detail",
+    "episode_row_json",
+    "episode_verdicts",
+    "run_report",
+    "run_report_and_records",
+]
 
 
 async def _events(s: AsyncSession, episode_id: str) -> list[Event]:
@@ -27,6 +34,20 @@ async def _events(s: AsyncSession, episode_id: str) -> list[Event]:
         )
     ).scalars()
     return [Event.model_validate(d) for d in rows]
+
+
+async def episode_verdicts(s: AsyncSession, episode_id: str, events: list[Event]) -> list[Verdict]:
+    """The `verdicts` rows when the episode has any (rejudging replaces them), else the
+    `verdict` events of its journal (episodes written before rows existed, imports)."""
+    rows = (
+        await s.execute(
+            select(VerdictRow.doc)
+            .where(VerdictRow.episode_id == episode_id)
+            .order_by(VerdictRow.created_at, VerdictRow.criterion)
+        )
+    ).scalars()
+    found = [Verdict.model_validate(d) for d in rows]
+    return found or [Verdict.model_validate(e.payload) for e in events if e.kind == "verdict"]
 
 
 def episode_row_json(e: Episode) -> dict[str, Any]:
@@ -89,9 +110,7 @@ async def run_report_and_records(
             if ev.kind == "check_result"
             and ev.payload["holds"] != (ev.payload["check_id"] == "success")
         ]
-        verdicts[e.id] = [
-            Verdict.model_validate(ev.payload) for ev in events if ev.kind == "verdict"
-        ]
+        verdicts[e.id] = await episode_verdicts(s, e.id, events)
         records.append(
             EpisodeRecord(
                 e.id,
@@ -151,7 +170,9 @@ async def episode_detail(
         },
         "partial": ep.status != "done",
         "events": shown,
-        "verdicts": [e.payload for e in events if e.kind == "verdict"],
+        "verdicts": [
+            v.model_dump(mode="json") for v in await episode_verdicts(s, episode_id, events)
+        ],
         "diff": diff,
         "tools": {t.name: t.risk for t in _tools(inputs.world)},
     }

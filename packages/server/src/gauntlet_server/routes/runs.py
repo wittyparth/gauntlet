@@ -58,10 +58,18 @@ async def list_runs(
     agent_version_id: str | None = None,
     suite_id: str | None = None,
     status: str | None = None,
+    purpose: str | None = None,
+    include_imports: bool = False,
     auth: AuthCtx = Depends(auth_ctx),
     s: AsyncSession = Depends(db_session),
 ) -> dict[str, Any]:
+    """Imported cassettes live in `purpose=import` runs, hidden unless asked for with
+    `purpose=import` or `include_imports=true` (CQ-R11)."""
     q = select(Run).where(Run.workspace_id == auth.workspace_id)
+    if purpose:
+        q = q.where(Run.purpose == purpose)
+    elif not include_imports:
+        q = q.where(Run.purpose != "import")
     if agent_version_id:
         q = q.where(Run.agent_version_id == agent_version_id)
     if suite_id:
@@ -147,11 +155,6 @@ async def get_report(
     run_id: str, auth: AuthCtx = Depends(auth_ctx), s: AsyncSession = Depends(db_session)
 ) -> RunReport:
     return await run_report(s, await _run(s, auth, run_id))
-
-
-@router.post("/episodes/{episode_id}/rejudge", status_code=501)
-async def rejudge(episode_id: str, _: AuthCtx = Depends(auth_ctx)) -> None:
-    raise ApiError(501, "not_implemented", "rejudge arrives in Phase 3")
 
 
 @router.post("/agents/{agent_id}/generate-scenarios", status_code=501)

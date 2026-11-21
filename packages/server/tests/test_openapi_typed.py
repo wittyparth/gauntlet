@@ -4,11 +4,10 @@ from __future__ import annotations
 
 from gauntlet_server.app import create_app
 
-# no body, a stream, or intentionally unimplemented
+# no body, a stream or raw text (the NDJSON cassette), or intentionally unimplemented
 UNTYPED = {
     ("get", "/v1/runs/{run_id}/stream"),
-    ("get", "/v1/runs/{run_id}/compare"),
-    ("post", "/v1/episodes/{episode_id}/rejudge"),
+    ("get", "/v1/episodes/{episode_id}/cassette"),
     ("post", "/v1/agents/{agent_id}/generate-scenarios"),
     ("post", "/v1/worlds/import-openapi"),
 }

@@ -75,6 +75,8 @@ class CassetteManifest(BaseModel):
     agent_version: AgentVersion
     persona: Persona
     rubrics: dict[str, Rubric] = {}
+    # JSON object keys are sorted on the wire, but the judge stage runs rubrics in this order
+    rubric_order: list[str] = []
     platform_version: str = "0.0.0"
     exported_at: datetime = datetime(2026, 1, 1, tzinfo=UTC)
 
@@ -174,9 +176,14 @@ def job_from_manifest(
         world=manifest.world,
         agent_version=agent_version or manifest.agent_version,
         persona=manifest.persona,
-        rubrics=dict(manifest.rubrics),
+        rubrics=_ordered(manifest),
         rng_seed=manifest.rng_seed,
     )
+
+
+def _ordered(manifest: CassetteManifest) -> dict[str, Rubric]:
+    names = [*manifest.rubric_order, *manifest.rubrics]
+    return {n: manifest.rubrics[n] for n in dict.fromkeys(names) if n in manifest.rubrics}
 
 
 def trajectory_from_cassette(snapshot: JournalSnapshot, manifest: CassetteManifest) -> Trajectory:

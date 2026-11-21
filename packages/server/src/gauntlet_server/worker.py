@@ -267,6 +267,14 @@ class Worker:
             ).scalar()
         return row if isinstance(row, dict) else None
 
+    async def _run_purpose(self, run_id: str) -> str:
+        async with self.state.sm() as s:
+            return str(
+                (
+                    await s.execute(text("SELECT purpose FROM runs WHERE id = :r"), {"r": run_id})
+                ).scalar()
+            )
+
     def _deps(self, run_id: str, roles: dict[str, Any] | None = None) -> RunnerDeps:
         st = self.state
         return RunnerDeps(
@@ -295,8 +303,11 @@ class Worker:
             await self._publish_run(lease.run_id)
             return
         deps = self._deps(lease.run_id, await self._run_roles(lease.run_id))
+        extra: dict[str, Any] = {}
+        if await self._run_purpose(lease.run_id) == "replay":  # agent_live replay (hard-cores 1.6a)
+            extra["mode"] = "agent_live"
         try:
-            out = await execute_with_attempts(job, deps, epoch=lease.epoch)
+            out = await execute_with_attempts(job, deps, epoch=lease.epoch, **extra)
         except NonDeterminism as e:
             await self._fail(lease, f"NonDeterminism: {e}")
             return

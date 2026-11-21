@@ -24,6 +24,7 @@ from .facade import router as facade_router
 from .routes import (
     attacks,
     audit,
+    cassettes,
     compare,
     core,
     dev,
@@ -68,7 +69,20 @@ async def build_state(settings: Settings | None = None) -> AppState:
     redis = aioredis.from_url(settings.redis_url)
     http = httpx.AsyncClient()
     gateway, cfg = make_gateway(settings)
+    object_store = None
+    if settings.s3_endpoint_url and settings.s3_bucket:
+        from gauntlet_core.objectstore import S3ObjectStore
+
+        object_store = S3ObjectStore(
+            settings.s3_bucket,
+            endpoint_url=settings.s3_endpoint_url,
+            access_key=settings.s3_access_key,
+            secret_key=settings.s3_secret_key,
+            region=settings.s3_region,
+            public_endpoint_url=settings.s3_public_endpoint_url or None,
+        )
     state = AppState(
+        object_store=object_store,
         settings=settings,
         sm=sm,
         gateway=gateway,
@@ -115,6 +129,7 @@ def create_app(state: AppState | None = None) -> FastAPI:
         core.router, docs.router, runs.router, models.router, dev.router, facade_router,
         targets.router, audit.router, killswitch.router, settings.router,
         findings.router, attacks.router, posture.router, compare.router, stability.router,
+        cassettes.router,
     ):  # fmt: skip
         application.include_router(r)
 
