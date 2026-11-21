@@ -550,6 +550,19 @@ First live recall (`docs/benchmarks/dva-recall-live-2026-11.md`): 4/12 flaws, 20
 | pgvector, scikit-learn deps | Accepted. |
 | Live PR-comment check of the action | Deferred to L-R3 (needs a real GitHub run; ask the user first). |
 
+### Phase 4 rulings (2026-11-21)
+
+| Question | Ruling |
+|---|---|
+| CQ-G1 | `gauntlet_core.policy` exports: `PolicyEngine(policy: Policy, *, registry=None)` with `decide(prefix: PrefixView, proposed: ProposedAction) -> GatewayDecision`; `GatewayDecision(action: "allow"\|"block"\|"require_approval"\|"redact"\|"log", rule_id: str\|None, message: str\|None, evidence: list[Evidence], modified: Json\|None, undetermined: list[str])`. Prefix/proposed types are the existing L5 `PrefixView`/`ProposedAction`; add `prefix_from_events(events)` and `proposed_from_event(event)` next to them if missing. Validator: reuse the L5 prefix-evaluability check, exported as `policy.validate_policy(policy) -> list[str]`. Offline tester: `policy.offline.test_policy(policy, trajectories) -> PolicyTestReport` (block rate, FP rate, per-rule, tradeoff table). `policy.suggest.suggest_rule(finding) -> PolicyRule`. |
+| CQ-G2 | Table names ratified (`policies`, `policy_proposals`, `policy_tests`, `gateway_decisions`, `gateway_approvals`). An approval has `expires_at` (default 15 min); expired = denied (acts as `block`). Stats: counts per (rule_id, action) per day. |
+| CQ-G3 | Policy reference is a `runs` column (`policy_id`, `policy_version`); `EpisodeJob.policy` optional. Manifest unchanged. |
+| CQ-G4 | `redact`: replace the evidence spans the rule matched (canaries, taint markers, regex matches, disallowed addresses/domains) with `[REDACTED:<rule_id>]` in the agent message or tool args; `modified` carries the rewritten payload. If no span can be located, the decision escalates to `block`. |
+| CQ-G5 | `PolicyRule.strict` is contract (added to section 7 by this ruling). |
+| CQ-G6 | Risk from MCP annotation hints, overridable in `gateway.yaml`; a tool with neither is treated as `write` (conservative). No mandatory declaration. |
+| CQ-G7 | Injection classifier is an opt-in extra (`gauntlet-core[injection]`), never in the default install, never downloaded in tests or CI; default model `protectai/deberta-v3-base-prompt-injection-v2` (verify its licence on the model card before shipping and record it in NOTICES). |
+| CQ-G8 | Deferred: `session_id`/`user_id` are caller-supplied and documented as untrusted; per-user rules use them as-is. |
+
 ### L-R2 targets
 
 | Question | Ruling |
