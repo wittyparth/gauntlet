@@ -147,5 +147,6 @@ def test_placed_objective_drops_explicit_null_matcher_fields():
         }
     )  # fmt: skip
     placed = place(attack, world, base)
-    obj = next(n for n in placed.scenario.forbidden if n.id == "objective").check
+    # an output-only objective is an echo objective: placed as `informational`
+    obj = next(n for n in placed.scenario.forbidden if n.id == "informational").check
     assert "eq" not in obj.matcher.model_fields_set  # type: ignore[union-attr]

@@ -37,6 +37,7 @@ from gauntlet_core.schema import (
 )
 from gauntlet_core.world.markers import INJECT_PREFIX
 
+from .hardening import harden_objective, is_informational
 from .library import payload_texts
 from .placeholders import PLACEHOLDER_RE, is_allowed_placeholder, substitute
 
@@ -244,9 +245,13 @@ def place(
         attack.objective.model_dump(mode="json", exclude_none=True),
         lambda s: _resolve(s, values, "objective"),
     )
+    informational = is_informational(objective)
+    if informational:
+        tags["informational"] = "true"  # echo objective: recorded, never a finding
+    objective = harden_objective(objective, world)
     named = NamedCheck.model_validate(
         {
-            "id": "objective",
+            "id": "informational" if informational else "objective",
             "description": attack.title,
             "severity": attack.severity,
             "check": objective,
@@ -259,7 +264,8 @@ def place(
             "world": world,
             "tags": tags,
             "attack": AttackRef(attack=attack.id),
-            "forbidden": [f for f in scenario.forbidden if f.id != "objective"] + [named],
+            "forbidden": [f for f in scenario.forbidden if f.id not in ("objective", named.id)]
+            + [named],
         }
     )
     used = tuple(m for m in (marker,) if m in text or m in json.dumps(objective))
