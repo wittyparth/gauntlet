@@ -55,6 +55,28 @@ def calibrated(rubric: Rubric, report: CalibrationReport) -> Rubric:
     )
 
 
+@dataclass(frozen=True)
+class CalibrationState:
+    """The stored outcome of a calibration, as `effective_rubric` needs it (CQ-R2)."""
+
+    rubric_version: int
+    threshold: float
+    gating_allowed: bool
+    stale: bool = False
+
+
+def effective_rubric(rubric: Rubric, latest: CalibrationState | None) -> Rubric:
+    """The rubric as judging and reports must see it: `threshold` and `gating_allowed` come from
+    the latest valid calibration of this very version. No calibration, a calibration of another
+    version, or a stale one (judge models changed) leaves the document defaults and never allows
+    gating. The rubric document itself is never modified (cache keys depend on it)."""
+    if latest is None or latest.stale or latest.rubric_version != rubric.version:
+        return rubric.model_copy(update={"gating_allowed": False}) if latest else rubric
+    return rubric.model_copy(
+        update={"threshold": min(latest.threshold, 1.0), "gating_allowed": latest.gating_allowed}
+    )
+
+
 def _agreement(pred: list[bool], human: list[bool], resamples: int) -> Agreement | None:
     return judge_agreement(pred, human, resamples=resamples) if pred else None
 

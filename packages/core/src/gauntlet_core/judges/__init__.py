@@ -3,10 +3,12 @@
 from .cache import CachingGateway, JudgeCache, MemoryJudgeCache, cache_key
 from .calibration import (
     CalibrationReport,
+    CalibrationState,
     GoldenItem,
     TauPoint,
     calibrate,
     calibrated,
+    effective_rubric,
 )
 from .cascade import (
     ContextProvider,
@@ -50,6 +52,7 @@ __all__ = [
     "SIM_FIDELITY_RUBRIC",
     "CachingGateway",
     "CalibrationReport",
+    "CalibrationState",
     "ContextProvider",
     "EvidenceItem",
     "GoldenItem",
@@ -69,6 +72,7 @@ __all__ = [
     "calibrate",
     "calibrated",
     "check_evidence",
+    "effective_rubric",
     "evaluate_rubric",
     "evaluate_sim_fidelity",
     "event_text",

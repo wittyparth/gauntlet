@@ -103,6 +103,7 @@ class RunReport(_M):
     caution: Caution
     reliability: list[ReliabilityPoint] = []
     quarantined: list[str] = []
+    human_overridden: int = 0  # counted episodes whose verdicts include a human label (CQ-R6)
 
 
 @dataclass(frozen=True)
@@ -207,6 +208,7 @@ def aggregate_run(
     quarantined: Collection[str] = (),
     adaptive: bool = False,
     repetitions: int | None = None,
+    human_overridden: Collection[str] = (),
 ) -> RunReport:
     """`quarantined` scenarios are reported with their own rate but excluded from every
     headline number. `adaptive` runs report posterior means (and Beta credible intervals) for
@@ -319,4 +321,5 @@ def aggregate_run(
         ),
         reliability=reliability_curve(data, seed=seed, resamples=RESAMPLES),
         quarantined=sorted(q for q in quarantine if q in by_scn),
+        human_overridden=len(set(human_overridden) & counted_ids),
     )

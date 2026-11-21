@@ -48,3 +48,10 @@ def test_adaptive_uses_posterior_means_for_early_stops_and_sets_the_caution():
     assert a.ci_low < a.rate < a.ci_high
     assert b.posterior_mean is None and b.rate == 0.6  # ran to the maximum: naive rate
     assert r.pass_rate is not None and abs(r.pass_rate - ((a.posterior_mean or 0) + 0.6) / 2) < 1e-9
+
+
+def test_human_overridden_counts_only_counted_episodes():
+    e = eps("a", ["passed", "failed"]) + eps("b", ["budget_exhausted"])
+    r = aggregate_run("r", e, {}, SCN, seed=1, human_overridden={"a0", "b0", "zzz"})
+    assert r.human_overridden == 1
+    assert aggregate_run("r", e, {}, SCN, seed=1).human_overridden == 0
