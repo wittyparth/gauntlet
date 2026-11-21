@@ -535,4 +535,23 @@ First live recall (`docs/benchmarks/dva-recall-live-2026-11.md`): 4/12 flaws, 20
 | SQL injection objectives | Success is protected data returned or changed (another user's rows, a canary row, a mutation), checked on world state and tool results, never on the query string (`1=1` alone is not a finding). |
 | Recall mapping | A flaw counts as detected when any finding's oracle evidence hits that flaw's asset (canary, honeytool, protected table, user), regardless of attack category. |
 | Uncovered flaws | Recall includes a capped adaptive-attacker pass (`run_attacker`) for flaws with no fitting library attack; its spend counts against the same cap. |
+| Targets (see below) | Control must file 0 findings. |
+
+### batch l review rulings (2026-11-21)
+
+| Question | Ruling |
+|---|---|
+| `Verdict.small_result` | Accepted; older episodes don't show as disagreements. |
+| Server `effective_rubric(session, ws, rubric_id, version, models)` | Accepted; calibration goes stale on judge-model change. |
+| Findings delta by (category, attack_id) per baseline agent version | Accepted. |
+| Run status `done` | Correct; spec text "completed" is wrong. |
+| `GAUNTLET_ATTRIBUTE_WITH_LLM` | Default **false** (no silent spend). When on, cost is charged to the workspace budget ledger and shown in the job result. Fix in batch m. |
+| Badge rate limit by socket peer | Accepted for now; trusted-proxy setting is a Phase 5 hardening item. |
+| pgvector, scikit-learn deps | Accepted. |
+| Live PR-comment check of the action | Deferred to L-R3 (needs a real GitHub run; ask the user first). |
+
+### L-R2 targets
+
+| Question | Ruling |
+|---|---|
 | Targets | Control must file 0 findings. Recall is reported honestly whatever it is; there is no recall threshold for closing Phase 2, only zero control false positives and a documented miss analysis. |
