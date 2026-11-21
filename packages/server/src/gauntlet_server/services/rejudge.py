@@ -22,7 +22,8 @@ from ..errors import ApiError, not_found
 from ..jobs import load_episode_inputs
 from ..models_gateway import gateway_for_roles
 from .audit import audit
-from .reports import _events
+from .calibration_state import apply_calibration, judge_models
+from .reports import _events, apply_human_override
 
 __all__ = ["RejudgeIn", "RejudgeOut", "rejudge"]
 
@@ -95,7 +96,10 @@ async def rejudge(
         raise ApiError(402, "budget_too_low", "the run has no remaining budget for a rejudge")
     inputs = await load_episode_inputs(s, episode_id)
     ids = body.rubrics if body.rubrics is not None else list(inputs.scenario.rubrics)
-    rubrics = await _rubrics(s, ws, ids)
+    by_id = await apply_calibration(
+        s, ws, {r.id: r for r in await _rubrics(s, ws, ids)}, judge_models(run.role_settings)
+    )
+    rubrics = [by_id[i] for i in ids]
     events = await _events(s, episode_id)
     built = build_world(inputs.world, inputs.scenario.world_overrides, int(ep.rng_seed))
     traj = build_trajectory(episode_id, inputs.scenario, events, built)
@@ -126,7 +130,7 @@ async def rejudge(
                 text("SELECT doc FROM verdicts WHERE episode_id = :e"), {"e": episode_id}
             )
         ).scalars()
-        current = [Verdict.model_validate(d) for d in rows]
+        current = apply_human_override([Verdict.model_validate(d) for d in rows])
         checks = [
             (str(e.payload["check_id"]), bool(e.payload["holds"]))
             for e in events

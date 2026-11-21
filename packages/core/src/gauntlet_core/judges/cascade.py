@@ -202,8 +202,10 @@ async def evaluate_rubric(
         return apply_gating(rubric, _verdict(rubric, "small", small, evaluator=ev))
     strong = await run_stage(gateway, strong_role, rubric, traj, **kw)  # type: ignore[arg-type]
     strong.cost = strong.cost + small.cost
+    small_result = small.output.result if small.valid and small.output else None
     if strong.valid:
-        return apply_gating(rubric, _verdict(rubric, "strong", strong, evaluator=ev))
+        v = _verdict(rubric, "strong", strong, evaluator=ev)
+        return apply_gating(rubric, v.model_copy(update={"small_result": small_result}))
     msg = "strong judge could not produce a valid verdict: " + (
         "; ".join(strong.errors) or "unknown"
     )

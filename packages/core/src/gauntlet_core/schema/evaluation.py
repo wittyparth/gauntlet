@@ -45,3 +45,5 @@ class Verdict(Model):
     stage: Stage = "rule"
     model: str | None = None
     cost: Cost | None = None
+    # the small judge's result when the strong judge decided (review queue disagreements, P3-5)
+    small_result: VerdictResult | None = None

@@ -63,6 +63,12 @@ async def test_low_confidence_escalates_and_strong_is_final():
     assert roles(f) == [S, T]
     assert (v.stage, v.result) == ("strong", "fail")
     assert v.cost is not None and v.cost.usd_micros == 37  # both stages counted
+    assert v.small_result == "pass"  # the review queue's disagreement signal
+
+
+async def test_small_result_is_not_set_when_small_decides():
+    v = await run(llm([reply("pass", 0.95)]))
+    assert v.stage == "small" and v.small_result is None
 
 
 async def test_high_severity_fail_always_confirmed_by_strong():

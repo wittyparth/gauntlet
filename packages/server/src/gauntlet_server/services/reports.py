@@ -16,9 +16,11 @@ from ..db.models import Scenario as ScenarioRow
 from ..db.models import Verdict as VerdictRow
 from ..errors import not_found
 from ..jobs import load_episode_inputs
+from .calibration_state import apply_calibration, judge_models
 from .stability import quarantined_ids
 
 __all__ = [
+    "apply_human_override",
     "episode_detail",
     "episode_row_json",
     "episode_verdicts",
@@ -36,6 +38,19 @@ async def _events(s: AsyncSession, episode_id: str) -> list[Event]:
     return [Event.model_validate(d) for d in rows]
 
 
+def apply_human_override(verdicts: list[Verdict]) -> list[Verdict]:
+    """A human verdict replaces every other verdict for its criterion (CQ-R6); with several
+    human labels the last one (rows arrive oldest first) wins. Order is otherwise kept."""
+    human: dict[str, Verdict] = {}
+    for v in verdicts:
+        if v.stage == "human":
+            human[v.criterion] = v
+    if not human:
+        return verdicts
+    out = [v for v in verdicts if v.stage != "human" and v.criterion not in human]
+    return out + list(human.values())
+
+
 async def episode_verdicts(s: AsyncSession, episode_id: str, events: list[Event]) -> list[Verdict]:
     """The `verdicts` rows when the episode has any (rejudging replaces them), else the
     `verdict` events of its journal (episodes written before rows existed, imports)."""
@@ -46,7 +61,7 @@ async def episode_verdicts(s: AsyncSession, episode_id: str, events: list[Event]
             .order_by(VerdictRow.created_at, VerdictRow.criterion)
         )
     ).scalars()
-    found = [Verdict.model_validate(d) for d in rows]
+    found = apply_human_override([Verdict.model_validate(d) for d in rows])
     return found or [Verdict.model_validate(e.payload) for e in events if e.kind == "verdict"]
 
 
@@ -129,6 +144,23 @@ async def run_report_and_records(
             )
         )
     cfg = manifest.agent_version.target
+    human = set(
+        (
+            await s.execute(
+                text(
+                    "SELECT DISTINCT v.episode_id FROM verdicts v JOIN episodes e "
+                    "ON e.id = v.episode_id WHERE e.run_id = :r AND v.doc->>'stage' = 'human'"
+                ),
+                {"r": run.id},
+            )
+        ).scalars()
+    )
+    library = await apply_calibration(
+        s,
+        run.workspace_id,
+        load_rubrics(),
+        judge_models(manifest.model_roles),
+    )
     report = aggregate_run(
         run.id,
         records,
@@ -139,7 +171,8 @@ async def run_report_and_records(
         target_model=getattr(cfg, "model", None),
         target_kind=cfg.kind,
         wired=bool(getattr(cfg, "wired", False)),
-        rubrics=load_rubrics(),
+        rubrics=library,
+        human_overridden=human,
         quarantined=await quarantined_ids(s, run.workspace_id),
         adaptive=run.adaptive,
         repetitions=run.repetitions,

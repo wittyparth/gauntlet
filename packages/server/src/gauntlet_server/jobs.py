@@ -25,6 +25,7 @@ from .db.models import Rubric as RubricRow
 from .db.models import Scenario as ScenarioRow
 from .db.models import World as WorldRow
 from .secrets import SecretStore
+from .services.calibration_state import apply_calibration, judge_models
 
 __all__ = ["JobInputs", "load_episode_inputs", "load_episode_job", "secret_names"]
 
@@ -81,6 +82,9 @@ async def load_episode_inputs(session: AsyncSession, episode_id: str) -> JobInpu
         world = scenario.world
     persona = await _persona(session, run.workspace_id, scenario.persona)
     rubrics = await _rubrics(session, run.workspace_id, scenario.rubrics)
+    rubrics = await apply_calibration(
+        session, run.workspace_id, rubrics, judge_models(manifest.model_roles)
+    )
     return JobInputs(ep, run, manifest, scenario, world, persona, rubrics)
 
 
