@@ -508,3 +508,18 @@ Cheap reasoning models return empty content when hidden reasoning eats the outpu
 | CQ-R9 | Accepted: `/badge/{token}.svg`, unauthenticated, exposes only a pass-rate string or grade letter; tokens revocable. |
 | CQ-R10 | Accepted as proposed. |
 | CQ-R11 | Imported episodes live in runs with `purpose=import`, hidden from the default run list behind a filter, included in reports only when explicitly selected. |
+
+### rigor-k review rulings (2026-11-21)
+
+| Question | Ruling |
+|---|---|
+| Adaptive stop rule | Keep L4 `sequential_decision` unchanged. The P3-2 claim "an obviously passing scenario stops after 3 reps" is withdrawn: with Beta(1,1) and stop at P(p > 0.9) > 0.95 a clean pass stops only after ~28 reps (i.e. never inside normal caps); a clear failure stops after 4. Adaptive sampling saves cost on failing and mixed scenarios, which is where it matters; documented as such. |
+| Nested-range inference | `nested_keys` infers each target span's start from the loop shape. Accepted for now because a wrong inference only causes an earlier divergence (more live calls), never a wrong replay. Follow-up (batch l): record `start` ordinals in the 1.7a span when a nested frame opens and prefer them over inference. |
+| Hosted targets | Model/tool effects of hosted agents are top-level and replay while requests match. Accepted. |
+| Wired targets + agent_live | Not supported in Phase 3; the replay route returns 422 `agent_live_unsupported_for_wired` until the facade is journal-aware. Follow-up (batch l). |
+| Cassette manifest | `persona`, `rubrics`, `rubric_order` added; `exclude_none` dump accepted. |
+| Strict replay `verify_payloads` | Accepted as an opt-in flag; `NonDeterminism` carries `seq`, `expected`, `got`. |
+| Quarantine scope | All versions of a scenario, retroactive in reports and compares, inherited by new versions. Accepted. |
+| Migrations | rigor-k used 0006 to 0008. Batch l numbers from the head: 0009 review/calibration/jobs, 0010 failure clusters, 0011 badges. |
+| `aiobotocore` | Accepted; the boto3 downgrade is from its pin. |
+| Web types | Regenerated in batch m (P3-7 web). |

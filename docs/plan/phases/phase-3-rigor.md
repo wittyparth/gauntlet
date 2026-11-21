@@ -6,7 +6,7 @@ Read first: `docs/plan/README.md`, `docs/plan/02-contracts.md`, `docs/plan/03-ha
 
 **G** (gate) = `uv run ruff check . && uv run ruff format --check . && uv run pyright packages && uv run pytest packages tests apps -q`. Integration tests are marked `integration` and run with `TEST_DATABASE_URL` set.
 
-Migrations in this phase (one revision per task that needs it, in this order): `0004_compare_stability.py` (P3-1, P3-2), `0005_adaptive_quarantine.py` (P3-2), `0006_review_calibration_jobs.py` (P3-5), `0007_failure_clusters.py` (P3-6), `0008_badges.py` (P3-4). Write them by hand; `alembic check` must stay clean.
+Migrations in this phase (one revision per task that needs it, in this order): `0006_compare_stability.py` (P3-1, P3-2), `0007_adaptive_quarantine.py` (P3-2), `0008_import_purpose.py` (P3-3), `0009_review_calibration_jobs.py` (P3-5), `0010_failure_clusters.py` (P3-6), `0011_badges.py` (P3-4). Write them by hand; `alembic check` must stay clean.
 
 ---
 
@@ -75,7 +75,7 @@ Migrations in this phase (one revision per task that needs it, in this order): `
 **Steps:**
 - [ ] `test_reliability.py`: known-value table for pass^k with n=5 and c in 0..5, the two properties above, `n < k` scenarios excluded and counted, interval shape.
 - [ ] `test_stability.py`: `classify_flaky` table; `suggest_quarantine` over crafted histories (3 of 5 flaky yes, 2 of 5 no, simulator error 3 of 10 yes); `test_report_p3.py`: quarantined excluded from rates and listed, adaptive report uses posterior means and sets the caution, Phase 1 reports unchanged when fields absent.
-- [ ] `test_quarantine.py`, `test_stability_routes.py` (routes, audit row, exclusion visible in `GET /runs/{id}/report`). `test_adaptive.py` (integration, FakeLLM scripted outcomes): an obviously passing scenario stops after 3 reps, a mixed one continues to the maximum, a scenario with simulator errors respects the cap, two concurrent finishes never enqueue two extra reps (advisory lock), report flags adaptive.
+- [ ] `test_quarantine.py`, `test_stability_routes.py` (routes, audit row, exclusion visible in `GET /runs/{id}/report`). `test_adaptive.py` (integration, FakeLLM scripted outcomes): an obviously failing scenario stops after 4 reps (see rigor-k rulings), a mixed one continues to the maximum, a scenario with simulator errors respects the cap, two concurrent finishes never enqueue two extra reps (advisory lock), report flags adaptive.
 - [ ] Implement; **G** and integration. Commits: `feat(core): reliability curve and flaky detection`, `feat(server): quarantine, stability and adaptive sampling`.
 
 **Done when:** a 30-scenario run with `repetitions: 5` and `adaptive: true` against scripted outcomes uses fewer episodes than 150, reports pass^1 to pass^5 with intervals, lists the flaky scenario, and excludes a quarantined scenario from the headline rate.
