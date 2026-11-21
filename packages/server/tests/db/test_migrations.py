@@ -24,7 +24,7 @@ CONTRACT_TABLES = {
     "effects", "verdicts", "secrets", "events_archive", "effects_archive", "workspace_settings",
     "target_verifications", "audit_log", "kill_switches", "findings", "finding_episodes",
     "attacks", "episode_attacks", "human_labels", "calibrations", "jobs",
-    "failure_embeddings", "failure_clusters", "badge_tokens",
+    "failure_embeddings", "failure_clusters", "badge_tokens", "policies", "policy_proposals",
 }  # fmt: skip
 
 

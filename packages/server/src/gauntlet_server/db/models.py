@@ -322,4 +322,4 @@ class WorkspaceSettings(Base):
     )
 
 
-from . import cluster_models, review_models, sec_models  # noqa: E402,F401  (Phase 2 and 3 tables)
+from . import cluster_models, policy_models, review_models, sec_models  # noqa: E402,F401
