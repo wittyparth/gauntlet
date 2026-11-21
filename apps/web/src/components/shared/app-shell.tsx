@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { Bot } from "@/components/animate-ui/icons/bot";
+import { Gavel } from "@/components/animate-ui/icons/gavel";
+import { Layers } from "@/components/animate-ui/icons/layers";
 import { Flag } from "@/components/animate-ui/icons/flag";
 import { Rocket } from "@/components/animate-ui/icons/rocket";
 import { Scroll } from "@/components/animate-ui/icons/scroll";
@@ -43,6 +45,11 @@ const SECURITY_NAV = [
   { href: "/security/audit", label: "Audit log", Icon: Scroll, exact: false },
 ] as const;
 
+const QUALITY_NAV = [
+  { href: "/review", label: "Review", Icon: Gavel },
+  { href: "/rubrics", label: "Rubrics", Icon: Layers },
+] as const;
+
 export function AppShell({ children, defaultOpen }: { children: ReactNode; defaultOpen: boolean }) {
   const pathname = usePathname();
   return (
@@ -60,6 +67,28 @@ export function AppShell({ children, defaultOpen }: { children: ReactNode; defau
             <SidebarGroupContent>
               <SidebarMenu>
                 {NAV.map(({ href, label, Icon }) => {
+                  const active = pathname === href || pathname.startsWith(`${href}/`);
+                  return (
+                    <SidebarMenuItem key={href}>
+                      <SidebarMenuButton
+                        isActive={active}
+                        tooltip={label}
+                        render={<Link href={href} aria-current={active ? "page" : undefined} />}
+                      >
+                        <Icon size={16} animateOnHover />
+                        <span>{label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupLabel>Quality</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {QUALITY_NAV.map(({ href, label, Icon }) => {
                   const active = pathname === href || pathname.startsWith(`${href}/`);
                   return (
                     <SidebarMenuItem key={href}>
