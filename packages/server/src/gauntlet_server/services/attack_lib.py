@@ -9,8 +9,14 @@ from functools import cache
 from pathlib import Path
 from typing import Any
 
-from gauntlet_core.schema import Attack, WorldSpec
-from gauntlet_core.security import AttackLibrary, Taxonomy, load_attacks, load_taxonomy
+from gauntlet_core.schema import Attack
+from gauntlet_core.security import (
+    AttackLibrary,
+    Taxonomy,
+    load_attacks,
+    load_taxonomy,
+    world_capabilities,
+)
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -85,21 +91,4 @@ async def load_workspace_library(session: AsyncSession, ws: str) -> AttackLibrar
     return AttackLibrary([Attack.model_validate(r.doc) for r in rows])
 
 
-def available_capabilities(world: WorldSpec) -> set[str]:
-    caps = {"multi_turn", "tool:read"}
-    for t in world.tools:
-        caps.add(f"tool:{t.risk}")
-        if t.risk == "read":
-            caps.add("untrusted_tool_output")  # `place` marks the readers of an injected record
-        if t.honeytool:
-            caps.add("tool:honeytool")
-        if t.untrusted_output:
-            caps.add("untrusted_tool_output")
-        if "sql" in t.name:
-            caps.add("sql_tool")
-    if world.documents:
-        caps.add("documents")
-        caps.add("untrusted_tool_output")  # injectable documents surface through read tools
-    if any(c.placement == "system_prompt" for c in world.canaries):
-        caps.add("system_prompt_canary")
-    return caps
+available_capabilities = world_capabilities  # the capability rule lives in gauntlet_core

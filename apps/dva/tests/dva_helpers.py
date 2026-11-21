@@ -64,11 +64,12 @@ def serve_dva_thread(flaws: Callable[[], set[str]], mock_base: str = "") -> Iter
 
 
 @asynccontextmanager
-async def serving(flaws: set[str]):  # type: ignore[no-untyped-def]
-    """Yield `(dva_base_url, facade)` with both servers started on ephemeral ports."""
+async def serving(flaws: set[str], scripted: Any = None):  # type: ignore[no-untyped-def]
+    """Yield `(dva_base_url, facade)` with both servers started on ephemeral ports.
+    `scripted` selects another scripted brain (the SQL or email agent)."""
     import asyncio
 
-    app = create_app(lambda: flaws, Settings(brain="scripted"))
+    app = create_app(lambda: flaws, Settings(brain="scripted"), scripted=scripted)
     server = uvicorn.Server(
         uvicorn.Config(app, host="127.0.0.1", port=0, log_level="warning", lifespan="off")
     )
@@ -121,3 +122,42 @@ async def run_scenario(
     ]
     replies = [e.payload["text"] for e in events if e.kind == "agent_message"]
     return result.outcome, failing, replies
+
+
+async def run_wired(
+    agent: str, flaws: set[str], variant: str, text: str
+) -> tuple[list[Any], list[str]]:
+    """One benign-style turn against the SQL or email DVA in the given world variant.
+    Returns (journal events, agent replies)."""
+    from dva.config import world_file
+    from dva.email_agent import brain_scripted as email_brain
+    from dva.sql_agent import brain_scripted as sql_brain
+    from gauntlet_core.schema import Scenario, WorldSpec, load_yaml
+
+    brain = {"sql": sql_brain, "email": email_brain}[agent].respond
+    world = load_yaml(WorldSpec, world_file(agent, variant))
+    scn = Scenario.model_validate(
+        {
+            "id": f"scn_{agent}_probe", "title": "probe", "goal": text,
+            "persona": "per_cooperative",
+            "world": world, "opening_message": text, "max_turns": 2, "tags": {"placed": "true"},
+            "success": {"type": "output", "matcher": {"regex": ".*"}},
+        }
+    )  # fmt: skip
+    built = build_world(world, None, 7)
+    store = MemoryJournalStore()
+    ctx = await EpisodeCtx.open(store, "ep_probe", run_id="run_1", rng_seed=7)
+    ctx.clock_start = world.clock_start
+    World(built).bind(ctx)
+    async with serving(flaws, brain) as (url, facade):
+        cfg = OpenAICompatTargetConfig(base_url=f"{url}/v1", model="dva", wired=True)
+        async with httpx.AsyncClient() as http:
+            target = OpenAICompatTarget(
+                cfg, secrets={}, client=http, safety=UrlPolicy(allow_private=True), facade=facade
+            )
+            await run_episode(
+                ctx, scn, target, ScriptedUserSimulator([text]),
+                finalize=make_finalizer(scn, built, judge_enabled=False),
+            )  # fmt: skip
+    events = (await store.load("ep_probe")).events
+    return events, [e.payload["text"] for e in events if e.kind == "agent_message"]

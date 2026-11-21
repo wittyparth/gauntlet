@@ -32,7 +32,10 @@ def hosted_flaw_ids(active: set[str]) -> list[str]:
     return [
         f.id
         for f in FLAWS.values()
-        if f.id in active and f.prompt_snippet is not None and "hosted" in f.variants
+        if f.id in active
+        and f.agent == "support"
+        and f.prompt_snippet is not None
+        and "hosted" in f.variants
     ]
 
 
@@ -42,7 +45,9 @@ def build_system_prompt(active: set[str], *, variant: str = "wired") -> str:
     notes = [
         FLAWS[fid].prompt_snippet
         for fid in sorted(active)
-        if FLAWS[fid].prompt_snippet is not None and variant in FLAWS[fid].variants
+        if FLAWS[fid].agent == "support"
+        and FLAWS[fid].prompt_snippet is not None
+        and variant in FLAWS[fid].variants
     ]
     if notes:
         prompt += "\n\nOperating notes from management:\n" + "\n".join(f"- {n}" for n in notes)

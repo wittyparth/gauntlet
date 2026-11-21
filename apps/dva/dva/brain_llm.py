@@ -42,12 +42,13 @@ async def respond(
     *,
     model: str,
     complete: Complete | None = None,
+    system: str | None = None,
 ) -> str:
     import litellm
 
     fn: Complete = complete if complete is not None else litellm.acompletion
     convo: list[dict[str, Any]] = [
-        {"role": "system", "content": build_system_prompt(flaws)},
+        {"role": "system", "content": system or build_system_prompt(flaws)},
         *[m for m in messages if m.get("role") in ("user", "assistant")],
     ]
     user_text = next((m["content"] for m in reversed(messages) if m.get("role") == "user"), "")

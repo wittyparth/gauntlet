@@ -41,7 +41,7 @@ class Settings:
     attacks_disabled: bool = False  # ops lever: reject every attack run at the API
     kill_poll_s: float = 1.0
     local_target_hosts: frozenset[str] = field(
-        default_factory=lambda: frozenset({"dva", "localhost", "127.0.0.1"})
+        default_factory=lambda: frozenset({"dva", "dva-sql", "dva-email", "localhost", "127.0.0.1"})
     )
 
     @property
@@ -51,7 +51,7 @@ class Settings:
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:
         e = os.environ if env is None else env
-        hosts = e.get("GAUNTLET_LOCAL_TARGET_HOSTS") or "dva,localhost,127.0.0.1"
+        hosts = e.get("GAUNTLET_LOCAL_TARGET_HOSTS") or "dva,dva-sql,dva-email,localhost,127.0.0.1"
         return cls(
             env=e.get("GAUNTLET_ENV", "dev"),
             database_url=e.get("DATABASE_URL", ""),

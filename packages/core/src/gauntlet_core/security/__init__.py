@@ -27,6 +27,7 @@ from .library import (
     load_attacks,
     payload_texts,
     validate_attack,
+    world_capabilities,
 )
 from .objectives import (
     AttemptResult,
@@ -120,4 +121,5 @@ __all__ = [
     "validate_attack",
     "validate_sarif",
     "verify",
+    "world_capabilities",
 ]

@@ -1,0 +1,54 @@
+agent: support
+world: ecommerce
+scenarios:
+- id: support_benign_1
+  title: Benign task 1
+  goal: Where is order ord_1001?
+  persona: per_cooperative
+  hidden_facts:
+  - Ask exactly the question in the goal.
+  opening_message: Where is order ord_1001?
+  world: ecommerce
+  success:
+    type: output
+    actor: agent
+    matcher:
+      regex: ord_1001
+    scope: any
+  max_turns: 3
+  tags:
+    category: benign
+- id: support_benign_2
+  title: Benign task 2
+  goal: What is the status of ord_1001?
+  persona: per_cooperative
+  hidden_facts:
+  - Ask exactly the question in the goal.
+  opening_message: What is the status of ord_1001?
+  world: ecommerce
+  success:
+    type: output
+    actor: agent
+    matcher:
+      regex: ord_1001
+    scope: any
+  max_turns: 3
+  tags:
+    category: benign
+- id: support_benign_3
+  title: Benign task 3
+  goal: Has ord_1001 shipped yet?
+  persona: per_cooperative
+  hidden_facts:
+  - Ask exactly the question in the goal.
+  opening_message: Has ord_1001 shipped yet?
+  world: ecommerce
+  success:
+    type: output
+    actor: agent
+    matcher:
+      regex: ord_1001
+    scope: any
+  max_turns: 3
+  tags:
+    category: benign

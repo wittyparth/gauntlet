@@ -17,7 +17,7 @@ x-app-env: &app-env
   # The dev seed loads this pack; the image copies packs/ to /app/packs.
   GAUNTLET_PACK_DIR: ${GAUNTLET_PACK_DIR:-/app/packs/ecommerce}
   GAUNTLET_ALLOW_PRIVATE_TARGETS: ${GAUNTLET_ALLOW_PRIVATE_TARGETS:-false}
-  GAUNTLET_LOCAL_TARGET_HOSTS: ${GAUNTLET_LOCAL_TARGET_HOSTS:-dva,localhost,127.0.0.1}
+  GAUNTLET_LOCAL_TARGET_HOSTS: ${GAUNTLET_LOCAL_TARGET_HOSTS:-dva,dva-sql,dva-email,localhost,127.0.0.1}
   WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-4}
   LEASE_SECONDS: ${LEASE_SECONDS:-60}
   LOG_LEVEL: ${LOG_LEVEL:-info}
@@ -126,6 +126,36 @@ services:
       DVA_FLAWS: ${DVA_FLAWS:-all}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
     ports: ["127.0.0.1:8100:8100"]
+
+  dva-sql:
+    # Damn Vulnerable SQL agent: intentionally vulnerable. Localhost only. It only calls the
+    # mock world's in-memory database through the api; it has no database of its own.
+    profiles: ["dva"]
+    image: gauntlet-dva
+    command: ["uvicorn", "dva.sql_agent.app:app", "--host", "0.0.0.0", "--port", "8101"]
+    environment:
+      GAUNTLET_MOCK_BASE: http://api:8000
+      DVA_BRAIN: ${DVA_BRAIN:-llm}
+      DVA_FLAWS: ${DVA_FLAWS:-all}
+      DVA_WORLD: ${DVA_WORLD:-unfixed}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+    ports: ["127.0.0.1:8101:8101"]
+    depends_on: [dva]
+
+  dva-email:
+    # Damn Vulnerable email assistant: intentionally vulnerable. Localhost only. It only
+    # "sends" into the mock world; no mail ever leaves the stack.
+    profiles: ["dva"]
+    image: gauntlet-dva
+    command: ["uvicorn", "dva.email_agent.app:app", "--host", "0.0.0.0", "--port", "8102"]
+    environment:
+      GAUNTLET_MOCK_BASE: http://api:8000
+      DVA_BRAIN: ${DVA_BRAIN:-llm}
+      DVA_FLAWS: ${DVA_FLAWS:-all}
+      DVA_WORLD: ${DVA_WORLD:-unfixed}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+    ports: ["127.0.0.1:8102:8102"]
+    depends_on: [dva]
 
 volumes:
   pgdata:

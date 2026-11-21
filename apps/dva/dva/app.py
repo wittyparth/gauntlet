@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 import time
 import uuid
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 import httpx
@@ -25,8 +25,15 @@ __all__ = ["create_app", "main"]
 log = logging.getLogger("dva")
 
 
+Scripted = Callable[[list[dict[str, Any]], set[str], Callable[..., Any]], Awaitable[str]]
+
+
 def create_app(
-    flaws: Callable[[], set[str]] | None = None, settings: Settings | None = None
+    flaws: Callable[[], set[str]] | None = None,
+    settings: Settings | None = None,
+    *,
+    scripted: Scripted | None = None,
+    system_prompt: Callable[[set[str]], str] | None = None,
 ) -> FastAPI:
     cfg = settings or load_settings()
     flaws_now = flaws or active_flaws
@@ -34,7 +41,7 @@ def create_app(
 
     @app.get("/healthz")
     async def healthz() -> dict[str, Any]:
-        return {"ok": True, "brain": cfg.brain, "flaws": sorted(flaws_now())}
+        return {"ok": True, "brain": cfg.brain, "world": cfg.world, "flaws": sorted(flaws_now())}
 
     @app.post("/v1/chat/completions")
     async def chat(request: Request) -> JSONResponse:
@@ -51,10 +58,15 @@ def create_app(
         async with httpx.AsyncClient(timeout=30) as client:
             tools = ToolsClient(client, base, token)
             if cfg.brain == "scripted":
-                reply = await brain_scripted.respond(messages, active, tools.call)
+                reply = await (scripted or brain_scripted.respond)(messages, active, tools.call)
             else:
                 reply = await brain_llm.respond(
-                    messages, active, tools.call, await tools.list_tools(), model=cfg.model
+                    messages,
+                    active,
+                    tools.call,
+                    await tools.list_tools(),
+                    model=cfg.model,
+                    system=system_prompt(active) if system_prompt else None,
                 )
         return JSONResponse(
             {

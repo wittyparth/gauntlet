@@ -10,7 +10,7 @@ from pathlib import Path
 import yaml
 from pydantic import ValidationError
 
-from gauntlet_core.schema import SEVERITY_ORDER, Attack
+from gauntlet_core.schema import SEVERITY_ORDER, Attack, WorldSpec
 from gauntlet_core.validate import walk_check
 
 from .placeholders import extract_placeholders, is_allowed_placeholder
@@ -25,6 +25,7 @@ __all__ = [
     "load_attacks",
     "payload_texts",
     "validate_attack",
+    "world_capabilities",
 ]
 
 ID_RE = re.compile(r"^atk_[a-z0-9_]{3,40}$")
@@ -113,6 +114,28 @@ def validate_attack(attack: Attack, taxonomy: Taxonomy) -> list[Issue]:
         ):
             add("canary_unreferenced", f"canary {n.canary!r} is not referenced by the payload")
     return out
+
+
+def world_capabilities(world: WorldSpec) -> set[str]:
+    """What a world can host (the `requires` vocabulary): tool risks, honeytools, injectable
+    documents, untrusted output, a system-prompt canary, a SQL tool."""
+    caps = {"multi_turn", "tool:read"}
+    for t in world.tools:
+        caps.add(f"tool:{t.risk}")
+        if t.risk == "read":
+            caps.add("untrusted_tool_output")  # `place` marks the readers of an injected record
+        if t.honeytool:
+            caps.add("tool:honeytool")
+        if t.untrusted_output:
+            caps.add("untrusted_tool_output")
+        if "sql" in t.name:
+            caps.add("sql_tool")
+    if world.documents:
+        caps.add("documents")
+        caps.add("untrusted_tool_output")  # injectable documents surface through read tools
+    if any(c.placement == "system_prompt" for c in world.canaries):
+        caps.add("system_prompt_canary")
+    return caps
 
 
 @dataclass

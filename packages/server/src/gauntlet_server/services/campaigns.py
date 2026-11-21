@@ -7,7 +7,7 @@ import random
 from typing import Any, Literal
 
 from gauntlet_core.ids import new_id
-from gauntlet_core.schema import Scenario, WorldSpec
+from gauntlet_core.schema import Attack, Scenario, WorldSpec
 from gauntlet_core.security import PlacementError, place
 from gauntlet_core.security.mutate import apply_mutations
 from pydantic import BaseModel, ConfigDict, Field
@@ -44,6 +44,17 @@ class CampaignCreate(BaseModel):
     budget_usd_micros: int
     max_attacks: int = Field(default=100, ge=1)
     seed: int = 0
+
+
+def with_default_target(attack: Attack, world: WorldSpec) -> Attack:
+    """Library tool_result attacks carry no target: inject into the first tool that returns
+    untrusted output (else the first read tool), so every result of that tool carries it."""
+    if attack.vector != "tool_result" or attack.target:
+        return attack
+    names = [t.name for t in world.tools if t.untrusted_output] or [
+        t.name for t in world.tools if t.risk == "read"
+    ]
+    return attack.model_copy(update={"target": names[0]}) if names else attack
 
 
 async def _latest_doc(s: AsyncSession, model: Any, ws: str, id: str) -> Any:
@@ -114,6 +125,7 @@ async def build_campaign(
     used = []
     for i, attack in enumerate(usable):
         base = benign[i % len(benign)]
+        attack = with_default_target(attack, world)
         try:
             placed = place(attack, world, base, seed=body.seed)
         except PlacementError as e:
