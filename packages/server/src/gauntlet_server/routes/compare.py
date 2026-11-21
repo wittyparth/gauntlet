@@ -12,7 +12,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..api_models import RunOut
 from ..auth import AuthCtx
 from ..deps import auth_ctx, db_session
-from ..services.compare import compare_for_run, episode_diff, set_baseline
+from ..services.compare import (
+    FindingsDeltaOut,
+    compare_for_run,
+    episode_diff,
+    findings_delta,
+    set_baseline,
+)
 from ..services.runs import run_json
 
 router = APIRouter(prefix="/v1")
@@ -64,3 +70,14 @@ async def get_episode_diff(
 ) -> TrajectoryDiff:
     """Align this episode's trajectory with `against` (the baseline side)."""
     return await episode_diff(s, auth.workspace_id, episode_id, against)
+
+
+@router.get("/runs/{run_id}/findings-delta", response_model=FindingsDeltaOut)
+async def get_findings_delta(
+    run_id: str,
+    baseline: str | None = None,
+    auth: AuthCtx = Depends(auth_ctx),
+    s: AsyncSession = Depends(db_session),
+) -> FindingsDeltaOut:
+    """New security findings of the run versus its baseline (the CI gate's input)."""
+    return await findings_delta(s, auth.workspace_id, run_id, baseline)

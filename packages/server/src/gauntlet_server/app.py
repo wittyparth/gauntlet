@@ -24,6 +24,7 @@ from .facade import router as facade_router
 from .routes import (
     attacks,
     audit,
+    badges,
     calibrations,
     cassettes,
     clusters,
@@ -134,6 +135,7 @@ def create_app(state: AppState | None = None) -> FastAPI:
         targets.router, audit.router, killswitch.router, settings.router,
         findings.router, attacks.router, posture.router, compare.router, stability.router,
         cassettes.router, jobs.router, review.router, calibrations.router, clusters.router,
+        badges.router, badges.public,
     ):  # fmt: skip
         application.include_router(r)
 

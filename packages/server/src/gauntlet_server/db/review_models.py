@@ -22,7 +22,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base, created_at_col, workspace_col
 
-__all__ = ["Calibration", "HumanLabel", "Job"]
+__all__ = ["BadgeToken", "Calibration", "HumanLabel", "Job"]
 
 _EMPTY_OBJ = text("'{}'::jsonb")
 
@@ -92,3 +92,14 @@ class Job(Base):
     )
     created_at: Mapped[datetime] = created_at_col()
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class BadgeToken(Base):
+    __tablename__ = "badge_tokens"
+    __table_args__ = (UniqueConstraint("token"), Index("ix_badge_tokens_agent", "agent_id"))
+    id: Mapped[str] = mapped_column(primary_key=True)
+    workspace_id: Mapped[str] = workspace_col()
+    agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id"))
+    token: Mapped[str]
+    created_at: Mapped[datetime] = created_at_col()
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

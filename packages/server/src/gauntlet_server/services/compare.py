@@ -11,15 +11,26 @@ from gauntlet_core.eval import (
 )
 from gauntlet_core.schema import Event, RunManifest, Trajectory
 from gauntlet_core.world import build_trajectory, build_world
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.models import Episode, Run
+from ..db.sec_models import Finding as FindingRow
+from ..db.sec_models import FindingEpisode
 from ..errors import ApiError, not_found
 from ..jobs import load_episode_inputs
 from .reports import _events, run_report_and_records
 from .stability import quarantined_ids
 
-__all__ = ["check_baseline", "compare_for_run", "episode_diff", "set_baseline"]
+__all__ = [
+    "FindingsDeltaOut",
+    "check_baseline",
+    "compare_for_run",
+    "episode_diff",
+    "findings_delta",
+    "set_baseline",
+]
 
 
 async def _owned_run(s: AsyncSession, ws: str, run_id: str) -> Run:
@@ -97,3 +108,61 @@ async def episode_diff(s: AsyncSession, ws: str, episode_id: str, against: str) 
     a = await _trajectory(s, ws, against)
     b = await _trajectory(s, ws, episode_id)
     return diff_trajectories(a, b)
+
+
+class NewFinding(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: str
+    title: str
+    severity: str
+    category: str
+
+
+class FindingsDeltaOut(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    baseline_id: str
+    new_by_severity: dict[str, int]
+    new: list[NewFinding]
+
+
+async def findings_delta(
+    s: AsyncSession, ws: str, run_id: str, baseline_id: str | None
+) -> FindingsDeltaOut:
+    """Findings this run's episodes belong to whose (category, attack) the baseline's agent
+    version has never produced. Finding dedup keys include the agent version, so identical
+    attacks against two versions are told apart by what they are, not by key."""
+    run = await _owned_run(s, ws, run_id)
+    baseline_id = baseline_id or run.baseline_of
+    if baseline_id is None:
+        raise ApiError(404, "not_found", f"run {run_id!r} has no baseline")
+    base = await _owned_run(s, ws, baseline_id)
+    rows = (
+        await s.execute(
+            select(FindingRow)
+            .join(FindingEpisode, FindingEpisode.finding_id == FindingRow.id)
+            .join(Episode, Episode.id == FindingEpisode.episode_id)
+            .where(Episode.run_id == run.id, FindingRow.agent_version_id == run.agent_version_id)
+            .distinct()
+            .order_by(FindingRow.id)
+        )
+    ).scalars()
+    known = {
+        (f.category, f.attack_id)
+        for f in (
+            await s.execute(
+                select(FindingRow).where(FindingRow.agent_version_id == base.agent_version_id)
+            )
+        ).scalars()
+    }
+    new = [f for f in rows if (f.category, f.attack_id) not in known]
+    counts: dict[str, int] = {}
+    for f in new:
+        counts[f.severity] = counts.get(f.severity, 0) + 1
+    return FindingsDeltaOut(
+        baseline_id=base.id,
+        new_by_severity=counts,
+        new=[
+            NewFinding(id=f.id, title=f.title, severity=f.severity, category=f.category)
+            for f in new
+        ],
+    )
