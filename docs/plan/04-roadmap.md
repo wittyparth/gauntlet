@@ -56,31 +56,31 @@ Definition of done: an attack suite against DVA produces findings with determini
 | P2-7 | DONE | Hall of Failures pack: 8 incident-derived scenarios (Air Canada, Chevrolet, DPD, MyCity, Replit, Cursor, Slack AI, EchoLeak), sources verified and cited neutrally | L7 |
 | P2-8 | DONE | MCP scanner v1 and agent linter v1 as CLI commands (`gauntlet scan mcp`, `gauntlet lint`) | P2-1 |
 | P2-9 | DONE | DVA: SQL agent and email assistant with planted vulnerabilities; recall script | P1-11 |
-| P2-10 | SUB j | Web: findings inbox and detail, campaign launch, coverage heatmap, posture report page | P2-5 |
-| L-R2 | LEAD | Phase review; measure recall and precision on DVA; publishable checkpoint | all |
+| P2-10 | DONE | Web: findings inbox and detail, campaign launch, coverage heatmap, posture report page | P2-5 |
+| L-R2 | DONE | Phase review; measure recall and precision on DVA; publishable checkpoint | all |
 
 ## Phase 3: Regression and rigor
 
 | ID | Owner | Task | Depends |
 |---|---|---|---|
-| P3-1 | SUB k | Baselines, run comparison API using L4, flip table, trajectory diff | L4 |
-| P3-2 | SUB k | Repetitions, pass^k and reliability curve in reports; flaky scenario detection and quarantine; adaptive sampling switch | L4 |
-| P3-3 | SUB k | Cassette export and import, `strict` and `agent_live` replay from CLI and API, rejudge endpoint | L2 |
-| P3-4 | SUB l | GitHub Action, PR comment, gates (`gauntlet gate`), badge endpoint | P3-1 |
-| P3-5 | SUB l | Human review queue API, golden sets, calibration job and rubric gating using L6 | L6 |
-| P3-6 | SUB l | Failure clustering (embeddings in pgvector, HDBSCAN, model-named clusters), root-cause attribution | P1-9 |
-| P3-7 | SUB m | Web: compare view, reliability charts, review queue, rubric manager, clusters on run report | P3-1, P3-5, P3-6 |
-| P3-8 | SUB m | Model migration report (same suite on two versions, Pareto data), scorecard page | P3-1 |
+| P3-1 | DONE | Baselines, run comparison API using L4, flip table, trajectory diff | L4 |
+| P3-2 | DONE | Repetitions, pass^k and reliability curve in reports; flaky scenario detection and quarantine; adaptive sampling switch | L4 |
+| P3-3 | DONE | Cassette export and import, `strict` and `agent_live` replay from CLI and API, rejudge endpoint | L2 |
+| P3-4 | DONE | GitHub Action, PR comment, gates (`gauntlet gate`), badge endpoint | P3-1 |
+| P3-5 | DONE | Human review queue API, golden sets, calibration job and rubric gating using L6 | L6 |
+| P3-6 | DONE | Failure clustering (embeddings in pgvector, HDBSCAN, model-named clusters), root-cause attribution | P1-9 |
+| P3-7 | DONE | Web: compare view, reliability charts, review queue, rubric manager, clusters on run report | P3-1, P3-5, P3-6 |
+| P3-8 | DONE | Model migration report (same suite on two versions, Pareto data), scorecard page | P3-1 |
 | L-R3 | LEAD | Phase review; judge accuracy study on a hand-labelled set | all |
 
 ## Phase 4: Gateway and policies
 
 | ID | Owner | Task | Depends |
 |---|---|---|---|
-| L8 | CORE | Policy engine, offline policy testing, rule suggestion from findings | L5, L7 |
-| P4-1 | SUB n | Policy compiler: policy document to proposed rules (typed machine, model, human), review flow, coverage report | L8 |
-| P4-2 | SUB n | Gateway as Python SDK middleware (wraps tool execution), shadow and enforce, decision log, approvals | L8 |
-| P4-3 | SUB n | MCP gateway: proxy, description pinning, allowlist, description scanning, namespace isolation | P4-2 |
+| L8 | DONE | Policy engine, offline policy testing, rule suggestion from findings | L5, L7 |
+| P4-1 | DONE | Policy compiler: policy document to proposed rules (typed machine, model, human), review flow, coverage report | L8 |
+| P4-2 | DONE | Gateway as Python SDK middleware (wraps tool execution), shadow and enforce, decision log, approvals | L8 |
+| P4-3 | DONE | MCP gateway: proxy, description pinning, allowlist, description scanning, namespace isolation | P4-2 |
 | P4-4 | SUB o | Injection classifier detector (open-source model, local), origin tagging in the middleware | P4-2 |
 | P4-5 | SUB o | Closed loop wiring: finding, suggested rule, offline test, enforce, verify; blast-radius and permission diff | L8, P2-5 |
 | P4-6 | SUB p | Web: gateway console, policy editor, policy test results with tradeoff chart, approval inbox | P4-2 |
