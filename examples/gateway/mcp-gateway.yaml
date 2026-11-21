@@ -1,0 +1,24 @@
+# gauntlet mcp pin --config examples/gateway/mcp-gateway.yaml --approve-all
+# gauntlet mcp-gateway serve --config examples/gateway/mcp-gateway.yaml
+policy: policy.yaml            # the same Policy as the SDK (optional)
+pins: pins.json
+on_pin_mismatch: block         # block | warn
+on_unpinned: block             # block | warn   (a tool never approved)
+scan:
+  block_at: high               # description findings at or above this hide the tool
+servers:
+  - name: files                # namespace prefix: tools are exposed as files__<tool>
+    transport: stdio
+    command: ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/srv/data"]
+    env: {ROOT_DIR: /srv/data} # only these variables (plus PATH) reach the server
+    trust: untrusted           # its tool results count as untrusted content
+    allow_tools: ["read_*", "list_*"]
+    deny_tools: ["delete_*"]
+    scopes: {max_risk: write}  # read | write | destructive | financial | external_comm
+  - name: crm
+    transport: http
+    url: https://crm.example.test/mcp
+    headers: {Authorization: "Bearer ${CRM_TOKEN}"}  # interpolated at connect time, never logged
+    trust: untrusted
+risk_overrides:
+  files__write_file: destructive

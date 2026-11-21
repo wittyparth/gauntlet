@@ -10,6 +10,7 @@ from .commands.demo import demo_app
 from .commands.gate import gate
 from .commands.init import init
 from .commands.lint import lint
+from .commands.mcp_gateway import mcp_app, mcp_gateway_app
 from .commands.policy import policy_app
 from .commands.rejudge import rejudge
 from .commands.replay import replay
@@ -35,6 +36,8 @@ app.add_typer(attacks_app, name="attacks")
 app.add_typer(scan_app, name="scan")
 app.add_typer(cassette_app, name="cassette")
 app.add_typer(policy_app, name="policy")
+app.add_typer(mcp_gateway_app, name="mcp-gateway")
+app.add_typer(mcp_app, name="mcp")
 app.command()(replay)
 app.command()(rejudge)
 app.command()(gate)

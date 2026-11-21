@@ -39,7 +39,7 @@ from .namespace import UnknownTool, describe, expose_name, split_exposed
 from .pins import PinStore, tool_pin_hash
 from .scan_hook import ScanHook
 
-__all__ = ["McpGateway", "default_risk"]
+__all__ = ["McpGateway", "default_risk", "fetch_tools"]
 
 log = logging.getLogger("gauntlet.gateway.mcp")
 
@@ -374,3 +374,30 @@ class McpGateway:
             await uvicorn.Server(
                 uvicorn.Config(app, host=host, port=port, log_level="error")
             ).serve()
+
+
+async def fetch_tools(
+    config: McpGatewayConfig, *, targets: Mapping[str, Any] | None = None
+) -> dict[str, tuple[list[dict[str, Any]], dict[str, Any] | None]]:
+    """Connect to every configured upstream, list its tools (no tool is ever called) and
+    return `{server: (tool dicts, server_info)}`. Used by `gauntlet mcp pin` and `mcp diff`."""
+    out: dict[str, tuple[list[dict[str, Any]], dict[str, Any] | None]] = {}
+    for srv in config.servers:
+        target = (targets or {}).get(srv.name) or McpGateway._target(srv)
+        async with Client(target) as client:
+            tools: list[dict[str, Any]] = []
+            cursor: str | None = None
+            while True:
+                page = await client.list_tools(cursor=cursor)
+                tools += [
+                    t.model_dump(mode="json", by_alias=True, exclude_none=True) for t in page.tools
+                ]
+                cursor = page.next_cursor
+                if not cursor:
+                    break
+            info = client.server_info
+            out[srv.name] = (
+                tools,
+                {"name": info.name, "version": info.version} if info is not None else None,
+            )
+    return out

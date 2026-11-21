@@ -51,6 +51,13 @@ def scan_mcp(
     fmt: Annotated[str, typer.Option("--format", help="text, json or sarif.")] = "text",
     fail_on: Annotated[str, typer.Option(help="low, medium, high or critical.")] = "high",
     timeout: Annotated[float, typer.Option(help="Seconds.")] = 20.0,
+    pins: Annotated[
+        Path | None,
+        typer.Option(help="pins.json: report MCP-012 for tools changed since approval."),
+    ] = None,
+    pin_server: Annotated[
+        str | None, typer.Option(help="The server's name in the pins (default: the only one).")
+    ] = None,
 ) -> None:
     """Scan an MCP server (exit 0 clean, 1 findings at or above --fail-on, 2 usage or error)."""
     if sum(x is not None for x in (stdio, url, tools_file)) != 1:
@@ -81,7 +88,24 @@ def scan_mcp(
         except ConnectError as e:
             typer.echo(f"connection failed: {e}", err=True)
             raise typer.Exit(2) from e
-    findings = scan_mcp_tools(listing, transport=transport)
+    store = None
+    if pins is not None:
+        from gauntlet_core.gateway.mcp import PinStore
+
+        try:
+            store = PinStore.load(pins)
+        except (OSError, ValueError) as e:
+            typer.echo(f"cannot read {pins}: {e}", err=True)
+            raise typer.Exit(2) from e
+        if pin_server is None:
+            names = store.servers()
+            if len(names) != 1:
+                typer.echo("--pin-server is needed when the pins hold several servers", err=True)
+                raise typer.Exit(2)
+            pin_server = names[0]
+    findings = scan_mcp_tools(
+        listing, transport=transport, pins=store, server=pin_server or "server"
+    )
     out = render(findings, fmt, tool="gauntlet-mcp-scan")
     if out:
         typer.echo(out)

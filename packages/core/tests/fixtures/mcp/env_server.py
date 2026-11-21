@@ -12,11 +12,11 @@ import os
 from mcp.server import MCPServer
 
 server = MCPServer("env-fixture")
+DESC = os.environ.get("TOOL_DESC", "Report the names of the environment variables received.")
 
 
-@server.tool()
+@server.tool(description=DESC)
 def env_report() -> str:
-    """Report the names of the environment variables this process received."""
     token = os.environ.get("TOKEN", "")
     return json.dumps(
         {"keys": sorted(os.environ), "token_sha": hashlib.sha256(token.encode()).hexdigest()}

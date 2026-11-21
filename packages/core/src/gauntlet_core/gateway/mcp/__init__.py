@@ -17,7 +17,7 @@ from .pins import (
 from .scan_hook import ScanHook
 
 if TYPE_CHECKING:
-    from .proxy import McpGateway
+    from .proxy import McpGateway, fetch_tools
 
 __all__ = [
     "McpGateway",
@@ -33,6 +33,7 @@ __all__ = [
     "canonical_tool",
     "describe",
     "expose_name",
+    "fetch_tools",
     "server_manifest_hash",
     "split_exposed",
     "tool_pin_hash",
@@ -40,8 +41,8 @@ __all__ = [
 
 
 def __getattr__(name: str) -> Any:
-    if name == "McpGateway":
-        from .proxy import McpGateway
+    if name in ("McpGateway", "fetch_tools"):
+        from . import proxy
 
-        return McpGateway
+        return getattr(proxy, name)
     raise AttributeError(name)
