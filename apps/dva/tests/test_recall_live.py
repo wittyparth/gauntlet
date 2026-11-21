@@ -8,11 +8,15 @@ import pytest
 from dva import recall
 from dva.live import TARGET_ROLE, BudgetExceeded, CappedGateway, gateway_complete
 from gauntlet_core.llm import FakeLLM
-from gauntlet_core.llm.fake import FakeReply
+from gauntlet_core.llm.fake import FakeReply, Scripted
 from gauntlet_core.llm.types import ToolCallRequest
 from gauntlet_core.schema import Cost
 
 from .test_recall import fixture_library
+
+
+def sim_script(text: str, n: int) -> list[Scripted]:
+    return [FakeReply(text=text) for _ in range(n)]
 
 
 def cost(micros: int) -> Cost:
@@ -69,7 +73,7 @@ async def test_live_campaign_runs_the_llm_brain_through_the_capped_gateway(monke
     )
     inner = FakeLLM(
         by_role={TARGET_ROLE: [sql_call, "ok"] * 20},
-        script=["sim reply"] * 50,
+        script=sim_script("sim reply", 50),
         default_cost=cost(10),
     )
     gw = CappedGateway(inner, 10_000_000)
@@ -81,7 +85,11 @@ async def test_live_campaign_runs_the_llm_brain_through_the_capped_gateway(monke
 
 async def test_live_campaign_stops_when_the_cap_trips(monkeypatch):
     fixture_library(monkeypatch)
-    inner = FakeLLM(by_role={TARGET_ROLE: ["ok"] * 20}, script=["x"] * 50, default_cost=cost(500))
+    inner = FakeLLM(
+        by_role={TARGET_ROLE: ["ok"] * 20},
+        script=sim_script("x", 50),
+        default_cost=cost(500),
+    )
     gw = CappedGateway(inner, 600)
     out = await recall.run_recall("sql", 5, 0, gw, control=True)
     assert gw.spent <= 600 and out["main_truncated"] and out["control"] is None
