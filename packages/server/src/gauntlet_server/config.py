@@ -37,6 +37,9 @@ class Settings:
     lease_s: int = 60
     poll_interval_s: float = 1.0
     allow_private_targets: bool = False
+    verification_ttl_days: int = 90
+    attacks_disabled: bool = False  # ops lever: reject every attack run at the API
+    kill_poll_s: float = 1.0
     local_target_hosts: frozenset[str] = field(
         default_factory=lambda: frozenset({"dva", "localhost", "127.0.0.1"})
     )
@@ -64,6 +67,10 @@ class Settings:
             poll_interval_s=float(e.get("POLL_INTERVAL_S") or 1.0),
             allow_private_targets=(e.get("GAUNTLET_ALLOW_PRIVATE_TARGETS") or "").lower()
             in ("1", "true", "yes"),
+            verification_ttl_days=_int(e, "GAUNTLET_VERIFICATION_TTL_DAYS", 90),
+            attacks_disabled=(e.get("GAUNTLET_ATTACKS_DISABLED") or "").lower()
+            in ("1", "true", "yes"),
+            kill_poll_s=float(e.get("GAUNTLET_KILL_POLL_S") or 1.0),
             local_target_hosts=frozenset(h.strip() for h in hosts.split(",") if h.strip()),
         )
 

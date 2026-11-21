@@ -95,3 +95,18 @@ def test_strict_rules_empty_hidden_facts_and_max_turns(pack):
         **{**pack.scenarios["scn_ecom_01"].__dict__, "max_turns": 500}
     )
     assert codes(pack, broken, strict=True) == {"bad_max_turns"}
+
+
+def test_attack_with_inline_world_requires_placed_tag():
+    from gauntlet_core.schema import AttackRef, Scenario, WorldSpec
+
+    world = WorldSpec(tools=[], seed={}, clock_start="2026-01-01T00:00:00Z")  # type: ignore[arg-type]
+    base = {
+        "id": "s1", "title": "t", "goal": "g", "persona": "p", "world": world,
+        "success": {"type": "output", "matcher": {"contains": "x"}},
+        "attack": AttackRef(attack="atk_x"),
+    }  # fmt: skip
+    bad = validate_scenario(Scenario.model_validate(base), world)
+    assert [i.code for i in bad] == ["attack_inline_world"]
+    ok = validate_scenario(Scenario.model_validate({**base, "tags": {"placed": "true"}}), world)
+    assert ok == []

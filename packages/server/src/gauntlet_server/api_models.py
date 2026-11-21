@@ -227,6 +227,8 @@ class RunOut(_Out):
     reserved_usd_micros: int
     spent_usd_micros: int
     baseline_of: str | None
+    purpose: str = "eval"
+    finding_id: str | None = None
     counts: RunCounts
     created_at: str
     finished_at: str | None

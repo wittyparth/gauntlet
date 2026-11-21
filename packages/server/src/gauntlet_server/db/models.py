@@ -187,6 +187,9 @@ class Run(Base):
     # resolved {role: {model, reasoning}} the run's worker must use (null: process defaults)
     role_settings: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     baseline_of: Mapped[str | None] = mapped_column(ForeignKey("runs.id"))
+    purpose: Mapped[str] = mapped_column(server_default="eval")
+    finding_id: Mapped[str | None]
+    attack: Mapped[bool] = mapped_column(server_default="false")  # placed attack scenarios inside
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = created_at_col()
 
@@ -305,6 +308,11 @@ class WorkspaceSettings(Base):
     workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id"), primary_key=True)
     # {role: {model, reasoning}} chosen by the workspace; absent roles use the defaults
     model_roles: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default=_EMPTY_OBJ)
+    # attack_scope, auto_pin_on_fixed (security controls, P2-4)
+    doc: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default=_EMPTY_OBJ)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=text("now()"), onupdate=text("now()")
     )
+
+
+from . import sec_models  # noqa: E402,F401  (registers the Phase 2 tables)

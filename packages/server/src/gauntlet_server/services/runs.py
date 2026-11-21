@@ -26,7 +26,10 @@ from ..db.models import Scenario as ScenarioRow
 from ..db.models import World as WorldRow
 from ..deps import AppState
 from ..errors import ApiError, not_found
+from .audit import audit
 from .model_settings import effective_config, load_choices, resolved_roles
+from .ownership import target_host
+from .scope import enforce_attack_run, is_attack_run
 
 __all__ = [
     "RunCreate",
@@ -99,6 +102,8 @@ async def run_json(
         "reserved_usd_micros": run.reserved_usd_micros,
         "spent_usd_micros": run.spent_usd_micros,
         "baseline_of": run.baseline_of,
+        "purpose": run.purpose,
+        "finding_id": run.finding_id,
         "counts": await run_counts(session, run.id),
         "created_at": _iso(run.created_at),
         "finished_at": _iso(run.finished_at),
@@ -143,6 +148,9 @@ async def create_run(
     dry_run: bool = False,
     run_id: str | None = None,
     episode_ids: list[str] | None = None,
+    purpose: str = "eval",
+    finding_id: str | None = None,
+    actor: str = "system",
 ) -> tuple[dict[str, Any], int]:
     """Returns (response, http status). Creates nothing when `dry_run`."""
     suite = await session.get(Suite, body.suite_id)
@@ -226,6 +234,12 @@ async def create_run(
         }, 200
     if errors:
         raise ApiError(422, "validation_error", "the suite cannot run", errors)
+    attack = is_attack_run(scenarios)
+    if attack:
+        await enforce_attack_run(
+            session, state, workspace_id, version_model, scenarios,
+            episodes=len(scenarios) * reps, budget_usd_micros=budget,
+        )  # fmt: skip
     seed = body.seed if body.seed is not None else random.Random().randrange(2**31)
     rid = run_id or new_id("run")
     manifest = RunManifest(
@@ -253,9 +267,18 @@ async def create_run(
         seed=seed,
         world_versions={wid: w.version for wid, w in worlds.items()},
         budget_usd_micros=budget,
+        purpose=purpose,
+        finding_id=finding_id,
+        attack=attack,
     )
     session.add(run)
     await session.flush()
+    if attack:
+        await audit(
+            session, workspace_id, actor, "attack_run.created", "run", rid,
+            {"agent_version_id": av.id, "episodes": len(scenarios) * reps, "purpose": purpose,
+             "host": target_host(version_model.target)},
+        )  # fmt: skip
     n = 0
     for scn in scenarios:
         for rep in range(reps):

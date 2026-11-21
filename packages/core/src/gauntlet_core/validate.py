@@ -133,6 +133,14 @@ def validate_scenario(
             issues.append(Issue("bad_max_turns", f"max_turns {scenario.max_turns} not in 1..100"))
     if isinstance(scenario.world, WorldSpec):
         world = scenario.world
+        if scenario.attack is not None and scenario.tags.get("placed") != "true":
+            issues.append(
+                Issue(
+                    "attack_inline_world",
+                    "a scenario with an attack and an inline world must be placed by the "
+                    "campaign builder (tags.placed = 'true')",
+                )
+            )
     tools = {t.name for t in world.tools}
     if isinstance(scenario.world, str) and world.id is not None and scenario.world != world.id:
         issues.append(

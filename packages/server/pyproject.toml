@@ -11,6 +11,8 @@ dependencies = [
     "alembic>=1.13",
     "cryptography>=43",
     "redis>=5",
+    "dnspython>=2.6",
+    "tldextract>=5",
 ]
 
 [tool.uv.sources]

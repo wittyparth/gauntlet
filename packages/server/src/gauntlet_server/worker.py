@@ -34,7 +34,10 @@ from .deps import AppState
 from .events import PublishingJournalStore
 from .facade import RemoteFacade
 from .jobs import load_episode_job
+from .limits import HostLimiter, LimitedTransport
 from .models_gateway import gateway_for_roles
+from .services.killswitch import KILL_PREFIX, cancel_attack_runs, engaged_keys, killswitch_engaged
+from .services.ownership import covering_verification, is_remote, target_host
 from .services.runs import maybe_complete_run, run_update_payload
 from .stores import PgBudgetLedger, PgEpisodeQueue, PgJournalStore
 
@@ -60,7 +63,14 @@ class Worker:
         self.concurrency = concurrency or s.worker_concurrency
         self.lease_s = lease_s or s.lease_s
         self.poll_s = poll_interval_s if poll_interval_s is not None else s.poll_interval_s
+        self._own_http: httpx.AsyncClient | None = None
+        if http is None and state.redis is not None:
+            limiter = HostLimiter(state.redis)
+            transport = LimitedTransport(httpx.AsyncHTTPTransport(), limiter, s.local_target_hosts)
+            http = self._own_http = httpx.AsyncClient(transport=transport)
         self.http = http or state.http
+        # attack episodes in flight: episode id -> (run id, workspace id), for the kill switch
+        self._attack_eps: dict[str, tuple[str, str]] = {}
         self.queue = PgEpisodeQueue(state.sm)
         self._tasks: dict[str, tuple[asyncio.Task[None], EpisodeLease]] = {}
         self._killed = False
@@ -72,6 +82,16 @@ class Worker:
     async def run(self, stop: asyncio.Event | None = None) -> None:
         stop = stop or asyncio.Event()
         log.info("worker %s started (concurrency %d)", self.id, self.concurrency)
+        watcher = asyncio.create_task(self._kill_watch(stop))
+        try:
+            await self._loop(stop)
+        finally:
+            watcher.cancel()
+            await asyncio.gather(watcher, return_exceptions=True)
+            if self._own_http is not None:
+                await self._own_http.aclose()
+
+    async def _loop(self, stop: asyncio.Event) -> None:
         while not stop.is_set() and not self._killed:
             free = self.concurrency - len(self._tasks)
             if free > 0:
@@ -85,6 +105,72 @@ class Worker:
                 await asyncio.wait_for(stop.wait(), timeout=delay)
         if not self._killed:
             await self.shutdown()
+
+    # ------------------------------------------------------------------ kill switch
+
+    async def _kill_watch(self, stop: asyncio.Event) -> None:
+        """Poll Redis only (never Postgres) and cancel attack episodes while a switch is
+        engaged: in-flight tasks (cancelling their httpx requests), then queued episodes."""
+        redis = self.state.redis
+        if redis is None:
+            return
+        while not stop.is_set() and not self._killed:
+            await asyncio.sleep(self.state.settings.kill_poll_s)
+            try:
+                keys = await engaged_keys(redis)
+                if not keys:
+                    continue
+                for eid, (task, lease) in list(self._tasks.items()):
+                    info = self._attack_eps.get(eid)
+                    if info and await killswitch_engaged(redis, info[1], info[0]):
+                        await self._mark_cancelled(lease)
+                        task.cancel()
+                await self._cancel_engaged(keys)
+            except Exception:
+                log.warning("kill watcher error", exc_info=True)
+
+    async def _cancel_engaged(self, keys: list[str]) -> None:
+        async with self.state.sm() as s, s.begin():
+            for k in keys:
+                name = k[len(KILL_PREFIX) :]
+                if name.startswith("run:"):
+                    rid = name[4:]
+                    ws = (
+                        await s.execute(
+                            text("SELECT workspace_id FROM runs WHERE id = :r"), {"r": rid}
+                        )
+                    ).scalar()
+                    if ws:
+                        await cancel_attack_runs(s, ws, rid)
+                else:
+                    await cancel_attack_runs(s, name, None)
+
+    async def _attack_guard(self, lease: EpisodeLease, job: Any) -> bool:
+        """Re-check kill switch and ownership before an attack episode starts. True = stop."""
+        async with self.state.sm() as s:
+            ws = str(
+                (
+                    await s.execute(
+                        text("SELECT workspace_id FROM runs WHERE id = :r"), {"r": lease.run_id}
+                    )
+                ).scalar()
+            )
+        self._attack_eps[lease.episode_id] = (lease.run_id, ws)
+        redis = self.state.redis
+        if redis is not None and await killswitch_engaged(redis, ws, lease.run_id):
+            await self._mark_cancelled(lease)
+            return True
+        cfg = job.agent_version.target
+        host = target_host(cfg)
+        if host and is_remote(cfg, self.state.settings):
+            async with self.state.sm() as s:
+                ok = await covering_verification(s, ws, host) is not None
+            if not ok:
+                async with self.state.sm() as s, s.begin():
+                    await cancel_attack_runs(s, ws, lease.run_id)
+                await self._fail(lease, "target_not_verified")
+                return True
+        return False
 
     async def shutdown(self) -> None:
         """Graceful: stop claiming, cancel tasks, hand every live lease back."""
@@ -136,6 +222,7 @@ class Worker:
             await self._retry_or_fail(lease)
         finally:
             beat.cancel()
+            self._attack_eps.pop(lease.episode_id, None)
 
     async def _heartbeat(self, lease: EpisodeLease, task: asyncio.Task[Any]) -> None:
         while True:
@@ -200,6 +287,10 @@ class Worker:
                 job = await load_episode_job(s, lease.episode_id, self.state.secrets)
         except (LookupError, ValueError) as e:
             await self._fail(lease, f"cannot load episode: {e}")
+            return
+        if job.scenario.attack is not None and await self._attack_guard(lease, job):
+            await self._publish_episode(lease)
+            await self._publish_run(lease.run_id)
             return
         deps = self._deps(lease.run_id, await self._run_roles(lease.run_id))
         try:

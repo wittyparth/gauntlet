@@ -44,7 +44,7 @@ from gauntlet_core.schema import (
     Verdict,
     WorldSpec,
 )
-from gauntlet_core.sim import LLMUserSimulator, make_guard, merge_persona
+from gauntlet_core.sim import LLMUserSimulator, ScriptedUserSimulator, make_guard, merge_persona
 from gauntlet_core.targets import (
     Facade,
     HostedTarget,
@@ -73,6 +73,9 @@ __all__ = [
 # death in the middle of a wired turn burns one, so deployments that lose workers often (and
 # the chaos test) raise it with GAUNTLET_MAX_ATTEMPTS.
 MAX_ATTEMPTS = int(os.environ.get("GAUNTLET_MAX_ATTEMPTS") or 3)
+
+
+_TURNS_TAG = "attack_turns"  # = gauntlet_core.security.placement.TURNS_TAG (no import cycle)
 
 
 @dataclass
@@ -298,6 +301,8 @@ async def execute_episode(
     world.bind(ctx)
     persona = merge_persona(job.persona, scn.persona_overrides)
     target = make_target(job.agent_version, world, built, deps, job.secrets)
+    if sim is None and _TURNS_TAG in scn.tags:  # placed user_turn attack: scripted turns
+        sim = ScriptedUserSimulator(json.loads(scn.tags[_TURNS_TAG]))
     sim = sim or LLMUserSimulator(scn, persona, deps.gateway, guard=make_guard(scn, persona))
     finalizer = make_finalizer(
         scn,
