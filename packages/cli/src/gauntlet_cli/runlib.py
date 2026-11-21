@@ -20,13 +20,13 @@ from gauntlet_core.engine import (
     NonDeterminism,
     SqliteJournalStore,
     StaleLease,
-    dump_cassette,
 )
 from gauntlet_core.eval import EpisodeRecord, RunReport, aggregate_run, load_rubrics
 from gauntlet_core.eval.stability import AdaptiveScheduler
 from gauntlet_core.ids import new_id
 from gauntlet_core.llm import Gateway
 from gauntlet_core.packs import Pack
+from gauntlet_core.replay import CassetteManifest, export_cassette
 from gauntlet_core.runner import (
     EpisodeJob,
     EpisodeOutcome,
@@ -121,6 +121,22 @@ def _job(plan: RunPlan, ep_id: str) -> EpisodeJob:
     )
 
 
+def manifest_for(job: EpisodeJob) -> CassetteManifest:
+    """The cassette header: enough to strict-replay or rejudge the episode offline."""
+    return CassetteManifest(
+        episode_id=job.episode_id,
+        run_id=job.run_id,
+        scenario=job.scenario,
+        world=job.world,
+        rng_seed=job.rng_seed,
+        agent_version=job.agent_version,
+        persona=job.persona,
+        rubrics=job.rubrics,
+        rubric_order=list(job.rubrics),
+        platform_version="local",
+    )
+
+
 def _platform_error(detail: str) -> EpisodeOutcome:
     from gauntlet_core.schema import Cost
 
@@ -205,7 +221,7 @@ async def execute_plan(
             if snap.events:
                 (plan.out / "episodes").mkdir(exist_ok=True)
                 (plan.out / "episodes" / f"{ep_id}.cassette.jsonl").write_text(
-                    dump_cassette(snap, {"episode_id": ep_id, "run_id": plan.run_id})
+                    export_cassette(snap, manifest_for(_job(plan, ep_id)))
                 )
     finally:
         if facade is not None:
