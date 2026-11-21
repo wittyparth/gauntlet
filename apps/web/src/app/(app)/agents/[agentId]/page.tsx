@@ -15,6 +15,7 @@ import { ErrorState, isNotFound } from "@/components/shared/error-state";
 import { LoadingCard } from "@/components/shared/loading";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAgent, useAgentVersions } from "@/lib/api/hooks/read";
 
@@ -58,7 +59,20 @@ function Overview({ agentId }: { agentId: string }) {
             </Select>
           ) : null
         }
-        actions={version ? <StartRunDialog agentVersionId={version.id} /> : null}
+        actions={
+          version ? (
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger render={<Button size="sm" variant="outline" />}>Reports</DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem render={<Link href={`/agents/${agentId}/scorecard?version=${version.id}`} />}>Scorecard</DropdownMenuItem>
+                  <DropdownMenuItem render={<Link href={`/agents/${agentId}/migration`} />}>Model migration</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <StartRunDialog agentVersionId={version.id} />
+            </>
+          ) : null
+        }
       />
       <div className="grid gap-3 p-4 lg:grid-cols-2">
         {versions.isLoading || agent.isLoading ? (
