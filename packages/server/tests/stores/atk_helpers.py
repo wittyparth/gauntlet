@@ -103,3 +103,29 @@ async def make_turn_suite(client: Any, state: Any, suite_id: str = "suite_turn")
     r = await client.post("/v1/suites", json={"id": suite_id, "name": "t", "scenarios": [scn.id]})
     assert r.status_code == 201, r.text
     return suite_id
+
+
+async def add_finding(
+    state: Any,
+    version: str,
+    *,
+    key: str = "k1",
+    severity: str = "high",
+    category: str = "indirect_injection",
+    status: str = "open",
+    title: str = "Refund via injected order note",
+    ws: str = "ws_test",
+) -> str:
+    """Insert a finding row (through the L7 store) whose reproducer is the placed scenario."""
+    from gauntlet_core.schema import Finding
+    from gauntlet_server.services.findings import PgFindingStore
+
+    f = Finding(
+        id=f"fnd_{key}", title=title, category=category, severity=severity,  # type: ignore[arg-type]
+        agent_version_id=version, attack_id="atk_dva_notes", episode_ids=[],
+        reproducibility=(1, 1), reproducer=placed(), status=status,  # type: ignore[arg-type]
+        dedup_key=key,
+    )  # fmt: skip
+    async with state.sm() as s, s.begin():
+        await PgFindingStore(s, ws).put(f)
+    return f.id

@@ -36,6 +36,7 @@ from .facade import RemoteFacade
 from .jobs import load_episode_job
 from .limits import HostLimiter, LimitedTransport
 from .models_gateway import gateway_for_roles
+from .services.finding_hooks import after_episode
 from .services.killswitch import KILL_PREFIX, cancel_attack_runs, engaged_keys, killswitch_engaged
 from .services.ownership import covering_verification, is_remote, target_host
 from .services.runs import maybe_complete_run, run_update_payload
@@ -301,6 +302,10 @@ class Worker:
         await self._finish(lease, out)
 
     async def _finish(self, lease: EpisodeLease, out: EpisodeOutcome) -> None:
+        try:  # findings hook: before the episode is `done`, so a run never completes without it
+            await after_episode(self.state.sm, lease.episode_id, out.outcome)
+        except Exception:
+            log.exception("finding hook failed for %s", lease.episode_id)
         await self.queue.finish(lease, out.outcome, out.termination)  # StaleLease: dropped
         async with self.state.sm() as s, s.begin():
             await s.execute(

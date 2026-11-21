@@ -21,7 +21,19 @@ from .deps import AppState
 from .errors import ErrorEnvelope, install_errors
 from .events import RedisPublisher
 from .facade import router as facade_router
-from .routes import audit, core, dev, docs, killswitch, models, runs, settings, targets
+from .routes import (
+    attacks,
+    audit,
+    core,
+    dev,
+    docs,
+    findings,
+    killswitch,
+    models,
+    runs,
+    settings,
+    targets,
+)
 from .secrets import SecretStore
 
 __all__ = ["app", "build_state", "create_app"]
@@ -99,6 +111,7 @@ def create_app(state: AppState | None = None) -> FastAPI:
     for r in (
         core.router, docs.router, runs.router, models.router, dev.router, facade_router,
         targets.router, audit.router, killswitch.router, settings.router,
+        findings.router, attacks.router,
     ):  # fmt: skip
         application.include_router(r)
 

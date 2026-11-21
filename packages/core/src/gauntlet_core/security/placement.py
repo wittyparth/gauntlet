@@ -176,7 +176,12 @@ def place(
     turns = [_resolve(t, values, f"attack {attack.id}") for t in payload_texts(attack)]
     text = "\n".join(turns)
     style = placement_style(attack)
-    tags = {**scenario.tags, PLACED_TAG: "true", "attack_category": attack.category}
+    tags = {
+        **scenario.tags,
+        PLACED_TAG: "true",
+        "attack_category": attack.category,
+        "attack_vector": attack.vector,
+    }
     update: dict[str, Any] = {}
 
     if attack.vector == "document":

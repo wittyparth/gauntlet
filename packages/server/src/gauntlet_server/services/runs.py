@@ -347,4 +347,7 @@ async def maybe_complete_run(session: AsyncSession, run_id: str) -> bool:
         ),
         {"r": run_id},
     )
+    from .findings import finalize_finding_run  # replay and verify runs update their finding
+
+    await finalize_finding_run(session, run_id)
     return True
