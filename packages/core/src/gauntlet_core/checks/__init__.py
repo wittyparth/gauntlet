@@ -4,7 +4,7 @@ The AST lives in `gauntlet_core.schema.checks`. Importing this package registers
 """
 
 from . import calls, logic, text, worldnodes  # noqa: F401  (register node types)
-from .context import PrefixView, ProposedAction
+from .context import PrefixView, ProposedAction, prefix_from_events, proposed_from_event
 from .detectors import DetectorFn, get, names, register, text_detector
 from .evaluate import (
     NotPrefixEvaluable,
@@ -29,6 +29,8 @@ __all__ = [
     "is_prefix_evaluable",
     "match_value",
     "names",
+    "prefix_from_events",
+    "proposed_from_event",
     "register",
     "register_node",
     "resolve_path",

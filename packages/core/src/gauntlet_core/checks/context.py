@@ -57,6 +57,39 @@ class PrefixView(Model):
     honeytools: list[str] = []
 
 
+def prefix_from_events(
+    events: list[Event],
+    *,
+    initial_world: WorldSnapshot | None = None,
+    world: WorldSnapshot | None = None,
+    canaries: list[PlantedCanary] | None = None,
+    tool_risk: dict[str, str] | None = None,
+    honeytools: list[str] | None = None,
+) -> PrefixView:
+    """A PrefixView over the events seen so far."""
+    return PrefixView(
+        events=list(events),
+        initial_world=initial_world,
+        world=world,
+        canaries=canaries or [],
+        tool_risk=tool_risk or {},
+        honeytools=honeytools or [],
+    )
+
+
+def proposed_from_event(event: Event) -> ProposedAction:
+    """The action an agent-side journal event stands for: a `tool_call` or an `agent_message`."""
+    if event.kind == "tool_call":
+        return ProposedAction(
+            kind="tool_call",
+            tool=str(event.payload.get("tool", "")),
+            args=event.payload.get("args", {}),
+        )
+    if event.kind == "agent_message":
+        return ProposedAction(kind="agent_message", text=str(event.payload.get("text", "")))
+    raise ValueError(f"event kind {event.kind!r} is not a proposable action")
+
+
 @dataclass
 class Ctx:
     events: list[Event]
