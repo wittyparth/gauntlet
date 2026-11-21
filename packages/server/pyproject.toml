@@ -14,6 +14,8 @@ dependencies = [
     "dnspython>=2.6",
     "tldextract>=5",
     "aiobotocore>=3.10.0",
+    "pgvector>=0.3",
+    "scikit-learn>=1.4",
 ]
 
 [tool.uv.sources]
