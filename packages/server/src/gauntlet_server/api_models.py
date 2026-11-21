@@ -293,6 +293,7 @@ class SeedOut(_Out):
     agent_version_id: str
     suite_id: str
     run_id: str
+    compare_run_id: str | None = None
     failed_episode_id: str | None
 
 

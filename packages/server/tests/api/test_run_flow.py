@@ -118,3 +118,18 @@ async def test_seed_keeps_its_agent_version_current(client, sm):
     await client.post("/v1/dev/seed", json={})
     agent = (await client.get(f"/v1/agents/{seed['agent_id']}")).json()
     assert agent["purpose"] == "Customer support for an online outdoor gear store"
+
+
+async def test_seed_creates_the_compare_run_only_when_asked(client):
+    plain = (await client.post("/v1/dev/seed", json={"reset": False})).json()
+    assert plain["compare_run_id"] is None
+    ids = [r["id"] for r in (await client.get("/v1/runs")).json()["items"]]
+    assert ids == [plain["run_id"]]
+    both = (await client.post("/v1/dev/seed", json={"compare_run": True})).json()
+    assert both["compare_run_id"] == "run_demo_b"
+    runs = {r["id"]: r for r in (await client.get("/v1/runs")).json()["items"]}
+    assert (
+        runs["run_demo_b"]["status"] == "done"
+        and runs["run_demo_b"]["suite_id"] == runs["run_demo"]["suite_id"]
+    )
+    assert runs["run_demo_b"]["spent_usd_micros"] >= 0

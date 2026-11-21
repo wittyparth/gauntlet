@@ -5,27 +5,15 @@ import type { Page } from "@playwright/test";
 
 import { expect, test } from "./fixtures";
 
-type Run = { id: string; suite_id: string; status: string; agent_version_id: string };
-
+/**
+ * GUARD: e2e must never start runs. The compose worker holds live model keys, so a run started here
+ * spends real money. The compare pair is seeded by POST /v1/dev/seed (two finished scripted runs).
+ */
 async function runPair(request: import("@playwright/test").APIRequestContext) {
-  const res = await request.get("/api/gauntlet/v1/runs?limit=200");
-  const runs = ((await res.json()) as { items: Run[] }).items.filter((r) => r.status === "done");
-  const base = runs.find((r) => r.id === "run_demo") ?? runs[0];
-  if (!base) return null;
-  const other = runs.find((r) => r.id !== base.id && r.suite_id === base.suite_id);
-  if (other) return { cand: other, base };
-  // Only one finished run: start a second one of the same suite (the compose stack runs scripted models).
-  const made = await request.post("/api/gauntlet/v1/runs", {
-    data: { suite_id: base.suite_id, agent_version_id: base.agent_version_id, budget_usd_micros: 2_000_000, seed: 7, adaptive: false, include_drafts: false },
-  });
-  if (!made.ok()) return null;
-  const id = ((await made.json()) as { id: string }).id;
-  for (let i = 0; i < 90; i++) {
-    const r = (await (await request.get(`/api/gauntlet/v1/runs/${id}`)).json()) as Run;
-    if (r.status === "done") return { cand: r, base };
-    await new Promise((res) => setTimeout(res, 2000));
-  }
-  return null;
+  const seeded = await request.post("/api/gauntlet/v1/dev/seed", { data: { reset: false, compare_run: true } });
+  expect(seeded.ok()).toBeTruthy();
+  const s = (await seeded.json()) as { run_id: string; compare_run_id: string };
+  return { base: { id: s.run_id }, cand: { id: s.compare_run_id } };
 }
 
 const SHOTS = path.resolve(__dirname, "../../../.demo/shots");
@@ -41,10 +29,8 @@ async function themed(page: Page, name: string) {
 }
 
 test("compare: loads a comparison of two finished runs", async ({ page, request }) => {
-  test.setTimeout(240_000);
   const pair = await runPair(request);
-  test.skip(!pair, "needs two finished runs of one suite");
-  await page.goto(`/runs/${pair!.cand.id}/compare?baseline=${pair!.base.id}`);
+  await page.goto(`/runs/${pair.cand.id}/compare?baseline=${pair.base.id}`);
   await expect(page.getByTestId("verdict-banner")).toBeVisible();
   await expect(page.getByTestId("flip-table")).toBeVisible();
   await themed(page, "compare");

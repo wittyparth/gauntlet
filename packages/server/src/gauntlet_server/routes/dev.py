@@ -25,4 +25,9 @@ async def dev_seed(
     if not state.settings.is_dev:
         raise not_found("route", "/v1/dev/seed")
     want_reset = reset or bool((body or {}).get("reset", False))
-    return await seed_demo(state, auth.workspace_id, reset=want_reset)
+    return await seed_demo(
+        state,
+        auth.workspace_id,
+        reset=want_reset,
+        compare_run=bool((body or {}).get("compare_run", False)),
+    )

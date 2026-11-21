@@ -202,5 +202,5 @@ def test_new_hard_fail_scenarios_only_counts_scenarios_without_a_baseline_hard_f
 
     base = data([("b1", "s1"), ("b2", "s2")], ["b1"])
     cand = data([("c1", "s1"), ("c2", "s2"), ("c3", "s3")], ["c1", "c2"])
-    assert _new_hard_fail_scenarios(base, cand) == ["s2"]
-    assert _new_hard_fail_scenarios(base, data([("c1", "s1")], [])) == []
+    assert _new_hard_fail_scenarios(base, cand) == ["s2"]  # pyright: ignore[reportArgumentType]
+    assert _new_hard_fail_scenarios(base, data([("c1", "s1")], [])) == []  # pyright: ignore[reportArgumentType]

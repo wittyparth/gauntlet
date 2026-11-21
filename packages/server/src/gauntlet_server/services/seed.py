@@ -33,9 +33,11 @@ __all__ = ["script", "seed_demo"]
 
 PROJECT, AGENT, VERSION = "proj_demo", "agt_demo", "agv_demo"
 WORLD, RUN = "ecommerce", "run_demo"
+RUN_B = "run_demo_b"  # a second finished scripted run of the suite: the compare view's fixture
 SUITE, SUITE_FULL = "ecommerce_smoke", "ecommerce_full"
 PASS_N = 9  # smoke episodes that pass; one more fails
 EPISODES = [f"ep_demo_{i}" for i in range(PASS_N + 1)]
+EPISODES_B = [f"ep_demo_b_{i}" for i in range(PASS_N + 1)]
 
 
 def resolve_pack_dir(
@@ -91,8 +93,8 @@ async def _reset(s: AsyncSession) -> None:
         "DELETE FROM effects_archive WHERE episode_id LIKE 'ep_demo_%'",
         "DELETE FROM events WHERE episode_id LIKE 'ep_demo_%'",
         "DELETE FROM effects WHERE episode_id LIKE 'ep_demo_%'",
-        "DELETE FROM episodes WHERE run_id = 'run_demo'",
-        "DELETE FROM runs WHERE id = 'run_demo'",
+        "DELETE FROM episodes WHERE run_id IN ('run_demo', 'run_demo_b')",
+        "DELETE FROM runs WHERE id IN ('run_demo', 'run_demo_b')",
     ):
         await s.execute(text(sql))
 
@@ -200,7 +202,9 @@ async def _upsert_docs(s: AsyncSession, ws: str) -> None:
     await s.flush()
 
 
-async def seed_demo(state: AppState, ws: str, *, reset: bool = False) -> dict[str, Any]:
+async def seed_demo(
+    state: AppState, ws: str, *, reset: bool = False, compare_run: bool = False
+) -> dict[str, Any]:
     async with state.sm() as s, s.begin():
         if reset:
             await _reset(s)
@@ -228,7 +232,25 @@ async def seed_demo(state: AppState, ws: str, *, reset: bool = False) -> dict[st
                 run_id=RUN,
                 episode_ids=EPISODES,
             )
-        await _execute(state)
+        await _execute(state, RUN)
+    async with state.sm() as s:
+        run_b = await s.get(m.Run, RUN_B)
+    if compare_run and run_b is None:
+        async with state.sm() as s, s.begin():
+            await create_run(
+                s,
+                state,
+                ws,
+                RunCreate(
+                    suite_id=SUITE,
+                    agent_version_id=VERSION,
+                    budget_usd_micros=5_000_000,
+                    seed=1,
+                ),
+                run_id=RUN_B,
+                episode_ids=EPISODES_B,
+            )
+        await _execute(state, RUN_B)
     async with state.sm() as s:
         failed = (
             (
@@ -248,12 +270,13 @@ async def seed_demo(state: AppState, ws: str, *, reset: bool = False) -> dict[st
         "agent_version_id": VERSION,
         "suite_id": SUITE,
         "run_id": RUN,
+        "compare_run_id": RUN_B if compare_run or run_b is not None else None,
         "failed_episode_id": failed,
     }
 
 
-async def _execute(state: AppState) -> None:
-    """Run the demo run's episodes through the worker code, claiming only its own episodes."""
+async def _execute(state: AppState, run_id: str) -> None:
+    """Run a demo run's episodes through the worker code, claiming only its own episodes."""
     scripted = dataclasses.replace(state, gateway=ScriptedLLM(script()))
     worker = Worker(scripted, worker_id="seed", lease_s=300)
     async with state.sm() as s, s.begin():
@@ -266,10 +289,10 @@ async def _execute(state: AppState) -> None:
                     "WHERE run_id = :r AND status = 'queued' "
                     "RETURNING id, run_id, epoch, attempt"
                 ),
-                {"r": RUN},
+                {"r": run_id},
             )
         ).all()
-        await s.execute(text("UPDATE runs SET status = 'running' WHERE id = :r"), {"r": RUN})
+        await s.execute(text("UPDATE runs SET status = 'running' WHERE id = :r"), {"r": run_id})
     from gauntlet_core.engine import EpisodeLease
 
     leases = [EpisodeLease(r.id, r.run_id, r.epoch, "seed", 300, r.attempt) for r in rows]
