@@ -38,10 +38,12 @@ from .limits import HostLimiter, LimitedTransport
 from .models_gateway import gateway_for_roles
 from .services.adaptive import adaptive_after_episode
 from .services.finding_hooks import after_episode
+from .services.jobs import run_job
 from .services.killswitch import KILL_PREFIX, cancel_attack_runs, engaged_keys, killswitch_engaged
 from .services.ownership import covering_verification, is_remote, target_host
 from .services.runs import maybe_complete_run, run_update_payload
 from .stores import PgBudgetLedger, PgEpisodeQueue, PgJournalStore
+from .stores.jobs import PgJobQueue
 
 __all__ = ["Worker", "main"]
 
@@ -74,6 +76,9 @@ class Worker:
         # attack episodes in flight: episode id -> (run id, workspace id), for the kill switch
         self._attack_eps: dict[str, tuple[str, str]] = {}
         self.queue = PgEpisodeQueue(state.sm)
+        self.jobs = PgJobQueue(state.sm)
+        self.job_concurrency = s.job_concurrency
+        self._job_tasks: set[asyncio.Task[None]] = set()
         self._tasks: dict[str, tuple[asyncio.Task[None], EpisodeLease]] = {}
         self._killed = False
         self._stopping = False
@@ -85,11 +90,16 @@ class Worker:
         stop = stop or asyncio.Event()
         log.info("worker %s started (concurrency %d)", self.id, self.concurrency)
         watcher = asyncio.create_task(self._kill_watch(stop))
+        job_loop = asyncio.create_task(self._job_loop(stop))
         try:
             await self._loop(stop)
         finally:
             watcher.cancel()
-            await asyncio.gather(watcher, return_exceptions=True)
+            job_loop.cancel()
+            await asyncio.gather(watcher, job_loop, return_exceptions=True)
+            for t in list(self._job_tasks):
+                t.cancel()
+            await asyncio.gather(*self._job_tasks, return_exceptions=True)
             if self._own_http is not None:
                 await self._own_http.aclose()
 
@@ -107,6 +117,22 @@ class Worker:
                 await asyncio.wait_for(stop.wait(), timeout=delay)
         if not self._killed:
             await self.shutdown()
+
+    async def _job_loop(self, stop: asyncio.Event) -> None:
+        """Claim background jobs (calibration, clustering) next to the episode loop."""
+        while not stop.is_set() and not self._killed:
+            free = self.job_concurrency - len(self._job_tasks)
+            if free > 0:
+                try:
+                    for lease in await self.jobs.claim(self.id, free, self.lease_s):
+                        t = asyncio.create_task(run_job(self.state, self.jobs, lease))
+                        self._job_tasks.add(t)
+                        t.add_done_callback(self._job_tasks.discard)
+                except Exception:
+                    log.exception("job claim failed")
+            delay = self.poll_s * (1 + random.random() * 0.25)
+            with contextlib.suppress(TimeoutError):
+                await asyncio.wait_for(stop.wait(), timeout=delay)
 
     # ------------------------------------------------------------------ kill switch
 

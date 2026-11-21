@@ -34,6 +34,9 @@ class Settings:
     public_api_url: str = "http://api:8000"
     max_run_budget_usd_micros: int = 50_000_000
     worker_concurrency: int = 4
+    job_concurrency: int = 2
+    drift_check: bool = False  # worker re-checks calibrations daily (P3-5)
+    auto_cluster_min: int = 5  # failed episodes that trigger a cluster job (P3-6)
     lease_s: int = 60
     poll_interval_s: float = 1.0
     allow_private_targets: bool = False
@@ -69,6 +72,9 @@ class Settings:
             public_api_url=e.get("GAUNTLET_PUBLIC_API_URL") or "http://api:8000",
             max_run_budget_usd_micros=_int(e, "GAUNTLET_MAX_RUN_BUDGET_USD_MICROS", 50_000_000),
             worker_concurrency=_int(e, "WORKER_CONCURRENCY", 4),
+            job_concurrency=_int(e, "WORKER_JOB_CONCURRENCY", 2),
+            drift_check=(e.get("GAUNTLET_DRIFT_CHECK") or "").lower() in ("1", "true", "yes"),
+            auto_cluster_min=_int(e, "GAUNTLET_AUTO_CLUSTER_MIN", 5),
             lease_s=_int(e, "LEASE_SECONDS", 60),
             poll_interval_s=float(e.get("POLL_INTERVAL_S") or 1.0),
             allow_private_targets=(e.get("GAUNTLET_ALLOW_PRIVATE_TARGETS") or "").lower()

@@ -23,7 +23,7 @@ CONTRACT_TABLES = {
     "rubrics", "scenarios", "suites", "suite_scenarios", "runs", "episodes", "events",
     "effects", "verdicts", "secrets", "events_archive", "effects_archive", "workspace_settings",
     "target_verifications", "audit_log", "kill_switches", "findings", "finding_episodes",
-    "attacks", "episode_attacks",
+    "attacks", "episode_attacks", "human_labels", "calibrations", "jobs",
 }  # fmt: skip
 
 

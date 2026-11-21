@@ -322,4 +322,4 @@ class WorkspaceSettings(Base):
     )
 
 
-from . import sec_models  # noqa: E402,F401  (registers the Phase 2 tables)
+from . import review_models, sec_models  # noqa: E402,F401  (registers Phase 2 and 3 tables)
