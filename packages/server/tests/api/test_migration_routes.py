@@ -187,3 +187,20 @@ async def test_pareto_marks_dominated_with_interval_support(client, pair, sm):
         params={"run_ids": f"{base},{cand}", "metrics": "pass_rate,cost,latency_p95"},
     )
     assert lat.status_code == 200 and lat.json()["metrics"][-1] == "latency_p95"
+
+
+def test_new_hard_fail_scenarios_only_counts_scenarios_without_a_baseline_hard_fail():
+    from types import SimpleNamespace as NS
+
+    from gauntlet_server.services.migration import _new_hard_fail_scenarios
+
+    def data(records, hard):
+        return NS(
+            records=[NS(episode_id=e, scenario_id=s) for e, s in records],
+            report=NS(hard_fail_episodes=hard),
+        )
+
+    base = data([("b1", "s1"), ("b2", "s2")], ["b1"])
+    cand = data([("c1", "s1"), ("c2", "s2"), ("c3", "s3")], ["c1", "c2"])
+    assert _new_hard_fail_scenarios(base, cand) == ["s2"]
+    assert _new_hard_fail_scenarios(base, data([("c1", "s1")], [])) == []
