@@ -30,6 +30,7 @@ from .routes import (
     findings,
     killswitch,
     models,
+    posture,
     runs,
     settings,
     targets,
@@ -111,7 +112,7 @@ def create_app(state: AppState | None = None) -> FastAPI:
     for r in (
         core.router, docs.router, runs.router, models.router, dev.router, facade_router,
         targets.router, audit.router, killswitch.router, settings.router,
-        findings.router, attacks.router,
+        findings.router, attacks.router, posture.router,
     ):  # fmt: skip
         application.include_router(r)
 

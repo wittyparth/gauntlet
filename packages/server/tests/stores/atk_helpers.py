@@ -129,3 +129,26 @@ async def add_finding(
     async with state.sm() as s, s.begin():
         await PgFindingStore(s, ws).put(f)
     return f.id
+
+
+async def make_agent_version(
+    client: Any, base_url: str, *, agent_id: str | None = None, label: str = "v1"
+) -> tuple[str, str]:
+    """(agent id, version id); pass `agent_id` to add a later version of the same agent."""
+    seed = (await client.post("/v1/dev/seed", json={"reset": False})).json()
+    if agent_id is None:
+        made = await client.post(
+            "/v1/agents", json={"project_id": seed["project_id"], "name": label}
+        )
+        agent_id = str(made.json()["id"])
+    r = await client.post(
+        f"/v1/agents/{agent_id}/versions",
+        json={
+            "label": label,
+            "target": {"kind": "openai_compat", "base_url": base_url, "model": "m", "wired": True},
+            "profile": {"purpose": "support"},
+            "world_id": "ecommerce",
+        },
+    )
+    assert r.status_code == 201, r.text
+    return agent_id, str(r.json()["id"])
