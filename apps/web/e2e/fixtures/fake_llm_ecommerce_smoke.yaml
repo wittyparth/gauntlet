@@ -132,6 +132,36 @@ roles:
         state_note: done
         action: done
         done_reason: goal_met
+  - match: How many orders are there in total?
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: How many orders are there in total?
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: What is the name of customer cus_3?
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: What is the name of customer cus_3?
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: List the three most recent orders.
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: List the three most recent orders.
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
   model:openrouter/deepseek/deepseek-v4-flash:
   - Sure, I can help with that. Let me take a look at your order and get back to you.
   - Thanks for the details. I have noted your request and will follow our policy.

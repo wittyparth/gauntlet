@@ -33,6 +33,21 @@ services:
   worker: { environment: { GAUNTLET_GATEWAY: "fake:/app/e2e-fake.yaml" }, volumes: ["../apps/web/e2e/fixtures/fake_llm_ecommerce_smoke.yaml:/app/e2e-fake.yaml:ro"] }
 ```
 
+### Security specs
+
+The findings, posture, audit and campaign specs need findings. `e2e/global-setup.ts` seeds them
+through the API (`e2e/seed-security.ts`): the DVA SQL world and agent, one benign suite, an
+unverified remote agent and a small `tool_injection` campaign run by the scripted fake gateway. That
+needs the compose `dva` profile with the scripted brain, and the DVA service names as local targets:
+
+```sh
+export DVA_BRAIN=scripted GAUNTLET_LOCAL_TARGET_HOSTS=dva,dva-sql,dva-email,localhost,127.0.0.1
+docker compose -f infra/docker-compose.yml --profile dva up -d --build dva dva-sql api worker
+```
+
+Without it the security specs fail with "no findings" and the other specs are unaffected. The real
+campaign launch (`campaign-launch.spec.ts`, last test) is opt in with `GAUNTLET_E2E_REAL_RUN=1`.
+
 ## Layout
 
 - `src/app`: routes. `(app)` is the signed-in shell; `api/session` and `api/gauntlet` are the web

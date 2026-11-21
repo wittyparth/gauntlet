@@ -17,3 +17,17 @@ export const qk = {
   modelCatalog: ["models", "catalog"] as const,
   modelSettings: ["settings", "models"] as const,
 };
+
+export const qkSec = {
+  findings: (filters: object = {}) => ["findings", filters] as const,
+  finding: (id: string) => ["findings", "detail", id] as const,
+  attacks: (filters: object = {}) => ["attacks", filters] as const,
+  taxonomy: ["security", "taxonomy"] as const,
+  posture: (agentId: string, versionId: string) => ["security", "posture", agentId, versionId] as const,
+  coverage: (agentId: string, versionId: string) => ["security", "coverage", agentId, versionId] as const,
+  killswitch: ["security", "killswitch"] as const,
+  verifications: ["security", "verifications"] as const,
+  attackScope: ["security", "attack-scope"] as const,
+  audit: (filters: object = {}) => ["security", "audit", filters] as const,
+  auditVerify: ["security", "audit-verify"] as const,
+};

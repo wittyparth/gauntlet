@@ -41,6 +41,14 @@ export function seededHelpers(request: APIRequest) {
     async scenario(): Promise<{ id: string; scenario: { id: string; title: string; goal: string } }> {
       return (await items("/v1/scenarios?limit=200"))[0] as never;
     },
+    /** The first finding of the seeded DVA SQL campaign. */
+    async finding(): Promise<{ id: string; title: string; agent_version_id: string }> {
+      const found = await items("/v1/findings?limit=200");
+      if (found.length === 0) {
+        throw new Error("no findings: start compose with the dva profile (DVA_BRAIN=scripted) and re-run e2e");
+      }
+      return found[0] as never;
+    },
     async agent(): Promise<{ id: string; name: string }> {
       const agents = (await items("/v1/agents?limit=200")) as { id: string; name: string }[];
       // The seed's agent has runs; the onboarding spec creates extra agents without any.

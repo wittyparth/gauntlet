@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, use } from "react";
 
+import { OpenFindingsCard } from "@/components/agents/open-findings-card";
 import { LatestRunsCard } from "@/components/agents/latest-runs-card";
 import { ProfileCard } from "@/components/agents/profile-card";
 import { StartRunDialog } from "@/components/agents/start-run-dialog";
@@ -74,6 +75,7 @@ function Overview({ agentId }: { agentId: string }) {
             <ToolInventory worldId={version.world_id} allowed={version.target.kind === "hosted" ? version.target.tools : undefined} />
             <TargetCard target={version.target} />
             <LatestRunsCard versionIds={list.map((v) => v.id)} startAction={<StartRunDialog agentVersionId={version.id} variant="outline" />} />
+            <OpenFindingsCard versionId={version.id} />
           </>
         )}
       </div>
