@@ -191,3 +191,26 @@ def test_fake_llm_file_is_stateless_by_assistant_count():
     a, b = asyncio.run(go())
     assert isinstance(a.parsed, SimOutput) and a.parsed.action == "say"
     assert isinstance(b.parsed, SimOutput) and b.parsed.action == "done"
+
+
+def test_reps_print_a_reliability_block_and_one_rep_prints_the_hint(runner, smoke_args, tmp_path):
+    res = invoke(runner, [*smoke_args, "--reps", "3"])
+    assert res.exit_code == 0, res.stderr
+    assert "Reliability" in res.stdout and "pass^k" in res.stdout
+    rep = read_report(tmp_path / "run")
+    assert [p.k for p in rep.reliability] == [1, 2, 3]
+    assert rep.reliability[0].value == rep.pass_rate
+    one = invoke(runner, [*smoke_args[:-1], str(tmp_path / "one")])
+    assert "increase repetitions" in one.stdout
+
+
+def test_adaptive_stops_a_clearly_failing_scenario_early(runner, smoke_args, tmp_path):
+    res = invoke(runner, [*smoke_args, "--reps", "6", "--adaptive", "--concurrency", "1"])
+    assert res.exit_code == 0, res.stderr
+    rep = read_report(tmp_path / "run")
+    by = {s.scenario_id: s for s in rep.per_scenario}
+    assert by["scn_tiny_cancel"].counted == 4  # zero passes in four: the failure is clear, stop
+    assert by["scn_tiny_status"].counted == 6  # a passing scenario needs far more to stop
+    assert rep.caution.adaptive_sampling and by["scn_tiny_cancel"].posterior_mean is not None
+    assert by["scn_tiny_status"].posterior_mean is None
+    assert "Adaptive sampling" in res.stdout

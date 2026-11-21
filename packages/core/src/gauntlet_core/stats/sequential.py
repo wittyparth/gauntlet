@@ -61,3 +61,23 @@ def sequential_decision(
     if decision == "continue" and trials >= max_trials:
         decision = "max_reached"
     return SequentialDecision(decision, above, below, mean)
+
+
+def beta_credible_interval(successes: int, trials: int, level: float = 0.95) -> tuple[float, float]:
+    """Equal-tailed credible interval of p under the Beta(1, 1) prior (bisection on the cdf)."""
+    if not 0 <= successes <= trials:
+        raise ValueError(f"need 0 <= successes <= trials, got {successes}/{trials}")
+    a, b = successes + 1, trials - successes + 1
+    tail = (1 - level) / 2
+
+    def quantile(q: float) -> float:
+        lo, hi = 0.0, 1.0
+        for _ in range(60):
+            mid = (lo + hi) / 2
+            if beta_cdf(mid, a, b) < q:
+                lo = mid
+            else:
+                hi = mid
+        return (lo + hi) / 2
+
+    return quantile(tail), quantile(1 - tail)

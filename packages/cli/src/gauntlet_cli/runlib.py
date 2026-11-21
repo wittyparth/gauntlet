@@ -23,6 +23,8 @@ from gauntlet_core.engine import (
     dump_cassette,
 )
 from gauntlet_core.eval import EpisodeRecord, RunReport, aggregate_run, load_rubrics
+from gauntlet_core.eval.stability import AdaptiveScheduler
+from gauntlet_core.ids import new_id
 from gauntlet_core.llm import Gateway
 from gauntlet_core.packs import Pack
 from gauntlet_core.runner import (
@@ -58,6 +60,7 @@ class RunPlan:
     suite_id: str
     secrets: dict[str, str] = field(default_factory=dict)
     episodes: dict[str, tuple[str, int]] = field(default_factory=dict)  # id -> (scenario, rep)
+    adaptive: bool = False  # sequential stopping per scenario (P3-2)
 
 
 def collect_secrets(agent: AgentFile) -> dict[str, str]:
@@ -86,6 +89,7 @@ def make_plan(
     judge: bool,
     suite_id: str,
     episode_ids: dict[str, tuple[str, int]],
+    adaptive: bool = False,
 ) -> RunPlan:
     profile = agent.profile or AgentProfile(purpose=pack.title, policies_text=pack.policy_text)
     version = AgentVersion(
@@ -97,7 +101,7 @@ def make_plan(
     )
     return RunPlan(
         run_id, out, pack, version, scenarios, reps, seed, budget_micros, concurrency, judge,
-        suite_id, collect_secrets(agent), episode_ids,
+        suite_id, collect_secrets(agent), episode_ids, adaptive,
     )  # fmt: skip
 
 
@@ -150,6 +154,19 @@ async def execute_plan(
                 judge_enabled=plan.judge,
             )
 
+            scheduler = AdaptiveScheduler(plan.reps) if plan.adaptive else None
+            if scheduler:  # replay what a resumed run already finished into the scheduler
+                scheduler.start(sorted({s for s, _ in plan.episodes.values()}))
+                for e in db.episodes(plan.run_id):
+                    if e.outcome is not None:
+                        scheduler.record(e.scenario_id, e.outcome)
+            tasks: set[asyncio.Task[None]] = set()
+
+            def spawn(ep_id: str) -> None:
+                task = asyncio.create_task(one(ep_id))
+                tasks.add(task)
+                task.add_done_callback(tasks.discard)
+
             async def one(ep_id: str) -> None:
                 async with sem:
                     epoch = await store.bump_epoch(ep_id)
@@ -170,8 +187,19 @@ async def execute_plan(
                     )
                     if on_done:
                         on_done(ep_id, out)
+                    if scheduler:
+                        scn_id = plan.episodes[ep_id][0]
+                        rep = scheduler.record(scn_id, out.outcome)
+                        if rep is not None:
+                            new = new_id("ep")
+                            plan.episodes[new] = (scn_id, rep)
+                            db.add_episode(new, plan.run_id, scn_id, rep)
+                            spawn(new)
 
-            await asyncio.gather(*(one(e) for e in sorted(pending)))
+            for e in sorted(pending):
+                spawn(e)
+            while tasks:
+                await asyncio.gather(*list(tasks))
         for ep_id in plan.episodes:
             snap = await store.load(ep_id)
             if snap.events:
@@ -233,6 +261,8 @@ def build_report(
         wired=bool(getattr(cfg, "wired", False)),
         rubrics=load_rubrics(),
         unpriced_models=unpriced_models,
+        adaptive=plan.adaptive,
+        repetitions=plan.reps,
     )
 
 

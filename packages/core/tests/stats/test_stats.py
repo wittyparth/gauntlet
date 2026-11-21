@@ -273,3 +273,19 @@ def test_interval_never_zero_width_for_nonempty(data):
         assert est.high > est.low
     for point in reliability_curve(data, resamples=50):
         assert point.estimate.high > point.estimate.low
+
+
+# --- Beta credible interval (adaptive reports) --------------------------------------------
+
+
+def test_beta_credible_interval_known_values_and_bounds():
+    from gauntlet_core.stats import beta_credible_interval
+
+    # Beta(4, 1) (3 of 3 passed): the 95% equal-tailed interval is (0.025**(1/4), 0.975**(1/4))
+    lo, hi = beta_credible_interval(3, 3)
+    assert (lo, hi) == pytest.approx((0.3976, 0.9937), abs=1e-3)
+    for s, n in [(0, 3), (1, 4), (7, 9), (9, 9)]:
+        lo, hi = beta_credible_interval(s, n)
+        assert 0 <= lo < posterior_mean(s, n) < hi <= 1
+    narrow, wide = beta_credible_interval(5, 8, 0.8), beta_credible_interval(5, 8, 0.99)
+    assert wide[0] < narrow[0] and wide[1] > narrow[1]

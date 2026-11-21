@@ -80,6 +80,9 @@ def run(
     resume: Annotated[Path | None, typer.Option("--resume", help="Resume a run dir.")] = None,
     config: Annotated[Path | None, typer.Option(help="gauntlet.toml.")] = None,
     force: Annotated[bool, typer.Option("--force", help="Ignore the budget pre-check.")] = False,
+    adaptive: Annotated[
+        bool, typer.Option("--adaptive", help="Stop a scenario early once its outcome is clear.")
+    ] = False,
     fake_llm: Annotated[Path | None, typer.Option("--fake-llm", hidden=True)] = None,
 ) -> None:
     """Run PACK against the agent in --target and print a report.
@@ -102,6 +105,7 @@ def run(
         meta = read_meta(resume / "meta.json")
         suite, reps, seed = meta["suite"], meta["reps"], meta["seed"]
         budget_usd = meta["budget_usd"]
+        adaptive = bool(meta.get("adaptive", adaptive))
     if suite is None:
         suite = "smoke" if "smoke" in pack_obj.suites else "all"
     if suite == "all" and "all" not in pack_obj.suites:
@@ -129,14 +133,15 @@ def run(
     out_dir = resume or out or RUNS_DIR / run_id
     out_dir.mkdir(parents=True, exist_ok=True)
     db = LocalDb(out_dir / "local.db")
+    first = min(3, reps) if adaptive else reps  # adaptive runs start with three repetitions
     if resume is None:
-        episodes = {new_id("ep"): (s.id, rep) for s in scenarios for rep in range(reps)}
+        episodes = {new_id("ep"): (s.id, rep) for s in scenarios for rep in range(first)}
     else:
         episodes = {e.id: (e.scenario_id, e.rep) for e in db.episodes(run_id)}
     plan = make_plan(
         run_id=run_id, out=out_dir, pack=pack_obj, agent=agent, scenarios=scenarios, reps=reps,
         seed=seed, budget_micros=budget_micros, concurrency=concurrency, judge=not no_judge,
-        suite_id=suite, episode_ids=episodes,
+        suite_id=suite, episode_ids=episodes, adaptive=adaptive,
     )  # fmt: skip
     if resume is None:
         _record_run(plan, db, cfg.llm.roles, est.expected)
@@ -166,6 +171,7 @@ def _record_run(plan: RunPlan, db: LocalDb, roles: Any, expected: int) -> None:
             "run_id": plan.run_id,
             "suite": plan.suite_id,
             "reps": plan.reps,
+            "adaptive": plan.adaptive,
             "seed": plan.seed,
             "budget_usd": plan.budget_micros / 1_000_000,
             "pack": str(plan.pack.root),

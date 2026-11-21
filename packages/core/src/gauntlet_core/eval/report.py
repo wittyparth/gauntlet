@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from collections import Counter, defaultdict
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Literal
 
@@ -12,15 +12,23 @@ from pydantic import BaseModel, ConfigDict
 
 from gauntlet_core.judges import model_family
 from gauntlet_core.schema import SCORED_OUTCOMES, SEVERITY_ORDER, Rubric, Scenario, Verdict
-from gauntlet_core.stats import suite_pass_rate, wilson_estimate
+from gauntlet_core.stats import (
+    beta_credible_interval,
+    posterior_mean,
+    suite_pass_rate,
+    wilson_estimate,
+)
 
+from .reliability import ReliabilityPoint, reliability_curve
 from .scoring import composite_score, dimension_score, hard_fail_episodes
+from .stability import classify_flaky
 
 __all__ = [
     "Caution",
     "DimensionStats",
     "EpisodeRecord",
     "FailureRef",
+    "ReliabilityPoint",
     "RunReport",
     "ScenarioStats",
     "aggregate_run",
@@ -44,6 +52,10 @@ class ScenarioStats(_M):
     ci_high: float | None
     excluded: dict[str, int]
     episode_ids: list[str]
+    flaky: bool = False
+    flakiness: float | None = None
+    quarantined: bool = False
+    posterior_mean: float | None = None  # adaptive runs: set for scenarios that stopped early
 
 
 class DimensionStats(_M):
@@ -89,6 +101,8 @@ class RunReport(_M):
     latency_p95_ms: int | None
     failures: list[FailureRef]
     caution: Caution
+    reliability: list[ReliabilityPoint] = []
+    quarantined: list[str] = []
 
 
 @dataclass(frozen=True)
@@ -190,22 +204,47 @@ def aggregate_run(
     wired: bool = False,
     rubrics: Mapping[str, Rubric] | None = None,
     unpriced_models: Sequence[str] = (),
+    quarantined: Collection[str] = (),
+    adaptive: bool = False,
+    repetitions: int | None = None,
 ) -> RunReport:
-    counted_eps = [e for e in episodes if e.outcome in SCORED_OUTCOMES]
-    excluded = dict(Counter(e.outcome for e in episodes if e.outcome not in SCORED_OUTCOMES))
+    """`quarantined` scenarios are reported with their own rate but excluded from every
+    headline number. `adaptive` runs report posterior means (and Beta credible intervals) for
+    scenarios that stopped before `repetitions`, because early stopping biases naive rates."""
+    quarantine = set(quarantined)
+    headline = [e for e in episodes if e.scenario_id not in quarantine]
+    counted_eps = [e for e in headline if e.outcome in SCORED_OUTCOMES]
+    excluded = dict(Counter(e.outcome for e in headline if e.outcome not in SCORED_OUTCOMES))
 
     by_scn: dict[str, list[EpisodeRecord]] = defaultdict(list)
     for e in episodes:
         by_scn[e.scenario_id].append(e)
     per_scenario: list[ScenarioStats] = []
     data: dict[str, list[bool]] = {}
+    early: dict[str, float] = {}  # adaptive scenarios that stopped early: posterior mean
     for sid in sorted(by_scn):
         recs = by_scn[sid]
         scored = [r for r in recs if r.outcome in SCORED_OUTCOMES]
         passed = sum(1 for r in scored if r.outcome == "passed")
         est = wilson_estimate(passed, len(scored)) if scored else None
-        if scored:
-            data[sid] = [r.outcome == "passed" for r in scored]
+        trials = [r.outcome == "passed" for r in scored]
+        if scored and sid not in quarantine:
+            data[sid] = trials
+        rate = est.value if est else None
+        lo, hi = (est.low, est.high) if est else (None, None)
+        post: float | None = None
+        if (
+            adaptive
+            and repetitions
+            and scored
+            and sid not in quarantine
+            and len(scored) < repetitions
+        ):
+            post = posterior_mean(passed, len(scored))
+            early[sid] = post
+            rate = post
+            lo, hi = beta_credible_interval(passed, len(scored))
+        flaky = classify_flaky(trials)
         scn = scenarios.get(sid)
         per_scenario.append(
             ScenarioStats(
@@ -213,15 +252,26 @@ def aggregate_run(
                 title=scn.title if scn else sid,
                 counted=len(scored),
                 passed=passed,
-                rate=est.value if est else None,
-                ci_low=est.low if est else None,
-                ci_high=est.high if est else None,
+                rate=rate,
+                ci_low=lo,
+                ci_high=hi,
                 excluded=dict(Counter(r.outcome for r in recs if r.outcome not in SCORED_OUTCOMES)),
                 episode_ids=[r.episode_id for r in recs],
+                flaky=flaky.flaky,
+                flakiness=flaky.flakiness,
+                quarantined=sid in quarantine,
+                posterior_mean=post,
             )
         )
 
     suite = suite_pass_rate(data, resamples=RESAMPLES, seed=seed) if data else None
+    pass_rate, ci_low, ci_high = (
+        (suite.value, suite.low, suite.high) if suite else (None, None, None)
+    )
+    if suite and early:  # posterior means stand in for the naive rate of early stops
+        rates = [early.get(sid, sum(t) / len(t)) for sid, t in data.items()]
+        pass_rate = sum(rates) / len(rates)
+        ci_low, ci_high = min(suite.low, pass_rate), max(suite.high, pass_rate)
     counted_ids = {e.episode_id for e in counted_eps}
     dims = _dimensions(verdicts, counted_ids, rubrics)
     cost = sum(e.cost_usd_micros for e in episodes)
@@ -243,9 +293,9 @@ def aggregate_run(
         run_id=run_id,
         counted=len(counted_eps),
         excluded=excluded,
-        pass_rate=suite.value if suite else None,
-        ci_low=suite.low if suite else None,
-        ci_high=suite.high if suite else None,
+        pass_rate=pass_rate,
+        ci_low=ci_low,
+        ci_high=ci_high,
         per_scenario=per_scenario,
         dimensions=dims,
         composite_score=composite_score((d.score, d.severity) for d in dims),
@@ -265,5 +315,8 @@ def aggregate_run(
             else "full",
             reduced_coverage=target_kind in ("http", "openai_compat") and not wired,
             unpriced_models=sorted(unpriced_models),
+            adaptive_sampling=adaptive,
         ),
+        reliability=reliability_curve(data, seed=seed, resamples=RESAMPLES),
+        quarantined=sorted(q for q in quarantine if q in by_scn),
     )

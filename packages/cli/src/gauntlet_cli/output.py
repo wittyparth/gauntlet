@@ -52,6 +52,19 @@ def print_report(report: RunReport, meta: Mapping[str, Any], console: Console) -
         )  # fmt: skip
     console.print(table)
 
+    if len(report.reliability) > 1:
+        rel = Table(title="Reliability (pass^k: all k repetitions pass)")
+        for col in ("k", "pass^k", "95% CI", "Scenarios"):
+            rel.add_column(col)
+        for p in report.reliability:
+            rel.add_row(f"{p.k}", _pct(p.value), f"{_pct(p.ci_low)} to {_pct(p.ci_high)}",
+                        f"{p.scenarios}")  # fmt: skip
+        console.print(rel)
+    elif report.reliability:
+        console.print("[dim]Reliability: increase repetitions to see reliability (pass^k).[/dim]")
+    flaky = [s.scenario_id for s in report.per_scenario if s.flaky]
+    if flaky:
+        console.print("[yellow]Flaky scenarios:[/yellow] " + ", ".join(flaky))
     if report.failures:
         console.print("[bold]Failures[/bold]")
         for f in report.failures:
@@ -74,6 +87,10 @@ def print_report(report: RunReport, meta: Mapping[str, Any], console: Console) -
         notes.append("Some tool results were simulated by a model.")
     if c.reduced_coverage:
         notes.append("Target is not wired: reduced world coverage.")
+    if c.adaptive_sampling:
+        notes.append("Adaptive sampling: early-stopped scenarios report posterior means.")
+    if report.quarantined:
+        notes.append("Quarantined (excluded from the pass rate): " + ", ".join(report.quarantined))
     if c.unpriced_models:
         notes.append("Unpriced models (cost understated): " + ", ".join(c.unpriced_models))
     for n in notes:

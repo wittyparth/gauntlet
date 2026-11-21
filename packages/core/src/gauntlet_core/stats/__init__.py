@@ -21,7 +21,13 @@ from .passk import (
     suite_pass_hat_k,
     suite_pass_rate,
 )
-from .sequential import SequentialDecision, beta_cdf, posterior_mean, sequential_decision
+from .sequential import (
+    SequentialDecision,
+    beta_cdf,
+    beta_credible_interval,
+    posterior_mean,
+    sequential_decision,
+)
 
 __all__ = [
     "Agreement",
@@ -31,6 +37,7 @@ __all__ = [
     "ReliabilityPoint",
     "SequentialDecision",
     "beta_cdf",
+    "beta_credible_interval",
     "classify_flip",
     "cohens_kappa",
     "compare_runs",
