@@ -70,7 +70,14 @@ class PolicyEngine:
             if res.tri is True and res.stable:
                 seq = ctx.proposed_seq
                 if res.evidence and seq is not None and max(e.seq for e in res.evidence) < seq:
-                    continue  # already held before this action; it was decided then
+                    # Held before this action. If it rested on the agent's own earlier actions
+                    # it was decided then; if it rests on inputs (untrusted tool results) it
+                    # keeps applying to everything that follows.
+                    kinds = {e.seq: e.kind for e in ctx.events}
+                    if all(
+                        kinds.get(ev.seq) in ("tool_call", "agent_message") for ev in res.evidence
+                    ):
+                        continue
                 hit: PolicyRule = rule
                 evidence = res.evidence
             elif res.tri is False:

@@ -91,12 +91,10 @@ class Session:
         ok: bool = True,
     ) -> None:
         if untrusted is None:
-            untrusted = self.guard.is_untrusted_tool(tool)
-        origin = (
-            Origin(trust="untrusted_external", source=source or tool)
-            if untrusted
-            else Origin(trust="system", source=source)
-        )
+            trust = self.guard.origin_trust(tool)
+        else:
+            trust = "untrusted_external" if untrusted else "system"
+        origin = Origin(trust=trust, source=(source or tool) if trust != "system" else source)
         self._append(
             "tool_result",
             "tool",

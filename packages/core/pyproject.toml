@@ -16,6 +16,8 @@ dependencies = [
 [project.optional-dependencies]
 cluster = ["scikit-learn>=1.4"]
 mcp = ["mcp>=2.0"]
+classifier = ["onnxruntime>=1.17", "tokenizers>=0.19", "numpy>=1.26"]
+classifier-torch = ["transformers>=4.40", "torch>=2.2"]
 
 [build-system]
 requires = ["hatchling"]

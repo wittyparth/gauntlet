@@ -5,15 +5,16 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable, Sequence
 from datetime import UTC, datetime
-from fnmatch import fnmatchcase
 from pathlib import Path
 from typing import Any, Literal
 
 from gauntlet_core.ids import new_id
 from gauntlet_core.policy import PolicyEngine
 from gauntlet_core.schema import Policy, load_yaml
+from gauntlet_core.validate import walk_check
 
 from .approvals import ApprovalHandler
+from .classifier import DETECTOR_NAME, OriginRule, OriginRules, warm_up
 from .decision import DecisionRecord, LogArgs
 from .session import Session
 from .sinks import DecisionSink
@@ -46,7 +47,8 @@ class Guard:
         approval_timeout_s: float = 300.0,
         on_timeout: Literal["deny", "allow"] = "deny",
         on_block: Literal["raise", "return"] = "raise",
-        origin_rules: Sequence[str] = (),
+        origin_rules: Sequence[OriginRule | str | dict[str, Any]] = (),
+        use_origin_defaults: bool = True,
         tool_risk: dict[str, str] | None = None,
     ) -> None:
         self.mode = mode
@@ -58,7 +60,9 @@ class Guard:
         self.approval_timeout_s = approval_timeout_s
         self.on_timeout = on_timeout
         self.on_block = on_block
-        self.origin_rules = list(origin_rules)
+        self.origin_rules = OriginRules(
+            origin_rules, defaults=OriginRules().defaults if use_origin_defaults else ()
+        )
         self.tool_risk: dict[str, str] = dict(tool_risk or {})
         self._untrusted_tools: set[str] = set()
         self.sink_errors = 0
@@ -70,6 +74,12 @@ class Guard:
     def _load(policy: Policy | str | Path) -> tuple[Policy, PolicyEngine, dict[str, str]]:
         doc = policy if isinstance(policy, Policy) else load_yaml(Policy, policy)
         engine = PolicyEngine(doc)  # raises ValueError when a rule cannot be evaluated live
+        if any(
+            n.type == "detector" and n.name == DETECTOR_NAME
+            for r in doc.rules
+            for n in walk_check(r.when)
+        ):
+            warm_up()  # load the model now, not on the first call
         return doc, engine, {r.id: r.severity for r in doc.rules}
 
     def reload(self, policy: Policy | str | Path) -> None:
@@ -88,10 +98,18 @@ class Guard:
     def session(self, session_id: str | None = None, *, user_id: str | None = None) -> Session:
         return Session(self, session_id or new_id("ses"), user_id)
 
+    def origin_trust(self, tool: str) -> Literal["system", "user", "untrusted_external"]:
+        """Trust of a tool's results: configured rules (first match), then
+        `wrap(untrusted_output=True)`, then the conservative default globs, else system."""
+        configured = self.origin_rules.configured(tool)
+        if configured is not None:
+            return configured
+        if tool in self._untrusted_tools:
+            return "untrusted_external"
+        return self.origin_rules.match(tool) or "system"
+
     def is_untrusted_tool(self, tool: str) -> bool:
-        return tool in self._untrusted_tools or any(
-            fnmatchcase(tool, pat) for pat in self.origin_rules
-        )
+        return self.origin_trust(tool) == "untrusted_external"
 
     def wrap(
         self,

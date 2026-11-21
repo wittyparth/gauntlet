@@ -91,6 +91,8 @@ def eval_sequence(check: Sequence, ctx: Ctx) -> Res:
 
 def eval_detector(check: Detector, ctx: Ctx) -> Res:
     result = detectors.get(check.name)(ctx.trajectory(), check.params)
+    if not result.holds and result.needs_judge and ctx.prefix:
+        return Res(None)  # a detector that could not finish (latency budget, no model): unknown
     hs = HitSet([Hit(e.seq, e.quote, e.note) for e in result.evidence])
     return res_from_hits(ctx, result.holds, hs)
 
