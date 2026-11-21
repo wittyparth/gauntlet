@@ -168,7 +168,7 @@ async def test_llm_sim_goes_through_llm_effect_nested_in_the_tool_effect():
     out = await execute_episode(llm_sim_job(), runner.RunnerDeps(store=store, gateway=gw))
     snap = await store.load("ep_1")
     span = snap.effects["tool:0"].span
-    assert span == {"events": 0, "ordinals": {"llm": 1}}
+    assert span == {"events": 0, "ordinals": {"llm": 1}, "start": {"llm": 2}}
     llm_costs = [r.cost.usd_micros for r in snap.effects.values() if r.kind == "llm" and r.cost]
     assert len(llm_costs) == 5 and all(c == 10 for c in llm_costs)  # sim, 2 target, llm_sim, sim
     assert out.cost.usd_micros == 50 and out.world_fidelity == "simulated"
@@ -239,7 +239,7 @@ async def test_wired_through_local_facade_crash_matrix_and_zero_call_replay():
     h = WiredHarness()
     (events, effects), attempts = await crash_matrix(h.job, h.deps, expect_attempt_ok={0, 1})
     assert 1 in attempts and 0 in attempts
-    assert effects["target:0"][4] == {"events": 4, "ordinals": {"tool": 2}}
+    assert effects["target:0"][4] == {"events": 4, "ordinals": {"tool": 2}, "start": {"tool": 0}}
     final_orders = [e for e in events if e[1] == "tool_result"]
     assert len(final_orders) == 2
     hits = h.agent_hits

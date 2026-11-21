@@ -86,8 +86,8 @@ async def test_calibration_gates_then_goes_stale_when_a_judge_model_changes(clie
     wrong = {distinct[-1]}  # the small judge is wrong on one scenario, with low confidence
     state.gateway = FakeLLM(
         by_role={
-            "judge_small": [judge(truth, wrong, 0.6)] * (n + 5),
-            "judge_strong": [judge(truth, set(), 0.95)] * (n + 5),
+            "judge_small": [judge(truth, wrong, 0.6)] * (4 * n),
+            "judge_strong": [judge(truth, set(), 0.95)] * (4 * n),
         }
     )
 
