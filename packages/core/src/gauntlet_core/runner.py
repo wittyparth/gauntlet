@@ -27,6 +27,7 @@ from gauntlet_core.engine import (
     run_episode,
 )
 from gauntlet_core.eval.rubrics import RULE_STAGE, rule_context
+from gauntlet_core.gateway.guarded_world import GuardedWorld, guard_for_episode
 from gauntlet_core.judges import JudgeEvaluator
 from gauntlet_core.llm import Gateway, llm_effect
 from gauntlet_core.schema import (
@@ -38,6 +39,7 @@ from gauntlet_core.schema import (
     LLMSimHandler,
     Outcome,
     Persona,
+    Policy,
     Rubric,
     Scenario,
     Termination,
@@ -90,6 +92,11 @@ class EpisodeJob:
     rubrics: dict[str, Rubric]
     rng_seed: int
     secrets: dict[str, str] = field(default_factory=dict)
+    # a policy to enforce in this episode (P4-5); `policy_mode_override="enforce"` enforces a
+    # stored shadow policy (verification runs); approvals are auto-denied unless approve_all
+    policy: Policy | None = None
+    policy_mode_override: str | None = None
+    policy_approve_all: bool = False
 
 
 @dataclass
@@ -306,6 +313,11 @@ async def execute_episode(
     built = build_world(job.world, scn.world_overrides, job.rng_seed)
     world = World(built, llm_sim=make_llm_sim(deps.gateway))
     world.bind(ctx)
+    if job.policy is not None:
+        guard, _ = guard_for_episode(
+            job.policy, ctx, mode=job.policy_mode_override, approve_all=job.policy_approve_all
+        )
+        world = GuardedWorld(world, guard.session(f"ep:{job.episode_id}"))
     persona = merge_persona(job.persona, scn.persona_overrides)
     target = make_target(job.agent_version, world, built, deps, job.secrets)
     if sim is None and _TURNS_TAG in scn.tags:  # placed user_turn attack: scripted turns
