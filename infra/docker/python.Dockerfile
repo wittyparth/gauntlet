@@ -9,10 +9,12 @@ COPY packages/server/pyproject.toml packages/server/pyproject.toml
 COPY packages/cli/pyproject.toml packages/cli/pyproject.toml
 COPY apps/dva/pyproject.toml apps/dva/pyproject.toml
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --no-install-workspace --package gauntlet-server
+    uv sync --frozen --no-dev --no-install-workspace --package gauntlet-server --package gauntlet-dva
 COPY packages/ packages/
+# dva ships the python handlers of the SQL and email worlds (dva.handlers_*).
+COPY apps/dva/ apps/dva/
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --no-editable --package gauntlet-server
+    uv sync --frozen --no-dev --no-editable --package gauntlet-server --package gauntlet-dva
 
 FROM python:3.12-slim-bookworm AS runtime
 ENV PATH=/app/.venv/bin:$PATH PYTHONPATH=/app PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
