@@ -34,6 +34,7 @@ def create_app(
     *,
     scripted: Scripted | None = None,
     system_prompt: Callable[[set[str]], str] | None = None,
+    complete: Callable[..., Awaitable[Any]] | None = None,
 ) -> FastAPI:
     cfg = settings or load_settings()
     flaws_now = flaws or active_flaws
@@ -66,6 +67,7 @@ def create_app(
                     tools.call,
                     await tools.list_tools(),
                     model=cfg.model,
+                    complete=complete,
                     system=system_prompt(active) if system_prompt else None,
                 )
         return JSONResponse(

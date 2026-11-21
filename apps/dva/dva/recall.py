@@ -25,8 +25,8 @@ from typing import Any
 import uvicorn
 import yaml
 from gauntlet_core.checks import evaluate_final
-from gauntlet_core.engine import MemoryJournalStore
-from gauntlet_core.llm import FakeLLM
+from gauntlet_core.engine import MemoryBudgetLedger, MemoryJournalStore
+from gauntlet_core.llm import FakeLLM, LiteLLMGateway, RoleConfig, load_config
 from gauntlet_core.packs import load_pack
 from gauntlet_core.runner import RunnerDeps, derive_episode_seed
 from gauntlet_core.schema import (
@@ -58,10 +58,13 @@ from gauntlet_core.validate import walk_check
 from gauntlet_core.world import build_trajectory, build_world
 
 from .app import create_app
-from .config import Settings, world_file
+from .config import DEFAULT_MODEL, Settings, world_file
 from .email_agent import brain_scripted as email_brain
+from .email_agent import prompts as email_prompts
 from .flaws import FLAWS
+from .live import TARGET_ROLE, BudgetExceeded, CappedGateway, gateway_complete
 from .sql_agent import brain_scripted as sql_brain
+from .sql_agent import prompts as sql_prompts
 
 __all__ = ["AGENTS", "Clause", "main", "parse_oracle", "run_recall"]
 
@@ -166,6 +169,11 @@ def _benign(agent: str) -> list[Scenario]:
 
 
 AGENTS = {"support": None, "sql": sql_brain.respond, "email": email_brain.respond}
+PROMPTS = {
+    "support": None,
+    "sql": sql_prompts.build_system_prompt,
+    "email": email_prompts.build_system_prompt,
+}
 
 
 async def _serve(app: Any) -> tuple[uvicorn.Server, asyncio.Task[None], str]:
@@ -227,21 +235,37 @@ def _pick(
     return picked, skipped
 
 
+def _scripted_sim(s: Scenario) -> ScriptedUserSimulator:
+    return ScriptedUserSimulator([s.opening_message or s.goal])
+
+
 async def _campaign(
-    agent: str, variant: str, flaws: set[str], per_category: int, seed: int
+    agent: str,
+    variant: str,
+    flaws: set[str],
+    per_category: int,
+    seed: int,
+    live: CappedGateway | None = None,
 ) -> dict[str, Any]:
     world = _world(agent, variant)
     taxonomy = load_taxonomy(REPO / "attacks" / "taxonomy.yaml")
     lib = load_attacks(REPO / "attacks" / "library", taxonomy)
     picked, skipped = _pick(lib.attacks, world, agent, per_category, seed)
-    app = create_app(lambda: flaws, Settings(brain="scripted"), scripted=AGENTS[agent])
+    if live is None:
+        app = create_app(lambda: flaws, Settings(brain="scripted"), scripted=AGENTS[agent])
+    else:
+        app = create_app(
+            lambda: flaws, Settings(brain="llm"), system_prompt=PROMPTS[agent],
+            complete=gateway_complete(live),
+        )  # fmt: skip
     server, task, url = await _serve(app)
     facade = LocalFacade(secret=b"k" * 32)
     await facade.start()
     store, findings = MemoryJournalStore(), MemoryFindingStore()
     deps = RunnerDeps(
-        store=store, gateway=FakeLLM(), facade=facade,
-        url_policy=UrlPolicy(allow_private=True), judge_enabled=False,
+        store=store, gateway=live or FakeLLM(), facade=facade,
+        url_policy=UrlPolicy(allow_private=True), judge_enabled=live is not None,
+        budget=MemoryBudgetLedger(live.cap) if live is not None else None,
     )  # fmt: skip
     version = AgentVersion(
         id=f"av_{agent}", agent_id=agent, label=agent,
@@ -251,19 +275,31 @@ async def _campaign(
     persona = load_persona_library()["per_cooperative"]
     runner = EpisodeScenarioRunner(
         deps, version, persona, namespace=f"recall-{agent}-{variant}", seed=0,
-        sim_factory=lambda s: ScriptedUserSimulator([s.opening_message or s.goal]),
+        sim_factory=None if live is not None else _scripted_sim,
     )  # fmt: skip
     episodes: list[dict[str, Any]] = []
+    truncated = False
     try:
         for i, (attack, base) in enumerate(picked):
             assert base is not None
             placed = place(attack, world, base, seed=seed)
             attempt = f"a{i:03d}"
-            res = await runner(placed.scenario, placed.world, attempt)
+            before = live.spent if live is not None else 0
+            try:
+                res = await runner(placed.scenario, placed.world, attempt)
+            except BudgetExceeded:
+                truncated = True
+                break
+            if live is not None and live.tripped:
+                truncated = True  # the episode ran into the cap: its result is not trusted
+                break
             row: dict[str, Any] = {
                 "attack_id": attack.id, "category": attack.category, "held": res.objective_held,
                 "finding_id": None, "events": None, "scenario": placed.scenario,
                 "world": placed.world, "seed": derive_episode_seed(0, attempt, 0),
+                "cost_usd_micros": (live.spent - before) if live is not None else 0,
+                "reply": res.reply_summary, "tools": list(res.tools_called),
+                "outcome": res.outcome,
             }  # fmt: skip
             if res.objective_held:
                 filing = await file_finding(
@@ -277,7 +313,10 @@ async def _campaign(
         await facade.stop()
         server.should_exit = True
         await task
-    return {"episodes": episodes, "skipped": skipped, "findings": await findings.list()}
+    return {
+        "episodes": episodes, "skipped": skipped, "findings": await findings.list(),
+        "planned": len(picked), "truncated": truncated,
+    }  # fmt: skip
 
 
 async def _no_oracle(*_a: Any, **_k: Any) -> Any:
@@ -291,10 +330,18 @@ def _scope(agent: str) -> tuple[list[str], list[str], list[str]]:
     return in_scope, phase2_no_oracle, [f.id for f in mine if f.phase == 1]
 
 
-async def run_recall(agent: str, per_category: int, seed: int) -> dict[str, Any]:
+async def run_recall(
+    agent: str,
+    per_category: int,
+    seed: int,
+    live: CappedGateway | None = None,
+    control: bool = True,
+) -> dict[str, Any]:
     in_scope, expected_misses, _ = _scope(agent)
     flaws = {f.id for f in FLAWS.values() if f.agent == agent}
-    main_run = await _campaign(agent, "unfixed", flaws, per_category, seed)
+    spent0 = live.spent if live is not None else 0
+    main_run = await _campaign(agent, "unfixed", flaws, per_category, seed, live)
+    main_cost = (live.spent - spent0) if live is not None else 0
     per_flaw: dict[str, dict[str, Any]] = {
         fid: {"detected": False, "finding_ids": []} for fid in in_scope
     }
@@ -313,7 +360,10 @@ async def run_recall(agent: str, per_category: int, seed: int) -> dict[str, Any]
                     per_flaw[fid]["finding_ids"].append(ep["finding_id"])
                 mapped.add(ep["finding_id"])
     found = sorted(f for f, v in per_flaw.items() if v["detected"])
-    clean = await _campaign(agent, "fixed", set(), per_category, seed)
+    clean: dict[str, Any] | None = None
+    if control and not (live is not None and live.tripped):
+        clean = await _campaign(agent, "fixed", set(), per_category, seed, live)
+    total_cost = (live.spent - spent0) if live is not None else 0
     all_ids = {f.id for f in main_run["findings"]}
     return {
         "agent": agent, "flaws_in_scope": in_scope, "flaws_detected": found,
@@ -323,8 +373,25 @@ async def run_recall(agent: str, per_category: int, seed: int) -> dict[str, Any]
         "unmatched_findings": len(all_ids - mapped),
         "attacks_run": len(main_run["episodes"]), "attacks_skipped": len(main_run["skipped"]),
         "per_flaw": per_flaw,
-        "false_positives_on_clean": len(clean["findings"]),
+        "false_positives_on_clean": len(clean["findings"]) if clean else 0,
+        "mode": "live" if live is not None else "scripted",
+        "attacks_held": sum(1 for e in main_run["episodes"] if e["held"]),
+        "attacks_planned": main_run["planned"], "main_truncated": main_run["truncated"],
+        "attack_rows": [_row(e) for e in main_run["episodes"]],
+        "control": None if clean is None else {
+            "attacks_run": len(clean["episodes"]), "planned": clean["planned"],
+            "truncated": clean["truncated"], "findings": len(clean["findings"]),
+            "attack_rows": [_row(e) for e in clean["episodes"]],
+            "cost_usd_micros": total_cost - main_cost,
+        },
+        "cost_usd_micros": total_cost,
     }  # fmt: skip
+
+
+def _row(e: dict[str, Any]) -> dict[str, Any]:
+    return {k: e.get(k) for k in (
+        "attack_id", "category", "held", "finding_id", "cost_usd_micros", "tools", "reply",
+    )}  # fmt: skip
 
 
 def _print(r: dict[str, Any]) -> None:
@@ -340,17 +407,67 @@ def _print(r: dict[str, Any]) -> None:
         f"  attacks run {r['attacks_run']}, skipped {r['attacks_skipped']}, unmatched findings "
         f"{r['unmatched_findings']}, false positives on clean {r['false_positives_on_clean']}"
     )
+    if r.get("mode") == "live":
+        ctl = "skipped" if r["control"] is None else f"{r['control']['attacks_run']} attacks"
+        print(f"  attacks succeeded {r['attacks_held']}, control {ctl}, "
+              f"cost ${r['cost_usd_micros'] / 1e6:.4f}")  # fmt: skip
+
+
+def build_live_gateway(config: Path, budget_usd: float, inner: Any = None) -> CappedGateway:
+    """Catalog roles from `config` (reasoning off), plus the DVA target role on the catalog's
+    default generation model, behind a hard cap."""
+    cfg = load_config(config)
+    cfg.llm.roles[TARGET_ROLE] = RoleConfig(
+        model=DEFAULT_MODEL, temperature=0.0, max_output_tokens=1024, reasoning="off"
+    )
+    return CappedGateway(inner or LiteLLMGateway(cfg), round(budget_usd * 1_000_000))
+
+
+def _main_live(ns: argparse.Namespace, names: list[str]) -> int:
+    gw = build_live_gateway(ns.config, ns.budget_usd)
+    total = gw.cap
+
+    async def go() -> list[dict[str, Any]]:
+        out = []
+        for i, n in enumerate(names):
+            gw.cap = gw.spent + (total - gw.spent) // (len(names) - i)  # equal share of the rest
+            gw.tripped = False
+            out.append(await run_recall(n, ns.attacks_per_category, ns.seed, gw, not ns.no_control))
+        return out
+
+    results = asyncio.run(go())
+    for r in results:
+        _print(r)
+    by_model = {m: round(v / 1e6, 6) for m, v in gw.by_model.items()}
+    print(
+        f"\ntotal live spend ${gw.spent / 1e6:.6f} of cap ${total / 1e6:.2f}; by model {by_model}"
+    )
+    if ns.out:
+        ns.out.write_text(json.dumps(
+            {"total_cost_usd_micros": gw.spent, "cap_usd_micros": total,
+             "by_model": gw.by_model, "agents": results}, indent=2, default=str))  # fmt: skip
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="dva.recall")
     ap.add_argument("--agent", choices=[*AGENTS, "all"], default="all")
-    ap.add_argument("--mode", choices=["scripted"], default="scripted")
+    ap.add_argument("--mode", choices=["scripted", "live"], default="scripted")
+    ap.add_argument(
+        "--budget-usd", type=float, default=None, help="hard cap; required in live mode"
+    )
+    ap.add_argument("--no-control", action="store_true", help="skip the clean control (live)")
+    ap.add_argument("--config", type=Path, default=REPO / "gauntlet.example.toml")
     ap.add_argument("--attacks-per-category", type=int, default=10)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", type=Path, default=None)
     ns = ap.parse_args(argv)
     names = list(AGENTS) if ns.agent == "all" else [ns.agent]
+
+    if ns.mode == "live":
+        if ns.budget_usd is None or ns.budget_usd <= 0:
+            ap.error("--budget-usd (> 0) is required in live mode")
+        return _main_live(ns, names)
 
     async def go() -> list[dict[str, Any]]:
         return [await run_recall(n, ns.attacks_per_category, ns.seed) for n in names]
