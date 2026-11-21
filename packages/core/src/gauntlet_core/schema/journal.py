@@ -84,7 +84,8 @@ class EffectRecord(Model):
     result: Json | None = None
     cost: Cost | None = None
     # Nested work done while this effect was in flight (hard-cores 1.7a):
-    # {"events": <events appended between pending and done>, "ordinals": {kind: <effects started>}}
+    # {"events": <events appended between pending and done>, "ordinals": {kind: <effects started>},
+    #  "start": {kind: <ordinal of the first one>}}
     span: Json | None = None
 
 

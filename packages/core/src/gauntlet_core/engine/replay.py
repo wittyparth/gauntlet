@@ -29,9 +29,12 @@ def _ordinal(key: str) -> int:
 def nested_keys(effects: dict[str, EffectRecord]) -> set[str]:
     """Keys of effects that ran inside a `target` effect, from the targets' spans.
 
-    A span says how many effects of each kind started inside, not where the range starts. In
-    the episode loop the simulator's `llm` effect precedes every target call, so n + 1
-    top-level `llm` effects come before target n (when the simulator uses `llm` effects at all).
+    A span written by this version carries `start` (the first ordinal of each kind inside), and
+    that is used as is. Older spans only say how many effects of each kind started inside; for
+    those the range is inferred from the loop shape: the simulator's `llm` effect precedes every
+    target call, so n + 1 top-level `llm` effects come before target n (when the simulator uses
+    `llm` effects at all). The inference is wrong when the simulator makes extra calls (a
+    structured repair); a wrong guess only diverges earlier, never replays wrongly.
     """
     targets = sorted((_ordinal(k), r) for k, r in effects.items() if r.kind == "target")
     top_llm = sum(1 for r in effects.values() if r.kind == "llm" and not is_recorded(r))
@@ -42,8 +45,13 @@ def nested_keys(effects: dict[str, EffectRecord]) -> set[str]:
     sim_uses_llm = top_llm - nested_llm_total >= len(targets)
     out: set[str] = set()
     for n, rec in targets:
-        for kind, count in ((rec.span or {}).get("ordinals") or {}).items():
-            before = (n + 1 if kind == "llm" and sim_uses_llm else 0) + inside.get(kind, 0)
+        span = rec.span or {}
+        recorded_start = span.get("start") or {}
+        for kind, count in (span.get("ordinals") or {}).items():
+            if kind in recorded_start:
+                before = int(recorded_start[kind])
+            else:
+                before = (n + 1 if kind == "llm" and sim_uses_llm else 0) + inside.get(kind, 0)
             out.update(f"{kind}:{i}" for i in range(before, before + int(count)))
             inside[kind] = inside.get(kind, 0) + int(count)
     return out

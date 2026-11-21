@@ -64,3 +64,56 @@ async def test_strict_mode_still_raises_on_a_changed_request():
     with pytest.raises(NonDeterminism):
         await run_episode(ctx2, scenario(), Agent(calls), Other([], calls))
     assert ctx2.mode == "strict"
+
+
+async def test_fork_uses_recorded_span_starts_when_the_simulator_makes_extra_calls():
+    """A structured-repair call before the simulator's turn call makes the loop-shape inference
+    wrong; the recorded `start` ordinals keep exactly the simulator's effects."""
+    from gauntlet_core.engine import fork_for_agent_live
+
+    async def const():
+        return {"text": "x"}, Cost()
+
+    nested: list[str] = []
+
+    class RepairSim(Sim):
+        async def next_message(self, ctx):
+            n = sum(1 for e in ctx.trajectory_so_far if e.kind == "user_message")
+            await ctx.effect("llm", {"repair": n}, const, retry_safe=True)  # the extra call
+            return await super().next_message(ctx)
+
+    class NestingAgent(Agent):
+        async def send(self, ctx, user_text):
+            async def fn():
+                nested.append(f"llm:{ctx._ordinals.get('llm', 0)}")  # key of the call below
+                await ctx.effect("llm", {"nested": user_text}, const, retry_safe=True)
+                return {"reply": f"re: {user_text}"}, None
+
+            res = await ctx.effect("target", {"text": user_text}, fn, retry_safe=True)
+            return res["reply"]
+
+    store = MemoryJournalStore()
+    calls: Counter = Counter()
+    ctx = await EpisodeCtx.open(store, "src", run_id="r", rng_seed=1)
+    await run_episode(ctx, scenario(), NestingAgent(calls), RepairSim(["a", "b"], calls))
+    snap = await store.load("src")
+    assert len(nested) == 2 and all(
+        r.span for k, r in snap.effects.items() if k.startswith("target")
+    )
+    assert nested_keys(snap.effects) == set(nested)
+
+    # the same journal with the starts stripped (an older recording) falls back to inference,
+    # which the extra calls throw off: this is what recording `start` fixes
+    stripped = {
+        k: r.model_copy(
+            update={"span": {n: v for n, v in r.span.items() if n != "start"} if r.span else None}
+        )
+        for k, r in snap.effects.items()
+    }
+    assert nested_keys(stripped) != set(nested)
+
+    await fork_for_agent_live(store, "src", "fork")
+    forked = await store.load("fork")
+    sim_keys = {k for k, r in snap.effects.items() if r.kind == "llm"} - set(nested)
+    assert set(forked.effects) == sim_keys and len(sim_keys) == 6  # 3 turns x (repair + turn)
+    assert not any(k.startswith("target") for k in forked.effects)

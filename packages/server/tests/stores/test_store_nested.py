@@ -41,7 +41,11 @@ async def test_nested_spans_survive_a_crash_at_every_append(backend: Harness):
     mem = CrashingStore(MemoryJournalStore())
     await run_attempts(mem, "ep_ref", Counter())
     expected = await mem.load("ep_ref")
-    assert expected.effects["target:0"].span == {"events": 1, "ordinals": {"tool": 1}}
+    assert expected.effects["target:0"].span == {
+        "events": 1,
+        "ordinals": {"tool": 1},
+        "start": {"tool": 0},
+    }
     attempts = []
     for k in range(mem.appends):
         ep = f"ep_nested_{k}"

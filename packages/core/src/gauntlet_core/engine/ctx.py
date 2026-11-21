@@ -286,7 +286,11 @@ class EpisodeCtx(AgentLiveMixin):
             for k, n in self._ordinals.items()
             if n > frame.ord0.get(k, 0)
         }
-        return {"events": events, "ordinals": ordinals} if events or ordinals else None
+        if not (events or ordinals):
+            return None
+        # `start`: the first ordinal of each kind that ran inside, so a fork never has to infer it
+        start = {k: frame.ord0.get(k, 0) for k in ordinals}
+        return {"events": events, "ordinals": ordinals, "start": start}
 
     # --------------------------------------------------------------- effects
 

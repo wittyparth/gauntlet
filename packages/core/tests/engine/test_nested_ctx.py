@@ -52,7 +52,11 @@ async def test_span_recorded_on_the_outer_effect():
     ctx = await open_ctx(store)
     await nested_outer(ctx, [])
     j = await store.load(EP)
-    assert j.effects["target:0"].span == {"events": 2, "ordinals": {"tool": 1, "llm": 1}}
+    assert j.effects["target:0"].span == {
+        "events": 2,
+        "ordinals": {"tool": 1, "llm": 1},
+        "start": {"tool": 0, "llm": 0},
+    }
     assert j.effects["tool:0"].span is None and j.effects["llm:0"].span is None
     assert [e.payload["note"] for e in j.events] == ["a", "b"]
 
@@ -103,7 +107,11 @@ async def test_nested_work_by_another_process_is_counted_and_hooked():
 
     await ctx.effect("target", {"x": 1}, outer, retry_safe=True, nested=True)
     j = await store.load(EP)
-    assert j.effects["target:0"].span == {"events": 1, "ordinals": {"tool": 1}}
+    assert j.effects["target:0"].span == {
+        "events": 1,
+        "ordinals": {"tool": 1},
+        "start": {"tool": 0},
+    }
     assert hooked == [0]
     assert [e.payload["note"] for e in ctx.trajectory_so_far] == ["from-facade"]
     # our own next effect continues after the facade's ordinal and seq
