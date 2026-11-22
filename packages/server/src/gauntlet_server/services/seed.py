@@ -27,6 +27,7 @@ from ..db import models as m
 from ..deps import AppState
 from ..worker import Worker
 from .runs import RunCreate, create_run
+from .seed_gateway import POLICY, seed_gateway
 from .seed_script import MODEL, build_script
 
 __all__ = ["script", "seed_demo"]
@@ -95,6 +96,11 @@ async def _reset(s: AsyncSession) -> None:
         "DELETE FROM effects WHERE episode_id LIKE 'ep_demo_%'",
         "DELETE FROM episodes WHERE run_id IN ('run_demo', 'run_demo_b')",
         "DELETE FROM runs WHERE id IN ('run_demo', 'run_demo_b')",
+        "DELETE FROM gateway_approvals WHERE id = 'gap_demo'",
+        "DELETE FROM gateway_decisions WHERE id LIKE 'gdc_demo_%'",
+        "DELETE FROM policy_tests WHERE id = 'ptt_demo'",
+        "DELETE FROM policy_proposals WHERE policy_id = 'pol_demo'",
+        "DELETE FROM policies WHERE id = 'pol_demo'",
     ):
         await s.execute(text(sql))
 
@@ -203,7 +209,12 @@ async def _upsert_docs(s: AsyncSession, ws: str) -> None:
 
 
 async def seed_demo(
-    state: AppState, ws: str, *, reset: bool = False, compare_run: bool = False
+    state: AppState,
+    ws: str,
+    *,
+    reset: bool = False,
+    compare_run: bool = False,
+    gateway: bool = False,
 ) -> dict[str, Any]:
     async with state.sm() as s, s.begin():
         if reset:
@@ -251,6 +262,9 @@ async def seed_demo(
                 episode_ids=EPISODES_B,
             )
         await _execute(state, RUN_B)
+    if gateway:
+        async with state.sm() as s, s.begin():
+            await seed_gateway(s, ws, AGENT, VERSION)
     async with state.sm() as s:
         failed = (
             (
@@ -270,6 +284,7 @@ async def seed_demo(
         "agent_version_id": VERSION,
         "suite_id": SUITE,
         "run_id": RUN,
+        "policy_id": POLICY if gateway else None,
         "compare_run_id": RUN_B if compare_run or run_b is not None else None,
         "failed_episode_id": failed,
     }

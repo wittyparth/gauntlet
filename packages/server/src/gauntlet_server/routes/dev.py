@@ -30,4 +30,5 @@ async def dev_seed(
         auth.workspace_id,
         reset=want_reset,
         compare_run=bool((body or {}).get("compare_run", False)),
+        gateway=bool((body or {}).get("gateway", False)),
     )

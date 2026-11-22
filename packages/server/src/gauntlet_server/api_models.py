@@ -294,6 +294,7 @@ class SeedOut(_Out):
     suite_id: str
     run_id: str
     compare_run_id: str | None = None
+    policy_id: str | None = None
     failed_episode_id: str | None
 
 

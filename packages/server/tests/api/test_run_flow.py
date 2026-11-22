@@ -133,3 +133,23 @@ async def test_seed_creates_the_compare_run_only_when_asked(client):
         and runs["run_demo_b"]["suite_id"] == runs["run_demo"]["suite_id"]
     )
     assert runs["run_demo_b"]["spent_usd_micros"] >= 0
+
+
+async def test_seed_gateway_fixtures_are_opt_in_and_idempotent(client):
+    plain = (await client.post("/v1/dev/seed", json={"reset": False})).json()
+    assert plain["policy_id"] is None and (await client.get("/v1/policies")).json() == []
+    out = (await client.post("/v1/dev/seed", json={"gateway": True})).json()
+    again = (await client.post("/v1/dev/seed", json={"gateway": True})).json()
+    assert out["policy_id"] == again["policy_id"] == "pol_demo"
+    pol = (await client.get("/v1/policies/pol_demo")).json()
+    assert pol["status"] == "published" and len(pol["policy"]["rules"]) == 2
+    props = (await client.get("/v1/policies/pol_demo/proposals")).json()
+    assert [p["status"] for p in props["proposals"]] == ["accepted", "accepted", "proposed"]
+    tests = (await client.get("/v1/policies/pol_demo/tests")).json()
+    assert tests[0]["status"] == "done" and tests[0]["result"]["block_rate"] == 0.75
+    dec = (await client.get("/v1/gateway/decisions")).json()["items"]
+    assert len(dec) == 6 and {d["action"] for d in dec} >= {"block", "require_approval", "allow"}
+    pending = (await client.get("/v1/gateway/approvals", params={"status": "pending"})).json()
+    assert [a["id"] for a in pending] == ["gap_demo"]
+    stats = (await client.get("/v1/gateway/stats")).json()
+    assert stats["total"] == 6
