@@ -168,7 +168,7 @@ def guard_world(
     """Wrap `world` for this episode and bind it. The guard session is rebuilt from the events
     the episode already has, so a reopened episode (the api facade) decides as the live one."""
     guard, _ = guard_for_episode(policy, ctx, mode=mode, approve_all=approve_all)
-    session = guard.session(session_id or f"ep:{ctx.episode_id}")
+    session = guard.session(session_id or f"ep:{ctx.episode_id}", episode_id=ctx.episode_id)
     session.preload(ctx.trajectory_so_far)
     guarded = GuardedWorld(world, session)
     guarded.bind(ctx)

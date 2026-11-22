@@ -30,10 +30,17 @@ MAX_PREFIX = 500
 
 
 class Session:
-    def __init__(self, guard: Guard, session_id: str, user_id: str | None = None) -> None:
+    def __init__(
+        self,
+        guard: Guard,
+        session_id: str,
+        user_id: str | None = None,
+        episode_id: str | None = None,
+    ) -> None:
         self.guard = guard
         self.session_id = session_id
         self.user_id = user_id  # caller-supplied, untrusted (CQ-G8)
+        self.episode_id = episode_id
         self._events: list[Event] = []
         self._seq = 0
         self._lock = asyncio.Lock()
@@ -293,6 +300,7 @@ class Session:
             approval=approval,
             overhead_us=overhead_us,
             guard_error=guard_error,
+            episode_id=self.episode_id,
         )
 
     async def _approve(

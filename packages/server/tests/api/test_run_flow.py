@@ -151,5 +151,7 @@ async def test_seed_gateway_fixtures_are_opt_in_and_idempotent(client):
     assert len(dec) == 6 and {d["action"] for d in dec} >= {"block", "require_approval", "allow"}
     pending = (await client.get("/v1/gateway/approvals", params={"status": "pending"})).json()
     assert [a["id"] for a in pending] == ["gap_demo"]
+    blocked = next(d for d in dec if d["action"] == "block")
+    assert blocked["episode_id"] == "ep_demo_0" and blocked["evidence"][0]["seq"] == 4
     stats = (await client.get("/v1/gateway/stats")).json()
     assert stats["total"] == 6

@@ -95,8 +95,14 @@ class Guard:
 
     # -- sessions and tools ----------------------------------------------------------------
 
-    def session(self, session_id: str | None = None, *, user_id: str | None = None) -> Session:
-        return Session(self, session_id or new_id("ses"), user_id)
+    def session(
+        self,
+        session_id: str | None = None,
+        *,
+        user_id: str | None = None,
+        episode_id: str | None = None,
+    ) -> Session:
+        return Session(self, session_id or new_id("ses"), user_id, episode_id)
 
     def origin_trust(self, tool: str) -> Literal["system", "user", "untrusted_external"]:
         """Trust of a tool's results: configured rules (first match), then

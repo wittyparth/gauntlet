@@ -50,6 +50,7 @@ class DecisionRecord(Model):
     approval: ApprovalInfo | None = None
     overhead_us: int = 0
     guard_error: str | None = None
+    episode_id: str | None = None  # set when the decision was made inside a simulated episode
 
 
 def _canonical(args: Any) -> str:

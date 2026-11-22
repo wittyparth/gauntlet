@@ -83,3 +83,13 @@ async def test_prefix_cap_keeps_first_user_message():
     assert s.events[-1].payload["text"] == f"m{MAX_PREFIX + 49}"
     seqs = [e.seq for e in s.events]
     assert seqs == sorted(seqs)
+
+
+async def test_decision_records_carry_the_episode_id_only_when_given():
+    sink = MemorySink()
+    g = Guard(policy(REFUND_CAP), sink=sink)
+    plain = g.session("s1")
+    await plain.check_tool_call("issue_refund", {"amount_cents": 20000}, call_id="c1")
+    sim = g.session("ep:ep_1", episode_id="ep_1")
+    await sim.check_tool_call("issue_refund", {"amount_cents": 20000}, call_id="c2")
+    assert [r.episode_id for r in sink.records] == [None, "ep_1"]
