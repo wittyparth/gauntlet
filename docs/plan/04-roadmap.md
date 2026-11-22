@@ -81,8 +81,8 @@ Definition of done: an attack suite against DVA produces findings with determini
 | P4-1 | DONE | Policy compiler: policy document to proposed rules (typed machine, model, human), review flow, coverage report | L8 |
 | P4-2 | DONE | Gateway as Python SDK middleware (wraps tool execution), shadow and enforce, decision log, approvals | L8 |
 | P4-3 | DONE | MCP gateway: proxy, description pinning, allowlist, description scanning, namespace isolation | P4-2 |
-| P4-4 | SUB o | Injection classifier detector (open-source model, local), origin tagging in the middleware | P4-2 |
-| P4-5 | SUB o | Closed loop wiring: finding, suggested rule, offline test, enforce, verify; blast-radius and permission diff | L8, P2-5 |
+| P4-4 | DONE | Injection classifier detector (open-source model, local), origin tagging in the middleware | P4-2 |
+| P4-5 | DONE | Closed loop wiring: finding, suggested rule, offline test, enforce, verify; blast-radius and permission diff | L8, P2-5 |
 | P4-6 | SUB p | Web: gateway console, policy editor, policy test results with tradeoff chart, approval inbox | P4-2 |
 | L-R4 | LEAD | Phase review; latency benchmark; closed-loop demo recorded | all |
 
