@@ -39,6 +39,7 @@ from .limits import HostLimiter, LimitedTransport
 from .models_gateway import gateway_for_roles
 from .services import calibration as _calibration
 from .services import gateway as _gateway
+from .services import loop as _loop  # noqa: F401  (registers suggest_policy, policy_test)
 from .services import policies as _policies  # noqa: F401  (registers the compile_policy job)
 from .services.adaptive import adaptive_after_episode
 from .services.finding_hooks import after_episode

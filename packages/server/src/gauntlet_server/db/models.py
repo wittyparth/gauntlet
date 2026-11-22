@@ -194,6 +194,9 @@ class Run(Base):
     finding_id: Mapped[str | None]
     attack: Mapped[bool] = mapped_column(server_default="false")  # placed attack scenarios inside
     adaptive: Mapped[bool] = mapped_column(server_default="false")  # sequential stopping (P3-2)
+    policy_id: Mapped[str | None]  # a policy enforced in this run's episodes (CQ-G3)
+    policy_version: Mapped[int | None] = mapped_column(Integer)
+    verify_of: Mapped[str | None]  # benign runs of a policy verification: the attack run
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = created_at_col()
 

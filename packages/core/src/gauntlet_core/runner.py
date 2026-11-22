@@ -27,7 +27,7 @@ from gauntlet_core.engine import (
     run_episode,
 )
 from gauntlet_core.eval.rubrics import RULE_STAGE, rule_context
-from gauntlet_core.gateway.guarded_world import GuardedWorld, guard_for_episode
+from gauntlet_core.gateway.guarded_world import guard_world
 from gauntlet_core.judges import JudgeEvaluator
 from gauntlet_core.llm import Gateway, llm_effect
 from gauntlet_core.schema import (
@@ -314,10 +314,13 @@ async def execute_episode(
     world = World(built, llm_sim=make_llm_sim(deps.gateway))
     world.bind(ctx)
     if job.policy is not None:
-        guard, _ = guard_for_episode(
-            job.policy, ctx, mode=job.policy_mode_override, approve_all=job.policy_approve_all
+        world = guard_world(
+            world,
+            job.policy,
+            ctx,
+            mode=job.policy_mode_override,
+            approve_all=job.policy_approve_all,
         )
-        world = GuardedWorld(world, guard.session(f"ep:{job.episode_id}"))
     persona = merge_persona(job.persona, scn.persona_overrides)
     target = make_target(job.agent_version, world, built, deps, job.secrets)
     if sim is None and _TURNS_TAG in scn.tags:  # placed user_turn attack: scripted turns

@@ -10,11 +10,17 @@ from .registry import Res, first_hold_points, register_node
 from .support import Hit, HitSet, args_text, match_values, res_from_hits, snippet
 
 
+def _blocked(v: ToolCallView) -> bool:
+    return bool(v.error) and str(v.error).startswith("blocked_by_policy")
+
+
 def _call_matches(check: ToolCalled, v: ToolCallView, ctx: Ctx) -> tuple[bool, bool]:
     """(matches, unknown). `unknown` only arises for the proposed call: its result and some
     refs may not exist yet."""
     if check.tool not in ("*", v.tool):
         return False, False
+    if _blocked(v):
+        return False, False  # the guard stopped it: it never happened
     proposed = ctx.prefix and v.call_seq == ctx.proposed_seq
     for path, matcher in check.args.items():
         ok, unresolved = match_values(matcher, resolve_path(v.args, path), ctx, v)
@@ -54,12 +60,15 @@ def tool_called_points(check: ToolCalled, ctx: Ctx) -> list[int] | None:
 def tainted_hits(check: TaintedCall, ctx: Ctx) -> HitSet:
     hs = HitSet()
     markers: list[str] = []
+    blocked = {v.call_id for v in ctx.views() if _blocked(v)}
     for e in ctx.events:
         if e.origin and e.origin.markers:
             markers.extend(m for m in e.origin.markers if m not in markers)
         if e.kind != "tool_call":
             continue
         tool = e.payload["tool"]
+        if e.payload.get("call_id") in blocked:
+            continue
         if check.tool not in ("*", tool):
             continue
         if check.risk is not None and ctx.tool_risk.get(tool) not in check.risk:

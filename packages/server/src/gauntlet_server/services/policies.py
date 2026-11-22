@@ -43,6 +43,7 @@ __all__ = [
     "PolicyOut",
     "PublishIn",
     "coverage_for",
+    "dump_doc",
     "enqueue_compile",
     "get_policy",
     "get_proposals",
@@ -52,6 +53,12 @@ __all__ = [
 ]
 
 JOB_KIND = "compile_policy"
+
+
+def dump_doc(model: BaseModel) -> dict[str, Any]:
+    """The stored form of a policy document. Defaults are left out: a matcher dumped with its
+    unset operators (`eq: null`, ...) would reload as one that tests for null."""
+    return model.model_dump(mode="json", by_alias=True, exclude_defaults=True)
 
 
 class CompileIn(BaseModel):
@@ -190,7 +197,7 @@ async def compile_job(ctx: JobContext) -> dict[str, Any]:
                     workspace_id=ws,
                     name=str(p["name"]),
                     agent_id=p.get("agent_id"),
-                    doc=Policy(id=policy_id, version=1, rules=[]).model_dump(mode="json"),
+                    doc=dump_doc(Policy(id=policy_id, version=1, rules=[])),
                     status="draft",
                     source_text=str(p["text"]),
                 )
@@ -201,7 +208,7 @@ async def compile_job(ctx: JobContext) -> dict[str, Any]:
                     workspace_id=ws,
                     policy_id=policy_id,
                     version=1,
-                    doc=compiled.model_dump(mode="json"),
+                    doc=dump_doc(compiled),
                 )
             )
             await audit(
@@ -333,7 +340,7 @@ async def patch_proposal(
     compiled = compiled.model_copy(
         update={"proposals": [prop if p.clause_id == clause_id else p for p in compiled.proposals]}
     )
-    row.doc = compiled.model_dump(mode="json")
+    row.doc = dump_doc(compiled)
     await audit(
         s,
         ws,
@@ -366,7 +373,7 @@ async def publish_policy(
         raise ApiError(
             422, "validation_error", "the accepted rules do not form a valid policy", problems
         )
-    doc = policy.model_dump(mode="json")
+    doc = dump_doc(policy)
     if latest.status == "draft":
         latest.doc, latest.status = doc, "published"
         out_row = latest

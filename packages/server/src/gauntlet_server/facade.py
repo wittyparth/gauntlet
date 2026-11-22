@@ -21,6 +21,7 @@ from typing import Any
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from gauntlet_core.engine import EpisodeCtx, SeqConflict, StaleLease
+from gauntlet_core.gateway.guarded_world import guard_world
 from gauntlet_core.runner import make_llm_sim
 from gauntlet_core.targets.tokens import mint_token, verify_token
 from gauntlet_core.world import World, build_world
@@ -95,7 +96,16 @@ async def _open(state: AppState, episode_id: str, epoch: int):
     world = World(built, llm_sim=make_llm_sim(state.gateway))
     world.bind(ctx)
     ctx.seek_end()
-    return job, world, ctx
+    guarded: World = world
+    if job.policy is not None:  # the same guard the in-process runner would apply
+        guarded = guard_world(
+            world,
+            job.policy,
+            ctx,
+            mode=job.policy_mode_override,
+            approve_all=job.policy_approve_all,
+        )
+    return job, guarded, ctx
 
 
 @router.get("/mock/tools", include_in_schema=False)

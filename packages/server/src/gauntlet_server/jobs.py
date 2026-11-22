@@ -10,6 +10,7 @@ from gauntlet_core.runner import EpisodeJob
 from gauntlet_core.schema import (
     AgentVersion,
     Persona,
+    Policy,
     Rubric,
     RunManifest,
     Scenario,
@@ -24,6 +25,7 @@ from .db.models import Persona as PersonaRow
 from .db.models import Rubric as RubricRow
 from .db.models import Scenario as ScenarioRow
 from .db.models import World as WorldRow
+from .db.policy_models import PolicyVersion
 from .secrets import SecretStore
 from .services.calibration_state import apply_calibration, judge_models
 
@@ -133,6 +135,11 @@ async def load_episode_job(
     resolved = (
         await secrets.resolve(i.run.workspace_id, names) if secrets is not None and names else {}
     )
+    policy = None
+    if i.run.policy_id:
+        prow = await session.get(PolicyVersion, (i.run.policy_id, i.run.policy_version or 1))
+        if prow is not None:
+            policy = Policy.model_validate(prow.doc)
     return EpisodeJob(
         episode_id=episode_id,
         run_id=i.run.id,
@@ -143,4 +150,7 @@ async def load_episode_job(
         rubrics=i.rubrics,
         rng_seed=int(i.episode.rng_seed),
         secrets=resolved,
+        policy=policy,
+        # verification runs enforce even a stored shadow policy (P4-5)
+        policy_mode_override="enforce" if i.run.purpose in ("verify", "verify_benign") else None,
     )

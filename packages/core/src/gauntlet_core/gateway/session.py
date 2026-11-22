@@ -7,7 +7,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 from time import perf_counter_ns
 from typing import TYPE_CHECKING, Literal, cast
 
@@ -89,18 +89,42 @@ class Session:
         untrusted: bool | None = None,
         source: str | None = None,
         ok: bool = True,
+        markers: list[str] | None = None,
     ) -> None:
+        """`markers` are taint markers (simulation only): production origin is trust-based."""
         if untrusted is None:
             trust = self.guard.origin_trust(tool)
         else:
             trust = "untrusted_external" if untrusted else "system"
-        origin = Origin(trust=trust, source=(source or tool) if trust != "system" else source)
+        origin = Origin(
+            trust=trust,
+            source=(source or tool) if trust != "system" else source,
+            markers=list(markers or []),
+        )
         self._append(
             "tool_result",
             "tool",
             {"call_id": call_id, "tool": tool, "ok": ok, "result": result},
             origin,
         )
+
+    def preload(self, events: Sequence[Event]) -> None:
+        """Rebuild the prefix from journal events (the api facade reopens an episode on every
+        mock call). Calls the guard blocked never went ahead, so they are left out."""
+        blocked = {
+            str(e.payload.get("call_id"))
+            for e in events
+            if e.kind == "sim_note" and e.payload.get("note") == "policy_block"
+        }
+        for e in events:
+            if e.kind not in ("user_message", "agent_message", "tool_call", "tool_result"):
+                continue
+            if e.kind in ("tool_call", "tool_result") and str(e.payload.get("call_id")) in blocked:
+                continue
+            actor = {"user_message": "user", "agent_message": "agent", "tool_call": "agent"}.get(
+                e.kind, "tool"
+            )
+            self._append(e.kind, actor, dict(e.payload), e.origin)  # type: ignore[arg-type]
 
     @contextlib.asynccontextmanager
     async def active(self) -> AsyncIterator[Session]:

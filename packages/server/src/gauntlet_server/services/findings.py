@@ -274,6 +274,15 @@ async def finalize_finding_run(session: AsyncSession, run_id: str) -> None:
     from ..db.sec_models import EpisodeAttack
 
     run = await session.get(m.Run, run_id)
+    if (
+        run is not None
+        and run.purpose in ("verify_benign", "verify_benign_baseline")
+        and run.verify_of
+    ):
+        from .loop import finish_policy_verification  # a policy verification's benign runs
+
+        await finish_policy_verification(session, run.verify_of)
+        return
     if run is None or run.purpose not in ("replay", "verify") or not run.finding_id:
         return
     row = await session.get(FindingRow, run.finding_id)
@@ -292,6 +301,11 @@ async def finalize_finding_run(session: AsyncSession, run_id: str) -> None:
     for ea, _ in rows:
         await link_episode(session, row.id, ea.episode_id, role, [])
     finding = row_to_finding(row)
+    if run.purpose == "verify" and run.policy_id:
+        from .loop import finish_policy_verification  # decided together with its benign runs
+
+        await finish_policy_verification(session, run.id)
+        return
     if run.purpose == "replay":
         row.doc = {**row.doc, "reproducibility": [successes, attempts]}
         row.repro_successes, row.repro_attempts = successes, attempts

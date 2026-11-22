@@ -39,6 +39,8 @@ class Settings:
     auto_cluster_min: int = 5  # failed episodes that trigger a cluster job (P3-6)
     cluster_embedder: str = "hash"  # "hash" (offline, free) or "gateway" (catalog model, opt-in)
     attribute_with_llm: bool = False  # root-cause fallback through judge_small
+    max_fp_rate: float = 0.02  # enforce gate: offline-test false-positive rate (P4-5)
+    min_block_rate: float = 0.5  # enforce gate: offline-test block rate
     lease_s: int = 60
     poll_interval_s: float = 1.0
     allow_private_targets: bool = False
@@ -80,6 +82,8 @@ class Settings:
             cluster_embedder=e.get("GAUNTLET_CLUSTER_EMBEDDER") or "hash",
             attribute_with_llm=(e.get("GAUNTLET_ATTRIBUTE_WITH_LLM") or "false").lower()
             in ("1", "true", "yes"),
+            max_fp_rate=float(e.get("GAUNTLET_MAX_FP_RATE") or 0.02),
+            min_block_rate=float(e.get("GAUNTLET_MIN_BLOCK_RATE") or 0.5),
             lease_s=_int(e, "LEASE_SECONDS", 60),
             poll_interval_s=float(e.get("POLL_INTERVAL_S") or 1.0),
             allow_private_targets=(e.get("GAUNTLET_ALLOW_PRIVATE_TARGETS") or "").lower()

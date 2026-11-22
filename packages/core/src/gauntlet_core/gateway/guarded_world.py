@@ -9,6 +9,7 @@ the prefix). Approvals in simulation are an auto-deny unless `approve_all` is se
 
 from __future__ import annotations
 
+import json
 from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
@@ -23,7 +24,7 @@ from .guard import Guard
 from .session import Session
 from .sinks import MemorySink
 
-__all__ = ["GuardedWorld", "guard_for_episode"]
+__all__ = ["GuardedWorld", "guard_for_episode", "guard_world"]
 
 
 def guard_for_episode(
@@ -69,6 +70,7 @@ class GuardedWorld(World):
 
     def bind(self, ctx: EpisodeCtx) -> None:
         self._inner.bind(ctx)
+        ctx.state["world"] = self  # wired targets reach the world through ctx.state
 
     def apply_events(self, events: Sequence[Event]) -> None:
         self._inner.apply_events(events)
@@ -94,12 +96,15 @@ class GuardedWorld(World):
             args = decision.modified["args"]  # redact: the call goes ahead rewritten
         res = await inner.call_tool(ctx, tool, args, via=via)
         spec = inner.built.tools.get(tool)
+        untrusted = bool(spec and spec.untrusted_output)
+        text = json.dumps(res.result, default=str)
         await self.session.record_tool_result(
             res.call_id,
             tool,
             res.result if res.ok else {"error": res.error},
-            untrusted=bool(spec and spec.untrusted_output),
+            untrusted=untrusted,
             ok=res.ok,
+            markers=[mk for mk in inner.built.markers if mk in text] if untrusted else None,
         )
         return res
 
@@ -149,3 +154,22 @@ class GuardedWorld(World):
             )
         )
         return ToolResult(call_id, False, None, error)
+
+
+def guard_world(
+    world: World,
+    policy: Policy,
+    ctx: EpisodeCtx,
+    *,
+    mode: str | None = None,
+    approve_all: bool = False,
+    session_id: str | None = None,
+) -> GuardedWorld:
+    """Wrap `world` for this episode and bind it. The guard session is rebuilt from the events
+    the episode already has, so a reopened episode (the api facade) decides as the live one."""
+    guard, _ = guard_for_episode(policy, ctx, mode=mode, approve_all=approve_all)
+    session = guard.session(session_id or f"ep:{ctx.episode_id}")
+    session.preload(ctx.trajectory_so_far)
+    guarded = GuardedWorld(world, session)
+    guarded.bind(ctx)
+    return guarded

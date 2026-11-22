@@ -22,7 +22,13 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base, created_at_col, workspace_col
 
-__all__ = ["GatewayApprovalRow", "GatewayDecisionRow", "PolicyProposalRow", "PolicyVersion"]
+__all__ = [
+    "GatewayApprovalRow",
+    "GatewayDecisionRow",
+    "PolicyProposalRow",
+    "PolicyTestRow",
+    "PolicyVersion",
+]
 
 
 class PolicyVersion(Base):
@@ -107,3 +113,25 @@ class GatewayApprovalRow(Base):
     decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     note: Mapped[str | None]
     created_at: Mapped[datetime] = created_at_col()
+
+
+class PolicyTestRow(Base):
+    """One offline test of a policy version against stored trajectories (P4-5)."""
+
+    __tablename__ = "policy_tests"
+    __table_args__ = (
+        CheckConstraint("status IN ('queued','running','done','failed')", name="status"),
+        Index("ix_policy_tests_policy", "workspace_id", "policy_id", text("created_at DESC")),
+    )
+    id: Mapped[str] = mapped_column(primary_key=True)
+    workspace_id: Mapped[str] = workspace_col()
+    policy_id: Mapped[str]
+    policy_version: Mapped[int] = mapped_column(Integer)
+    agent_version_id: Mapped[str] = mapped_column(ForeignKey("agent_versions.id"))
+    status: Mapped[str] = mapped_column(server_default="queued")
+    result: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    attack_count: Mapped[int] = mapped_column(Integer, server_default="0")
+    benign_count: Mapped[int] = mapped_column(Integer, server_default="0")
+    error: Mapped[str | None]
+    created_at: Mapped[datetime] = created_at_col()
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
