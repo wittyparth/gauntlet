@@ -68,7 +68,8 @@ def openinference() -> dict[str, Any]:
     user1 = (1, ("user", "Hi, where is order ord_1001?"))
     return doc(
         [
-            span(t, "s0", "agent", 0, 400, {"openinference.span.kind": "AGENT", "session.id": "sess-1"}),
+            span(t, "s0", "agent", 0, 400,
+                 {"openinference.span.kind": "AGENT", "session.id": "sess-1"}),
             span(t, "s1", "llm", 10, 20, oi_llm({0: sysm[1], 1: user1[1]}, None,
                  calls=[("lookup_order", '{"order_id": "ord_1001"}')]), "s0"),
             span(t, "s2", "lookup_order", 30, 40, {
@@ -103,7 +104,8 @@ def genai() -> dict[str, Any]:
         "gen_ai.operation.name": "chat",
         "gen_ai.prompt.0.role": "user", "gen_ai.prompt.0.content": "Cancel order ord_2002",
         "gen_ai.prompt.1.role": "tool", "gen_ai.prompt.1.content": "cancelled",
-        "gen_ai.completion.0.role": "assistant", "gen_ai.completion.0.content": "Done, it is cancelled.",
+        "gen_ai.completion.0.role": "assistant",
+        "gen_ai.completion.0.content": "Done, it is cancelled.",
     }  # fmt: skip
     return doc(
         [
@@ -114,7 +116,10 @@ def genai() -> dict[str, Any]:
     )
 
 
-EMAIL, CARD, KEY, PHONE = "jane.doe@example.com", "4242 4242 4242 4242", "AKIAIOSFODNN7EXAMPLE", "415-555-0132"
+EMAIL = "jane.doe@example.com"
+CARD = "4242 4242 4242 4242"
+KEY = "AKIAIOSFODNN7EXAMPLE"
+PHONE = "415-555-0132"
 
 
 def planted() -> dict[str, Any]:
