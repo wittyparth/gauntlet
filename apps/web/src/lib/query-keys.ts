@@ -45,3 +45,14 @@ export const qkQ = {
   pareto: (runIds: string[]) => ["migration", "pareto", runIds] as const,
   scorecard: (agentId: string, versionId: string) => ["scorecard", agentId, versionId] as const,
 };
+
+export const qkG = {
+  policies: ["policies"] as const,
+  policy: (id: string) => ["policies", id] as const,
+  proposals: (id: string) => ["policies", id, "proposals"] as const,
+  tests: (id: string) => ["policies", id, "tests"] as const,
+  test: (id: string) => ["policy-tests", id] as const,
+  decisions: (filters: object) => ["gateway", "decisions", filters] as const,
+  stats: (window: string) => ["gateway", "stats", window] as const,
+  approvals: (status: string) => ["gateway", "approvals", status] as const,
+};

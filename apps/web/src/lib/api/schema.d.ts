@@ -1528,6 +1528,371 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/policies/compile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Compile
+         * @description Queues a `compile_policy` job; the result is a draft policy with reviewable proposals.
+         */
+        post: operations["post_compile_v1_policies_compile_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Policies */
+        get: operations["get_policies_v1_policies_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/policies/{policy_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get One */
+        get: operations["get_one_v1_policies__policy_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/policies/{policy_id}/proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Policy Proposals */
+        get: operations["get_policy_proposals_v1_policies__policy_id__proposals_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/policies/{policy_id}/proposals/{clause_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch One
+         * @description Accept, reject or edit one proposal. An edit is validated like a compiled rule.
+         */
+        patch: operations["patch_one_v1_policies__policy_id__proposals__clause_id__patch"];
+        trace?: never;
+    };
+    "/v1/policies/{policy_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Publish */
+        post: operations["post_publish_v1_policies__policy_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/policies/{policy_id}/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Coverage
+         * @description `run_id` adds that run's trajectories to the exercised/untested and false-positive
+         *     analysis; without it only the clause counts are filled in.
+         */
+        get: operations["get_coverage_v1_policies__policy_id__coverage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/gateway/decisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Decisions */
+        get: operations["get_decisions_v1_gateway_decisions_get"];
+        put?: never;
+        /**
+         * Post Decisions
+         * @description A batch of up to 500 records from an SDK sink. Idempotent on the record id.
+         */
+        post: operations["post_decisions_v1_gateway_decisions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/gateway/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Stats */
+        get: operations["get_stats_v1_gateway_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/gateway/approvals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Approvals */
+        get: operations["get_approvals_v1_gateway_approvals_get"];
+        put?: never;
+        /** Post Approval */
+        post: operations["post_approval_v1_gateway_approvals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/gateway/approvals/{approval_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get One Approval */
+        get: operations["get_one_approval_v1_gateway_approvals__approval_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/gateway/approvals/{approval_id}/decide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Decide */
+        post: operations["post_decide_v1_gateway_approvals__approval_id__decide_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/findings/{finding_id}/suggest-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Suggest Policy
+         * @description Queues a job that turns the finding's objective into a draft shadow policy.
+         */
+        post: operations["suggest_policy_v1_findings__finding_id__suggest_policy_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/policies/{policy_id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Policy Test
+         * @description An offline test over stored trajectories. A counterfactual approximation: the result
+         *     says so in its `approximation` field.
+         */
+        post: operations["post_policy_test_v1_policies__policy_id__test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/policies/{policy_id}/tests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Policy Tests */
+        get: operations["get_policy_tests_v1_policies__policy_id__tests_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/policy-tests/{test_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get One Policy Test */
+        get: operations["get_one_policy_test_v1_policy_tests__test_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/policies/{policy_id}/enforce": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Enforce
+         * @description Publishes an `enforce` version only after a passing offline test (or `override`).
+         */
+        post: operations["post_enforce_v1_policies__policy_id__enforce_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/findings/{finding_id}/verify-with-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Verify With Policy */
+        post: operations["post_verify_with_policy_v1_findings__finding_id__verify_with_policy_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agents/{agent_id}/versions/{version_id}/blast-radius": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Blast Radius */
+        get: operations["get_blast_radius_v1_agents__agent_id__versions__version_id__blast_radius_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agents/{agent_id}/permission-diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Permission Diff */
+        get: operations["get_permission_diff_v1_agents__agent_id__permission_diff_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/healthz": {
         parameters: {
             query?: never;
@@ -1549,6 +1914,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AcceptedOut */
+        AcceptedOut: {
+            /** Accepted */
+            accepted: number;
+            /** Duplicates */
+            duplicates: number;
+        };
         /** AgentIn */
         AgentIn: {
             /** Project Id */
@@ -1691,6 +2063,55 @@ export interface components {
             /** Created At */
             created_at: string | null;
         };
+        /** ApprovalIn */
+        ApprovalIn: {
+            /** Id */
+            id?: string | null;
+            record: components["schemas"]["DecisionRecord"];
+            /**
+             * Expires In S
+             * @default 900
+             */
+            expires_in_s: number;
+        };
+        /** ApprovalInfo */
+        ApprovalInfo: {
+            /** Id */
+            id: string;
+            /**
+             * Outcome
+             * @default pending
+             * @enum {string}
+             */
+            outcome: "pending" | "approved" | "denied" | "expired";
+        };
+        /** ApprovalOut */
+        ApprovalOut: {
+            /** Id */
+            id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "approved" | "denied" | "expired";
+            decision: components["schemas"]["DecisionRecord"];
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Decided By */
+            decided_by: string | null;
+            /** Decided At */
+            decided_at: string | null;
+            /** Note */
+            note: string | null;
+        };
         /** ArchiveOut */
         ArchiveOut: {
             /** Key */
@@ -1825,6 +2246,17 @@ export interface components {
         BaselineIn: {
             /** Baseline Run Id */
             baseline_run_id: string;
+        };
+        /** BlastRadius */
+        BlastRadius: {
+            /** Tools */
+            tools: components["schemas"]["ToolBlast"][];
+            /** Exposure Score */
+            exposure_score: number;
+            /** Exposure Score Without Policy */
+            exposure_score_without_policy: number;
+            /** Untrusted Output Tools */
+            untrusted_output_tools: string[];
         };
         /** BulkIds */
         BulkIds: {
@@ -2070,6 +2502,31 @@ export interface components {
             /** First Bad Id */
             first_bad_id?: string | null;
         };
+        /** Clause */
+        Clause: {
+            /** Id */
+            id: string;
+            /** Text */
+            text: string;
+            /** Source Span */
+            source_span: [
+                number,
+                number
+            ];
+        };
+        /** ClauseCoverage */
+        ClauseCoverage: {
+            /** Clause Id */
+            clause_id: string;
+            /** Text */
+            text: string;
+            /** Klass */
+            klass?: ("machine" | "model" | "human") | null;
+            /** Status */
+            status?: string | null;
+            /** Rule Id */
+            rule_id?: string | null;
+        };
         /** ClusterOut */
         ClusterOut: {
             /** Id */
@@ -2162,6 +2619,51 @@ export interface components {
             cautions: string[];
             params: components["schemas"]["CompareParams"];
         };
+        /** CompileIn */
+        CompileIn: {
+            /** Name */
+            name: string;
+            /** Agent Id */
+            agent_id?: string | null;
+            /** Text */
+            text?: string | null;
+            /** Tools From World Id */
+            tools_from_world_id?: string | null;
+            /**
+             * Seed
+             * @default 0
+             */
+            seed: number;
+        };
+        /** CompileStarted */
+        CompileStarted: {
+            /** Job Id */
+            job_id: string;
+            /** Policy Id */
+            policy_id: string;
+        };
+        /** CompiledPolicy */
+        CompiledPolicy: {
+            /** Policy Id */
+            policy_id: string;
+            /** Clauses */
+            clauses: components["schemas"]["Clause"][];
+            /** Proposals */
+            proposals: components["schemas"]["Proposal"][];
+            /**
+             * @default {
+             *       "usd_micros": 0,
+             *       "input_tokens": 0,
+             *       "output_tokens": 0
+             *     }
+             */
+            cost: components["schemas"]["Cost"];
+            /**
+             * Prompt Version
+             * @default policy-compile/1
+             */
+            prompt_version: string;
+        };
         /** ComplianceRow */
         ComplianceRow: {
             /** Framework */
@@ -2230,6 +2732,30 @@ export interface components {
             /** Coverage */
             coverage: components["schemas"]["CoverageCell"][];
         };
+        /** CoverageReport */
+        CoverageReport: {
+            /** Clauses Total */
+            clauses_total: number;
+            /** Machine */
+            machine: number;
+            /** Model */
+            model: number;
+            /** Human */
+            human: number;
+            /** Uncovered */
+            uncovered: string[];
+            /** Rules Exercised */
+            rules_exercised: components["schemas"]["RuleCoverage"][];
+            /** Rules Untested */
+            rules_untested: string[];
+            /** By Clause */
+            by_clause: components["schemas"]["ClauseCoverage"][];
+            /**
+             * Trajectories
+             * @default 0
+             */
+            trajectories: number;
+        };
         /** CrudHandler */
         CrudHandler: {
             /**
@@ -2264,6 +2790,96 @@ export interface components {
             planted_episodes: number;
             /** Leaked Episodes */
             leaked_episodes: number;
+        };
+        /** DayCount */
+        DayCount: {
+            /** Rule Id */
+            rule_id: string | null;
+            /** Action */
+            action: string;
+            /** Count */
+            count: number;
+            /** Day */
+            day: string;
+        };
+        /** DecideIn */
+        DecideIn: {
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "approve" | "deny";
+            /** Note */
+            note?: string | null;
+        };
+        /** DecisionRecord */
+        DecisionRecord: {
+            /** Id */
+            id: string;
+            /**
+             * Ts
+             * Format: date-time
+             */
+            ts: string;
+            /** Session Id */
+            session_id: string;
+            /** Agent Id */
+            agent_id?: string | null;
+            /** Policy Id */
+            policy_id: string;
+            /** Policy Version */
+            policy_version: number;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "shadow" | "enforce";
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "tool_call" | "output";
+            /** Tool */
+            tool?: string | null;
+            /** Args */
+            args?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "allow" | "block" | "require_approval" | "redact" | "log";
+            /** Enforced */
+            enforced: boolean;
+            /** Would Have */
+            would_have?: ("allow" | "block" | "require_approval" | "redact" | "log") | null;
+            /** Rule Id */
+            rule_id?: string | null;
+            /** Severity */
+            severity?: ("low" | "medium" | "high" | "critical") | null;
+            /** Message */
+            message?: string | null;
+            /**
+             * Evidence
+             * @default []
+             */
+            evidence: components["schemas"]["Evidence"][];
+            approval?: components["schemas"]["ApprovalInfo"] | null;
+            /**
+             * Overhead Us
+             * @default 0
+             */
+            overhead_us: number;
+            /** Guard Error */
+            guard_error?: string | null;
+        };
+        /** DecisionsPage */
+        DecisionsPage: {
+            /** Items */
+            items: components["schemas"]["DecisionRecord"][];
+            /** Next Cursor */
+            next_cursor: string | null;
         };
         /** Detector */
         Detector: {
@@ -2423,6 +3039,14 @@ export interface components {
              * @default []
              */
             allow_recipients: string[];
+        };
+        /** EnforceIn */
+        EnforceIn: {
+            /**
+             * Override
+             * @default false
+             */
+            override: boolean;
         };
         /** EpisodeDetail */
         EpisodeDetail: {
@@ -2874,6 +3498,11 @@ export interface components {
              */
             wired: boolean;
         };
+        /** IngestIn */
+        IngestIn: {
+            /** Records */
+            records: components["schemas"]["DecisionRecord"][];
+        };
         /** InjectionSpec */
         InjectionSpec: {
             /** Attack */
@@ -2929,6 +3558,11 @@ export interface components {
             created_at: string;
             /** Finished At */
             finished_at: string | null;
+        };
+        /** JobStarted */
+        JobStarted: {
+            /** Job Id */
+            job_id: string;
         };
         /** Judge */
         Judge: {
@@ -3243,6 +3877,15 @@ export interface components {
              */
             scope: "any" | "last" | "all";
         };
+        /** Overhead */
+        Overhead: {
+            /** P50 */
+            p50: number | null;
+            /** P95 */
+            p95: number | null;
+            /** P99 */
+            p99: number | null;
+        };
         /** ParetoOut */
         ParetoOut: {
             /** Suite Id */
@@ -3280,6 +3923,37 @@ export interface components {
             dominated_by: string[];
             /** Dominance Supported */
             dominance_supported: boolean;
+        };
+        /** PatchIn */
+        PatchIn: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "proposed" | "accepted" | "rejected" | "edited";
+            /** Rule */
+            rule?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** PermissionDiff */
+        PermissionDiff: {
+            /** Added Tools */
+            added_tools: string[];
+            /** Removed Tools */
+            removed_tools: string[];
+            /** Risk Changes */
+            risk_changes: components["schemas"]["RiskChange"][];
+            /** Schema Widenings */
+            schema_widenings: components["schemas"]["SchemaWidening"][];
+            /** Newly Uncovered */
+            newly_uncovered: string[];
+            /** Exposure Score Old */
+            exposure_score_old: number;
+            /** Exposure Score New */
+            exposure_score_new: number;
+            /** Exposure Score Delta */
+            exposure_score_delta: number;
         };
         /** PersonaDoc */
         PersonaDoc: {
@@ -3322,6 +3996,54 @@ export interface components {
             /** Scenario Id */
             scenario_id: string;
         };
+        /** Policy */
+        Policy: {
+            /** Id */
+            id: string;
+            /**
+             * Version
+             * @default 1
+             */
+            version: number;
+            /** Rules */
+            rules: components["schemas"]["PolicyRule"][];
+            /**
+             * Mode
+             * @default shadow
+             * @enum {string}
+             */
+            mode: "shadow" | "enforce";
+            /**
+             * Fail
+             * @default open
+             * @enum {string}
+             */
+            fail: "open" | "closed";
+        };
+        /** PolicyOut */
+        PolicyOut: {
+            /** Id */
+            id: string;
+            /** Version */
+            version: number;
+            /** Name */
+            name: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "published";
+            /** Agent Id */
+            agent_id: string | null;
+            policy: components["schemas"]["Policy"];
+            /** Source Text */
+            source_text: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** PolicyRule */
         PolicyRule: {
             /** Id */
@@ -3349,6 +4071,52 @@ export interface components {
              * @default false
              */
             strict: boolean;
+        };
+        /** PolicyTestIn */
+        PolicyTestIn: {
+            /** Agent Version Id */
+            agent_version_id: string;
+            /** Attack Runs */
+            attack_runs?: string[] | null;
+            /** Benign Runs */
+            benign_runs?: string[] | null;
+            /**
+             * Max Benign
+             * @default 200
+             */
+            max_benign: number;
+        };
+        /** PolicyTestOut */
+        PolicyTestOut: {
+            /** Id */
+            id: string;
+            /** Job Id */
+            job_id?: string | null;
+            /** Policy Id */
+            policy_id: string;
+            /** Policy Version */
+            policy_version: number;
+            /** Agent Version Id */
+            agent_version_id: string;
+            /** Status */
+            status: string;
+            /** Attack Count */
+            attack_count: number;
+            /** Benign Count */
+            benign_count: number;
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+            /** Error */
+            error: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
         };
         /** PostureFinding */
         PostureFinding: {
@@ -3426,6 +4194,45 @@ export interface components {
             name: string;
             /** Created At */
             created_at: string;
+        };
+        /** Proposal */
+        Proposal: {
+            /** Clause Id */
+            clause_id: string;
+            /** Clause Text */
+            clause_text: string;
+            /**
+             * Klass
+             * @enum {string}
+             */
+            klass: "machine" | "model" | "human";
+            rule?: components["schemas"]["PolicyRule"] | null;
+            rubric?: components["schemas"]["Rubric"] | null;
+            /** Confidence */
+            confidence: number;
+            /** Rationale */
+            rationale: string;
+            /**
+             * Status
+             * @default proposed
+             * @enum {string}
+             */
+            status: "proposed" | "accepted" | "rejected" | "edited";
+        };
+        /** PublishIn */
+        PublishIn: {
+            /**
+             * Mode
+             * @default shadow
+             * @enum {string}
+             */
+            mode: "shadow" | "enforce";
+            /**
+             * Fail
+             * @default open
+             * @enum {string}
+             */
+            fail: "open" | "closed";
         };
         /** PythonHandler */
         PythonHandler: {
@@ -3592,6 +4399,15 @@ export interface components {
             /** Episode Id */
             episode_id?: string | null;
         };
+        /** RiskChange */
+        RiskChange: {
+            /** Tool */
+            tool: string;
+            /** Old */
+            old: string;
+            /** New */
+            new: string;
+        };
         /** RoleChoice */
         RoleChoice: {
             /** Model */
@@ -3727,6 +4543,40 @@ export interface components {
             items: components["schemas"]["RubricDoc"][];
             /** Next Cursor */
             next_cursor: string | null;
+        };
+        /** RuleCount */
+        RuleCount: {
+            /** Rule Id */
+            rule_id: string | null;
+            /** Action */
+            action: string;
+            /** Count */
+            count: number;
+        };
+        /** RuleCoverage */
+        RuleCoverage: {
+            /** Rule Id */
+            rule_id: string;
+            /**
+             * Attack Hits
+             * @default 0
+             */
+            attack_hits: number;
+            /**
+             * Benign Hits
+             * @default 0
+             */
+            benign_hits: number;
+            /**
+             * Benign Total
+             * @default 0
+             */
+            benign_total: number;
+            /**
+             * High False Positive Risk
+             * @default false
+             */
+            high_false_positive_risk: boolean;
         };
         /** RunCounts */
         RunCounts: {
@@ -4052,6 +4902,15 @@ export interface components {
             /** Posterior Mean */
             posterior_mean?: number | null;
         };
+        /** SchemaWidening */
+        SchemaWidening: {
+            /** Tool */
+            tool: string;
+            /** Path */
+            path: string;
+            /** Change */
+            change: string;
+        };
         /** Scorecard */
         Scorecard: {
             latest_run: components["schemas"]["LatestRun"] | null;
@@ -4124,6 +4983,8 @@ export interface components {
             suite_id: string;
             /** Run Id */
             run_id: string;
+            /** Compare Run Id */
+            compare_run_id?: string | null;
             /** Failed Episode Id */
             failed_episode_id: string | null;
         };
@@ -4247,6 +5108,22 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** StatsOut */
+        StatsOut: {
+            /** Window S */
+            window_s: number;
+            /** Total */
+            total: number;
+            /** By Action */
+            by_action: {
+                [key: string]: number;
+            };
+            /** By Rule */
+            by_rule: components["schemas"]["RuleCount"][];
+            /** By Day */
+            by_day: components["schemas"]["DayCount"][];
+            overhead_us: components["schemas"]["Overhead"];
+        };
         /** StatusPatch */
         StatusPatch: {
             /** Status */
@@ -4345,6 +5222,25 @@ export interface components {
             verified_on: string;
             /** Categories */
             categories: components["schemas"]["CategoryOut"][];
+        };
+        /** ToolBlast */
+        ToolBlast: {
+            /** Tool */
+            tool: string;
+            /** Risk */
+            risk: string;
+            /** Collections Written */
+            collections_written: string[];
+            /** Max Records Changed Per Call */
+            max_records_changed_per_call: number;
+            /** Calls Observed */
+            calls_observed: number;
+            /** Covered By Rules */
+            covered_by_rules: string[];
+            /** Approval Required */
+            approval_required: boolean;
+            /** Worst Case */
+            worst_case: string;
         };
         /** ToolCalled */
         ToolCalled: {
@@ -4547,6 +5443,15 @@ export interface components {
             last_checked_at?: string | null;
             /** Detail */
             detail?: string | null;
+        };
+        /** VerifyIn */
+        VerifyIn: {
+            /** Policy Id */
+            policy_id: string;
+            /** Version */
+            version?: number | null;
+            /** Budget Usd Micros */
+            budget_usd_micros?: number | null;
         };
         /** VersionIn */
         VersionIn: {
@@ -8062,6 +8967,732 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Scorecard"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_compile_v1_policies_compile_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompileIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompileStarted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_policies_v1_policies_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyOut"][];
+                };
+            };
+        };
+    };
+    get_one_v1_policies__policy_id__get: {
+        parameters: {
+            query?: {
+                version?: number | null;
+            };
+            header?: never;
+            path: {
+                policy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_policy_proposals_v1_policies__policy_id__proposals_get: {
+        parameters: {
+            query?: {
+                version?: number | null;
+            };
+            header?: never;
+            path: {
+                policy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompiledPolicy"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_one_v1_policies__policy_id__proposals__clause_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                policy_id: string;
+                clause_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PatchIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompiledPolicy"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_publish_v1_policies__policy_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                policy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PublishIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_coverage_v1_policies__policy_id__coverage_get: {
+        parameters: {
+            query?: {
+                version?: number | null;
+                run_id?: string | null;
+            };
+            header?: never;
+            path: {
+                policy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverageReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_decisions_v1_gateway_decisions_get: {
+        parameters: {
+            query?: {
+                policy_id?: string | null;
+                action?: string | null;
+                tool?: string | null;
+                rule_id?: string | null;
+                mode?: string | null;
+                from?: string | null;
+                to?: string | null;
+                enforced?: boolean | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionsPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_decisions_v1_gateway_decisions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IngestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcceptedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_stats_v1_gateway_stats_get: {
+        parameters: {
+            query?: {
+                window?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_approvals_v1_gateway_approvals_get: {
+        parameters: {
+            query?: {
+                status?: ("pending" | "approved" | "denied" | "expired") | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_approval_v1_gateway_approvals_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApprovalIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_one_approval_v1_gateway_approvals__approval_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                approval_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_decide_v1_gateway_approvals__approval_id__decide_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                approval_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecideIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    suggest_policy_v1_findings__finding_id__suggest_policy_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobStarted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_policy_test_v1_policies__policy_id__test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                policy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PolicyTestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyTestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_policy_tests_v1_policies__policy_id__tests_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                policy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyTestOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_one_policy_test_v1_policy_tests__test_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                test_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyTestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_enforce_v1_policies__policy_id__enforce_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                policy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EnforceIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_verify_with_policy_v1_findings__finding_id__verify_with_policy_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_blast_radius_v1_agents__agent_id__versions__version_id__blast_radius_get: {
+        parameters: {
+            query?: {
+                policy_id?: string | null;
+            };
+            header?: never;
+            path: {
+                agent_id: string;
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlastRadius"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_permission_diff_v1_agents__agent_id__permission_diff_get: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                policy_id?: string | null;
+            };
+            header?: never;
+            path: {
+                agent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PermissionDiff"];
                 };
             };
             /** @description Validation Error */
