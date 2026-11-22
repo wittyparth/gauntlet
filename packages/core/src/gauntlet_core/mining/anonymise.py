@@ -48,6 +48,7 @@ _ADDRESS = re.compile(
     r"\b\d{1,5}\s+[A-Z][a-z]+(?:\s[A-Z][a-z]+)?\s(?:Street|St|Avenue|Ave|Road|Rd|Lane|Ln|Drive|Dr)\b"
 )
 _LONG = re.compile(r"[A-Za-z0-9_+/=-]{16,}")
+_URL = re.compile(r"https?://[^\s)>\"']+")
 _NON_PERSON = {"thanks", "there", "again", "please", "support", "team", "everyone"}
 
 
@@ -140,12 +141,22 @@ class _Replacer:
                 self._note("number", digits, stand_in)
         return text
 
+    def url(self, m: re.Match[str]) -> str:
+        """A link carrying an encoded run (a smuggled value) keeps only the fact it was a link."""
+        if any(
+            entropy(run) >= 3.5 and any(c.isdigit() for c in run) and any(c.isalpha() for c in run)
+            for run in _LONG.findall(m.group(0))
+        ):
+            return self._note("url", m.group(0), "https://link.example.test/x")
+        return m.group(0)
+
     def address(self, m: re.Match[str]) -> str:
         n = _h(self.seed, "address", m.group(0))
         return self._note("address", m.group(0), f"{n % 90 + 10} {STREETS[n % len(STREETS)]}")
 
     def text(self, text: str) -> str:
         text = _TOKEN.sub(self.token, text)
+        text = _URL.sub(self.url, text)
         text = _ADDRESS.sub(self.address, text)
         return self.bare(text)
 

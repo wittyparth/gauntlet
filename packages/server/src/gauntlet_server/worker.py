@@ -40,6 +40,7 @@ from .models_gateway import gateway_for_roles
 from .services import calibration as _calibration
 from .services import gateway as _gateway
 from .services import loop as _loop  # noqa: F401  (registers suggest_policy, policy_test)
+from .services import mining as _mining  # noqa: F401  (registers the mining jobs)
 from .services import production as _production
 from .services.adaptive import adaptive_after_episode
 from .services.finding_hooks import after_episode

@@ -27,6 +27,7 @@ CONTRACT_TABLES = {
     "failure_embeddings", "failure_clusters", "badge_tokens", "policies", "policy_proposals",
     "gateway_decisions", "gateway_approvals", "policy_tests",
     "prod_conversations", "prod_events", "prod_spans_seen", "ingest_stats",
+    "mining_runs", "mining_candidates",
 }  # fmt: skip
 
 
