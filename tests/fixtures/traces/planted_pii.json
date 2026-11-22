@@ -1,0 +1,117 @@
+{
+ "resourceSpans": [
+  {
+   "resource": {
+    "attributes": [
+     {
+      "key": "service.name",
+      "value": {
+       "stringValue": "support-bot"
+      }
+     }
+    ]
+   },
+   "scopeSpans": [
+    {
+     "scope": {
+      "name": "fixture"
+     },
+     "spans": [
+      {
+       "traceId": "cccccccccccccccccccccccccccccccc",
+       "spanId": "p1",
+       "parentSpanId": "",
+       "name": "llm",
+       "startTimeUnixNano": "1780000000000000000",
+       "endTimeUnixNano": "1780000000010000000",
+       "attributes": [
+        {
+         "key": "openinference.span.kind",
+         "value": {
+          "stringValue": "LLM"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "sess-pii"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.role",
+         "value": {
+          "stringValue": "user"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.content",
+         "value": {
+          "stringValue": "My email is jane.doe@example.com and my card is 4242 4242 4242 4242, call 415-555-0132"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.role",
+         "value": {
+          "stringValue": "assistant"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.content",
+         "value": {
+          "stringValue": "Thanks, I will email jane.doe@example.com."
+         }
+        },
+        {
+         "key": "api_key",
+         "value": {
+          "stringValue": "AKIAIOSFODNN7EXAMPLE"
+         }
+        },
+        {
+         "key": "http.headers.authorization",
+         "value": {
+          "stringValue": "Bearer AKIAIOSFODNN7EXAMPLE"
+         }
+        }
+       ]
+      },
+      {
+       "traceId": "cccccccccccccccccccccccccccccccc",
+       "spanId": "p2",
+       "parentSpanId": "",
+       "name": "send_email",
+       "startTimeUnixNano": "1780000000012000000",
+       "endTimeUnixNano": "1780000000020000000",
+       "attributes": [
+        {
+         "key": "openinference.span.kind",
+         "value": {
+          "stringValue": "TOOL"
+         }
+        },
+        {
+         "key": "tool.name",
+         "value": {
+          "stringValue": "send_email"
+         }
+        },
+        {
+         "key": "tool.parameters",
+         "value": {
+          "stringValue": "{\"to\": \"jane.doe@example.com\", \"authorization\": \"AKIAIOSFODNN7EXAMPLE\", \"note\": \"key AKIAIOSFODNN7EXAMPLE\"}"
+         }
+        },
+        {
+         "key": "output.value",
+         "value": {
+          "stringValue": "sent to jane.doe@example.com"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

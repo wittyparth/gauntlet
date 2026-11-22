@@ -16,6 +16,7 @@ dependencies = [
     "aiobotocore>=3.10.0",
     "pgvector>=0.3",
     "scikit-learn>=1.4",
+    "opentelemetry-proto>=1.25",
 ]
 
 [tool.uv.sources]

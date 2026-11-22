@@ -1,0 +1,325 @@
+{
+ "resourceSpans": [
+  {
+   "resource": {
+    "attributes": [
+     {
+      "key": "service.name",
+      "value": {
+       "stringValue": "support-bot"
+      }
+     }
+    ]
+   },
+   "scopeSpans": [
+    {
+     "scope": {
+      "name": "fixture"
+     },
+     "spans": [
+      {
+       "traceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "spanId": "s0",
+       "parentSpanId": "",
+       "name": "agent",
+       "startTimeUnixNano": "1780000000000000000",
+       "endTimeUnixNano": "1780000000400000000",
+       "attributes": [
+        {
+         "key": "openinference.span.kind",
+         "value": {
+          "stringValue": "AGENT"
+         }
+        },
+        {
+         "key": "session.id",
+         "value": {
+          "stringValue": "sess-1"
+         }
+        }
+       ]
+      },
+      {
+       "traceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "spanId": "s1",
+       "parentSpanId": "s0",
+       "name": "llm",
+       "startTimeUnixNano": "1780000000010000000",
+       "endTimeUnixNano": "1780000000020000000",
+       "attributes": [
+        {
+         "key": "openinference.span.kind",
+         "value": {
+          "stringValue": "LLM"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.role",
+         "value": {
+          "stringValue": "system"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.content",
+         "value": {
+          "stringValue": "You are a support agent."
+         }
+        },
+        {
+         "key": "llm.input_messages.1.message.role",
+         "value": {
+          "stringValue": "user"
+         }
+        },
+        {
+         "key": "llm.input_messages.1.message.content",
+         "value": {
+          "stringValue": "Hi, where is order ord_1001?"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.tool_calls.0.tool_call.function.name",
+         "value": {
+          "stringValue": "lookup_order"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.tool_calls.0.tool_call.function.arguments",
+         "value": {
+          "stringValue": "{\"order_id\": \"ord_1001\"}"
+         }
+        }
+       ]
+      },
+      {
+       "traceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "spanId": "s2",
+       "parentSpanId": "s0",
+       "name": "lookup_order",
+       "startTimeUnixNano": "1780000000030000000",
+       "endTimeUnixNano": "1780000000040000000",
+       "attributes": [
+        {
+         "key": "openinference.span.kind",
+         "value": {
+          "stringValue": "TOOL"
+         }
+        },
+        {
+         "key": "tool.name",
+         "value": {
+          "stringValue": "lookup_order"
+         }
+        },
+        {
+         "key": "tool.parameters",
+         "value": {
+          "stringValue": "{\"order_id\": \"ord_1001\"}"
+         }
+        },
+        {
+         "key": "output.value",
+         "value": {
+          "stringValue": "{\"id\": \"ord_1001\", \"status\": \"shipped\"}"
+         }
+        }
+       ]
+      },
+      {
+       "traceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "spanId": "s3",
+       "parentSpanId": "s0",
+       "name": "retrieve",
+       "startTimeUnixNano": "1780000000042000000",
+       "endTimeUnixNano": "1780000000048000000",
+       "attributes": [
+        {
+         "key": "openinference.span.kind",
+         "value": {
+          "stringValue": "RETRIEVER"
+         }
+        }
+       ]
+      },
+      {
+       "traceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "spanId": "s4",
+       "parentSpanId": "s0",
+       "name": "llm",
+       "startTimeUnixNano": "1780000000050000000",
+       "endTimeUnixNano": "1780000000060000000",
+       "attributes": [
+        {
+         "key": "openinference.span.kind",
+         "value": {
+          "stringValue": "LLM"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.role",
+         "value": {
+          "stringValue": "system"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.content",
+         "value": {
+          "stringValue": "You are a support agent."
+         }
+        },
+        {
+         "key": "llm.input_messages.1.message.role",
+         "value": {
+          "stringValue": "user"
+         }
+        },
+        {
+         "key": "llm.input_messages.1.message.content",
+         "value": {
+          "stringValue": "Hi, where is order ord_1001?"
+         }
+        },
+        {
+         "key": "llm.input_messages.2.message.role",
+         "value": {
+          "stringValue": "assistant"
+         }
+        },
+        {
+         "key": "llm.input_messages.2.message.content",
+         "value": {
+          "stringValue": ""
+         }
+        },
+        {
+         "key": "llm.input_messages.3.message.role",
+         "value": {
+          "stringValue": "tool"
+         }
+        },
+        {
+         "key": "llm.input_messages.3.message.content",
+         "value": {
+          "stringValue": "shipped"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.role",
+         "value": {
+          "stringValue": "assistant"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.content",
+         "value": {
+          "stringValue": "Order ord_1001 has shipped."
+         }
+        }
+       ]
+      },
+      {
+       "traceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "spanId": "s5",
+       "parentSpanId": "s0",
+       "name": "llm",
+       "startTimeUnixNano": "1780000000300000000",
+       "endTimeUnixNano": "1780000000310000000",
+       "attributes": [
+        {
+         "key": "openinference.span.kind",
+         "value": {
+          "stringValue": "LLM"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.role",
+         "value": {
+          "stringValue": "system"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.content",
+         "value": {
+          "stringValue": "You are a support agent."
+         }
+        },
+        {
+         "key": "llm.input_messages.1.message.role",
+         "value": {
+          "stringValue": "user"
+         }
+        },
+        {
+         "key": "llm.input_messages.1.message.content",
+         "value": {
+          "stringValue": "Hi, where is order ord_1001?"
+         }
+        },
+        {
+         "key": "llm.input_messages.2.message.role",
+         "value": {
+          "stringValue": "assistant"
+         }
+        },
+        {
+         "key": "llm.input_messages.2.message.content",
+         "value": {
+          "stringValue": ""
+         }
+        },
+        {
+         "key": "llm.input_messages.3.message.role",
+         "value": {
+          "stringValue": "tool"
+         }
+        },
+        {
+         "key": "llm.input_messages.3.message.content",
+         "value": {
+          "stringValue": "shipped"
+         }
+        },
+        {
+         "key": "llm.input_messages.4.message.role",
+         "value": {
+          "stringValue": "assistant"
+         }
+        },
+        {
+         "key": "llm.input_messages.4.message.content",
+         "value": {
+          "stringValue": "Order ord_1001 has shipped."
+         }
+        },
+        {
+         "key": "llm.input_messages.5.message.role",
+         "value": {
+          "stringValue": "user"
+         }
+        },
+        {
+         "key": "llm.input_messages.5.message.content",
+         "value": {
+          "stringValue": "Thanks!"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.role",
+         "value": {
+          "stringValue": "assistant"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.content",
+         "value": {
+          "stringValue": "You are welcome."
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
