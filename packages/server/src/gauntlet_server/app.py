@@ -41,12 +41,14 @@ from .routes import (
     models,
     policies,
     posture,
+    production,
     review,
     runs,
     scorecard,
     settings,
     stability,
     targets,
+    traces,
 )
 from .secrets import SecretStore
 
@@ -141,7 +143,7 @@ def create_app(state: AppState | None = None) -> FastAPI:
         findings.router, attacks.router, posture.router, compare.router, stability.router,
         cassettes.router, jobs.router, review.router, calibrations.router, clusters.router,
         badges.router, badges.public, migration.router, scorecard.router, policies.router,
-        gateway.router, loop.router,
+        gateway.router, loop.router, traces.router, production.router,
     ):  # fmt: skip
         application.include_router(r)
 

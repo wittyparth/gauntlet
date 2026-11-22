@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from datetime import UTC, datetime
 
 from gauntlet_core.ingest import group_spans, trace_to_events
-from ingest_helpers import spans
+from trace_helpers import spans
 
 
 def shape(conv):

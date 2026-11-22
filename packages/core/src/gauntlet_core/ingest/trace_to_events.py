@@ -97,7 +97,10 @@ def trace_to_events(
             )
             msgs = indexed_messages(a, prefix_in, flavour=flavour)
             prev = seen_inputs.get(sp.trace_id, 0)
-            fresh = msgs[prev:] if len(msgs) >= prev else msgs[-1:]
+            fresh = list(msgs[prev:] if len(msgs) >= prev else msgs[-1:])
+            last_msg = next((m for m in reversed(msgs) if m.role == "user"), None)
+            if last_msg is not None and last_msg not in fresh:
+                fresh.append(last_msg)  # a span that carries only the new turn
             seen_inputs[sp.trace_id] = len(msgs)
             for m in fresh:
                 if m.role == "user" and m.content and m.content != last_user:

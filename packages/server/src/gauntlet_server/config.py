@@ -41,6 +41,11 @@ class Settings:
     attribute_with_llm: bool = False  # root-cause fallback through judge_small
     max_fp_rate: float = 0.02  # enforce gate: offline-test false-positive rate (P4-5)
     min_block_rate: float = 0.5  # enforce gate: offline-test block rate
+    prod_retention_days: int = 30  # production conversations (P5-1)
+    ingest_max_spans: int = 5000
+    ingest_max_bytes: int = 4 * 1024 * 1024
+    ingest_sample_rate: float = 1.0
+    ingest_rate_per_s: int = 50
     lease_s: int = 60
     poll_interval_s: float = 1.0
     allow_private_targets: bool = False
@@ -84,6 +89,11 @@ class Settings:
             in ("1", "true", "yes"),
             max_fp_rate=float(e.get("GAUNTLET_MAX_FP_RATE") or 0.02),
             min_block_rate=float(e.get("GAUNTLET_MIN_BLOCK_RATE") or 0.5),
+            prod_retention_days=_int(e, "GAUNTLET_PROD_RETENTION_DAYS", 30),
+            ingest_max_spans=_int(e, "GAUNTLET_INGEST_MAX_SPANS", 5000),
+            ingest_max_bytes=_int(e, "GAUNTLET_INGEST_MAX_BYTES", 4 * 1024 * 1024),
+            ingest_sample_rate=float(e.get("GAUNTLET_INGEST_SAMPLE_RATE") or 1.0),
+            ingest_rate_per_s=_int(e, "GAUNTLET_INGEST_RATE_PER_S", 50),
             lease_s=_int(e, "LEASE_SECONDS", 60),
             poll_interval_s=float(e.get("POLL_INTERVAL_S") or 1.0),
             allow_private_targets=(e.get("GAUNTLET_ALLOW_PRIVATE_TARGETS") or "").lower()
@@ -108,6 +118,10 @@ class Settings:
             raise RuntimeError("GAUNTLET_SECRET_KEY is required outside GAUNTLET_ENV=dev")
         log.warning("GAUNTLET_SECRET_KEY is not set: using the fixed DEV key (dev mode only)")
         return base64.urlsafe_b64encode(hashlib.sha256(DEV_SECRET_SEED).digest())
+
+    def redaction_key(self) -> bytes:
+        """Keys the typed redaction tokens: stable across processes, not derivable from them."""
+        return hashlib.sha256(b"gauntlet-redaction-v1:" + self.fernet_key()).digest()
 
     def mock_secret(self) -> bytes:
         """HMAC key for episode tokens of the mock facade: derived, so api and worker agree."""

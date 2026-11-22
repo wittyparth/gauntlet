@@ -40,7 +40,7 @@ from .models_gateway import gateway_for_roles
 from .services import calibration as _calibration
 from .services import gateway as _gateway
 from .services import loop as _loop  # noqa: F401  (registers suggest_policy, policy_test)
-from .services import policies as _policies  # noqa: F401  (registers the compile_policy job)
+from .services import production as _production
 from .services.adaptive import adaptive_after_episode
 from .services.finding_hooks import after_episode
 from .services.jobs import run_job
@@ -127,6 +127,7 @@ class Worker:
         """Claim background jobs (calibration, clustering) next to the episode loop."""
         last_drift = float("-inf")
         last_sweep = float("-inf")
+        last_retention = float("-inf")
         while not stop.is_set() and not self._killed:
             free = self.job_concurrency - len(self._job_tasks)
             if free > 0:
@@ -137,6 +138,12 @@ class Worker:
                         t.add_done_callback(self._job_tasks.discard)
                 except Exception:
                     log.exception("job claim failed")
+            if time.monotonic() - last_retention > 3600:
+                last_retention = time.monotonic()
+                try:
+                    await _production.sweep_retention(self.state)
+                except Exception:
+                    log.exception("production retention sweep failed")
             if time.monotonic() - last_sweep > 30:
                 last_sweep = time.monotonic()
                 try:
