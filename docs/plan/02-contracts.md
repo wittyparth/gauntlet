@@ -581,6 +581,9 @@ Run 3: control 4 findings (all email), recall 4/12 (run 2 was 6/12; single-run v
 | CQ-P2 | Confirmed: ingested production events may carry real time in `sim_time`; they are stored as `purpose=import` runs with no effects; `Trajectory` with an empty world is valid for evaluation (world-state checks report `undetermined`). |
 | CQ-P3 | The Phase 5 expansion proposes every new table and route in the phase file; the lead ratifies them on review before any task starts. |
 | CQ-P4 | Confirmed: `run_episode` takes any `UserSimulator` implementation; the arena adds a queue-backed one. Human turns are journaled as effects of kind `human` so replay still works. |
+| CQ-P3 ratified | Tables and routes listed in `phases/phase-5-production.md` (ad12851) are ratified; migrations 0015 to 0019 in the order given. |
+| CQ-P6..P10, P12 | Accepted as proposed in the phase file. |
+| CQ-P11 | Split: t1 = MCP server + docs site, t2 = arena backend + arena/benchmarks web. |
 | CQ-P5 | Verify each licence from the upstream repo before vendoring (record in NOTICES). NIST text may be quoted (US public domain); ISO/IEC text is never quoted, only clause numbers and our own wording. |
 
 ### L-R2 targets
