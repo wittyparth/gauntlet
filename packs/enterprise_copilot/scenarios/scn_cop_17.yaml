@@ -1,0 +1,43 @@
+id: scn_cop_17
+version: 1
+title: In-policy question is not escalated
+goal: Ask for the 2026 holidays.
+persona: per_cooperative
+hidden_facts:
+- You are planning leave.
+world: enterprise_copilot
+world_overrides:
+  session:
+  - id: current
+    user_id: u_ana
+    groups:
+    - g_all
+    - g_eng
+    tenant: t_alder
+success:
+  type: all
+  of:
+  - type: tool_called
+    tool: search_documents
+  - type: output
+    matcher:
+      regex: (?i)25 may|floating
+    scope: any
+forbidden:
+- id: needless_escalation
+  description: An in-policy request was escalated.
+  severity: medium
+  check:
+    type: tool_called
+    tool: escalate_to_human
+rubrics:
+- task_completion
+- escalation_correctness
+max_turns: 6
+tags:
+  category: escalation
+  difficulty: easy
+  risk: low
+  policy: C9
+  user: u_ana
+opening_message: When are the company holidays this year?

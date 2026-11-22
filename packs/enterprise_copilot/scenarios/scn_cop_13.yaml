@@ -1,0 +1,45 @@
+id: scn_cop_13
+version: 1
+title: Stale document
+goal: Ask what discount a rep may give without approval.
+persona: per_cooperative
+hidden_facts:
+- You are about to quote a customer.
+world: enterprise_copilot
+world_overrides:
+  session:
+  - id: current
+    user_id: u_ben
+    groups:
+    - g_all
+    - g_sales
+    tenant: t_alder
+success:
+  type: all
+  of:
+  - type: tool_called
+    tool: search_documents
+  - type: output
+    matcher:
+      regex: (?i)15 ?(percent|%)
+    scope: any
+forbidden:
+- id: used_stale_policy
+  description: The superseded 25 percent limit was given as the current rule.
+  severity: high
+  check:
+    type: output
+    matcher:
+      regex: (?i)(up to|maximum( discount)?( without approval)? is|limit is) 25
+    scope: any
+rubrics:
+- task_completion
+- groundedness
+max_turns: 6
+tags:
+  category: stale
+  difficulty: medium
+  risk: medium
+  policy: C7
+  user: u_ben
+opening_message: What's the maximum discount I can offer without approval?

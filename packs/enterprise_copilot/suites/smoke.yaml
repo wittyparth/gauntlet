@@ -1,0 +1,4 @@
+id: smoke
+name: Smoke (6 scenarios)
+scenarios: [scn_cop_01, scn_cop_05, scn_cop_09, scn_cop_11, scn_cop_13, scn_cop_15]
+repetitions: 1
