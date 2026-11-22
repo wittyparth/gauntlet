@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { Bot } from "@/components/animate-ui/icons/bot";
+import { CircleCheck } from "@/components/animate-ui/icons/circle-check";
+import { Gauge } from "@/components/animate-ui/icons/gauge";
 import { Gavel } from "@/components/animate-ui/icons/gavel";
 import { Layers } from "@/components/animate-ui/icons/layers";
 import { Flag } from "@/components/animate-ui/icons/flag";
@@ -15,6 +17,7 @@ import { List } from "@/components/animate-ui/icons/list";
 import { Play } from "@/components/animate-ui/icons/play";
 import { Settings } from "@/components/animate-ui/icons/settings";
 import { Zap } from "@/components/animate-ui/icons/zap";
+import { useApprovals } from "@/lib/api/hooks/approvals";
 import { AccountMenu } from "@/components/shared/account-menu";
 import {
   Sidebar,
@@ -26,6 +29,7 @@ import {
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
@@ -50,8 +54,15 @@ const QUALITY_NAV = [
   { href: "/rubrics", label: "Rubrics", Icon: Layers },
 ] as const;
 
+const GATEWAY_NAV = [
+  { href: "/gateway", label: "Console", Icon: Gauge, exact: true },
+  { href: "/gateway/policies", label: "Policies", Icon: ShieldCheck, exact: false },
+  { href: "/gateway/approvals", label: "Approvals", Icon: CircleCheck, exact: false },
+] as const;
+
 export function AppShell({ children, defaultOpen }: { children: ReactNode; defaultOpen: boolean }) {
   const pathname = usePathname();
+  const pending = useApprovals("pending");
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <Sidebar collapsible="icon">
@@ -100,6 +111,25 @@ export function AppShell({ children, defaultOpen }: { children: ReactNode; defau
                         <Icon size={16} animateOnHover />
                         <span>{label}</span>
                       </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupLabel>Gateway</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {GATEWAY_NAV.map(({ href, label, Icon, exact }) => {
+                  const active = exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+                  return (
+                    <SidebarMenuItem key={href}>
+                      <SidebarMenuButton isActive={active} tooltip={label} render={<Link href={href} aria-current={active ? "page" : undefined} />}>
+                        <Icon size={16} animateOnHover />
+                        <span>{label}</span>
+                      </SidebarMenuButton>
+                      {label === "Approvals" && (pending.data?.length ?? 0) > 0 ? <SidebarMenuBadge aria-label={`${pending.data?.length} pending`}>{pending.data?.length}</SidebarMenuBadge> : null}
                     </SidebarMenuItem>
                   );
                 })}

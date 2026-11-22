@@ -39,6 +39,7 @@ export function useAgent(agentId: string) {
 export function useAgentVersions(agentId: string) {
   return useQuery({
     queryKey: qk.agentVersions(agentId),
+    enabled: Boolean(agentId),
     queryFn: async () =>
       bodyOf(
           await client.GET("/v1/agents/{agent_id}/versions", {
