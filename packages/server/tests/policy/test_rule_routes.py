@@ -79,3 +79,25 @@ async def test_the_seeded_finding_carries_a_suggested_rule_that_can_be_added(cli
     assert rule["id"] == "cap-refund-after-note"
     added = await client.post(f"/v1/policies/{pid}/rules", json=rule)
     assert added.status_code == 201 and "cap-refund-after-note" in rules(added.json())
+
+
+async def test_the_draft_document_follows_its_accepted_rules(client, pid):
+    await client.post(f"/v1/policies/{pid}/rules", json=RULE)
+    draft = (await client.get(f"/v1/policies/{pid}")).json()
+    assert draft["status"] == "draft"
+    assert {r["id"] for r in draft["policy"]["rules"]} == {
+        "refund-cap",
+        "no-card-email",
+        "no-delete",
+    }
+    await client.delete(f"/v1/policies/{pid}/rules/no-delete")
+    again = (await client.get(f"/v1/policies/{pid}")).json()
+    assert {r["id"] for r in again["policy"]["rules"]} == {"refund-cap", "no-card-email"}
+
+
+async def test_seeding_again_restores_the_fixture_policy(client, pid):
+    await client.post(f"/v1/policies/{pid}/rules", json=RULE)
+    assert (await client.get(f"/v1/policies/{pid}")).json()["version"] == 2
+    await client.post("/v1/dev/seed", json={"gateway": True})
+    again = (await client.get(f"/v1/policies/{pid}")).json()
+    assert (again["version"], again["status"], len(again["policy"]["rules"])) == (1, "published", 2)

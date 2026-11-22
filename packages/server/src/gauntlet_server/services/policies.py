@@ -50,6 +50,7 @@ __all__ = [
     "list_policies",
     "patch_proposal",
     "publish_policy",
+    "sync_draft_doc",
 ]
 
 JOB_KIND = "compile_policy"
@@ -315,6 +316,14 @@ async def _editable(
     return draft, copied
 
 
+def sync_draft_doc(draft: PolicyVersion, compiled: CompiledPolicy) -> None:
+    """Keep the draft's own rules in step with its accepted proposals, so an offline test of the
+    draft evaluates what publishing would publish."""
+    old = Policy.model_validate(draft.doc)
+    rules = [p.rule for p in accepted_proposals(compiled) if p.rule is not None]
+    draft.doc = dump_doc(old.model_copy(update={"rules": rules}))
+
+
 async def patch_proposal(
     s: AsyncSession, ws: str, policy_id: str, clause_id: str, body: PatchIn, actor: str
 ) -> CompiledPolicy:
@@ -341,6 +350,7 @@ async def patch_proposal(
         update={"proposals": [prop if p.clause_id == clause_id else p for p in compiled.proposals]}
     )
     row.doc = dump_doc(compiled)
+    sync_draft_doc(draft, compiled)
     await audit(
         s,
         ws,

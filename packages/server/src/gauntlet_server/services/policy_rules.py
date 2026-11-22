@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..errors import ApiError, not_found
 from .audit import audit
-from .policies import _editable, dump_doc
+from .policies import _editable, dump_doc, sync_draft_doc
 
 __all__ = ["add_rule", "delete_rule", "replace_rule"]
 
@@ -70,6 +70,7 @@ async def add_rule(
         }
     )  # fmt: skip
     row.doc = dump_doc(compiled)
+    sync_draft_doc(draft, compiled)
     await audit(s, ws, actor, "policy.rule_added", "policy", policy_id,
                 {"version": draft.version, "rule_id": ok.id})  # fmt: skip
     await s.commit()
@@ -91,6 +92,7 @@ async def replace_rule(
         update={"proposals": [new if p is prop else p for p in compiled.proposals]}
     )
     row.doc = dump_doc(compiled)
+    sync_draft_doc(draft, compiled)
     await audit(s, ws, actor, "policy.rule_updated", "policy", policy_id,
                 {"version": draft.version, "rule_id": rule_id})  # fmt: skip
     await s.commit()
@@ -121,6 +123,7 @@ async def delete_rule(
             }
         )
     row.doc = dump_doc(compiled)
+    sync_draft_doc(draft, compiled)
     await audit(s, ws, actor, "policy.rule_deleted", "policy", policy_id,
                 {"version": draft.version, "rule_id": rule_id})  # fmt: skip
     await s.commit()

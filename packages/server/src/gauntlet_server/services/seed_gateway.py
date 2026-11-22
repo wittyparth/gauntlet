@@ -119,8 +119,15 @@ def _decision(i: int, now: datetime, **kw: Any) -> dict[str, Any]:
 
 
 async def seed_gateway(s: AsyncSession, ws: str, agent_id: str, agent_version_id: str) -> None:
-    if await s.get(PolicyVersion, (POLICY, 1)) is not None:
-        return
+    for sql in (  # the fixtures start from the same state on every request
+        "DELETE FROM gateway_approvals WHERE id = 'gap_demo'",
+        "DELETE FROM gateway_decisions WHERE id LIKE 'gdc_demo_%'",
+        "DELETE FROM policy_tests WHERE policy_id = 'pol_demo'",
+        "DELETE FROM policy_proposals WHERE policy_id = 'pol_demo'",
+        "DELETE FROM policies WHERE id = 'pol_demo'",
+        "DELETE FROM findings WHERE id = 'fnd_demo_policy'",
+    ):
+        await s.execute(text(sql))
     now = datetime.now(UTC).replace(microsecond=0)
     compiled = _proposals()
     rules = [p.rule for p in compiled.proposals if p.status == "accepted" and p.rule]
