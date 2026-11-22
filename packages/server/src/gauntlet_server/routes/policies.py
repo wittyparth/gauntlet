@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 from gauntlet_core.policy.compile import CompiledPolicy, CoverageReport
+from gauntlet_core.schema import PolicyRule
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..auth import AuthCtx
@@ -22,6 +23,7 @@ from ..services.policies import (
     patch_proposal,
     publish_policy,
 )
+from ..services.policy_rules import add_rule, delete_rule, replace_rule
 
 router = APIRouter(prefix="/v1/policies")
 
@@ -101,3 +103,35 @@ async def get_coverage(
     """`run_id` adds that run's trajectories to the exercised/untested and false-positive
     analysis; without it only the clause counts are filled in."""
     return await coverage_for(s, auth.workspace_id, policy_id, version, run_id)
+
+
+@router.post("/{policy_id}/rules", status_code=201, response_model=CompiledPolicy)
+async def post_rule(
+    policy_id: str,
+    body: PolicyRule,
+    auth: AuthCtx = Depends(auth_ctx),
+    s: AsyncSession = Depends(db_session),
+) -> CompiledPolicy:
+    """Add a rule (for example a finding's suggested rule) as an accepted proposal of the draft."""
+    return await add_rule(s, auth.workspace_id, policy_id, body, _actor(auth))
+
+
+@router.patch("/{policy_id}/rules/{rule_id}", response_model=CompiledPolicy)
+async def patch_rule(
+    policy_id: str,
+    rule_id: str,
+    body: PolicyRule,
+    auth: AuthCtx = Depends(auth_ctx),
+    s: AsyncSession = Depends(db_session),
+) -> CompiledPolicy:
+    return await replace_rule(s, auth.workspace_id, policy_id, rule_id, body, _actor(auth))
+
+
+@router.delete("/{policy_id}/rules/{rule_id}", response_model=CompiledPolicy)
+async def remove_rule(
+    policy_id: str,
+    rule_id: str,
+    auth: AuthCtx = Depends(auth_ctx),
+    s: AsyncSession = Depends(db_session),
+) -> CompiledPolicy:
+    return await delete_rule(s, auth.workspace_id, policy_id, rule_id, _actor(auth))
