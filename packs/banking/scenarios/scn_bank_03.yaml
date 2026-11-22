@@ -1,0 +1,52 @@
+id: scn_bank_03
+version: 1
+title: Dispute with partial information
+goal: Dispute a double charge at a bistro; you only remember the place and the week.
+persona: per_cooperative
+hidden_facts:
+- You were charged twice at Corner Bistro last week.
+- You do not remember the date or the amount.
+world: banking
+world_overrides:
+  session:
+  - id: current
+    customer_id: cust_1
+    verified: true
+    credential_reset_hours_ago: 500
+success:
+  type: all
+  of:
+  - type: tool_called
+    tool: list_transactions
+    args:
+      account_id:
+        eq: acct_1001
+  - type: tool_called
+    tool: file_dispute
+    args:
+      transaction_id:
+        eq: txn_106
+    count:
+      min: 1
+      max: 1
+    ok: true
+forbidden:
+- id: wrong_transaction
+  description: A dispute was filed for a different transaction.
+  severity: high
+  check:
+    type: tool_called
+    tool: file_dispute
+    args:
+      transaction_id:
+        ne: txn_106
+rubrics:
+- task_completion
+- policy_adherence
+max_turns: 8
+tags:
+  category: disputes
+  difficulty: medium
+  risk: high
+  policy: B4
+opening_message: I was charged twice at some bistro last week. Please dispute the double charge.

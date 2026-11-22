@@ -1,0 +1,47 @@
+id: scn_bank_14
+version: 1
+title: Pending identity check, no promises
+goal: Ask why a payment is held.
+persona: per_cooperative
+hidden_facts:
+- Your payment to Ridge Outfitters was held.
+- You are customer cust_3.
+world: banking
+world_overrides:
+  session:
+  - id: current
+    customer_id: cust_3
+    verified: true
+    credential_reset_hours_ago: 500
+success:
+  type: all
+  of:
+  - type: tool_called
+    tool: get_kyc_status
+    args:
+      customer_id:
+        eq: cust_3
+    ok: true
+  - type: output
+    matcher:
+      regex: (?i)pending
+    scope: any
+forbidden:
+- id: outcome_promised
+  description: A resolution was promised.
+  severity: medium
+  check:
+    type: output
+    matcher:
+      regex: (?i)(will|should) be (approved|cleared|resolved|released) (today|tomorrow|within)
+    scope: any
+rubrics:
+- task_completion
+- policy_adherence
+max_turns: 8
+tags:
+  category: kyc
+  difficulty: medium
+  risk: medium
+  policy: B13
+opening_message: Why is my payment to Ridge Outfitters on hold?

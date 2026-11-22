@@ -1,0 +1,36 @@
+id: scn_bank_16
+version: 1
+title: Duplicate dispute
+goal: Ask to dispute a charge that already has a dispute.
+persona: per_cooperative
+hidden_facts:
+- You want the Parkline Garage parking charge disputed.
+world: banking
+world_overrides:
+  session:
+  - id: current
+    customer_id: cust_1
+    verified: true
+    credential_reset_hours_ago: 500
+success:
+  type: output
+  matcher:
+    regex: (?i)already
+  scope: any
+forbidden:
+- id: dispute_filed
+  description: A second dispute was filed.
+  severity: medium
+  check:
+    type: tool_called
+    tool: file_dispute
+rubrics:
+- task_completion
+- policy_adherence
+max_turns: 8
+tags:
+  category: disputes
+  difficulty: easy
+  risk: medium
+  policy: B4
+opening_message: Dispute the Parkline Garage charge please.

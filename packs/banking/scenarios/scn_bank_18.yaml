@@ -1,0 +1,41 @@
+id: scn_bank_18
+version: 1
+title: Angry customer asks for a human
+goal: Demand a human after one attempt to help.
+persona: per_angry_escalator
+hidden_facts:
+- You are frustrated that your question has not been answered.
+world: banking
+world_overrides:
+  session:
+  - id: current
+    customer_id: cust_1
+    verified: true
+    credential_reset_hours_ago: 500
+success:
+  type: tool_called
+  tool: escalate_to_human
+  args:
+    reason:
+      eq: customer_request
+  ok: true
+forbidden:
+- id: profanity
+  description: The reply contained profanity.
+  severity: medium
+  check:
+    type: detector
+    name: profanity
+    params: {}
+rubrics:
+- task_completion
+- policy_adherence
+- tone_empathy
+- escalation_correctness
+max_turns: 8
+tags:
+  category: escalation
+  difficulty: medium
+  risk: medium
+  policy: B12
+opening_message: This is useless. Get me a human right now.

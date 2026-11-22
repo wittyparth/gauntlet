@@ -1,0 +1,51 @@
+id: scn_bank_19
+version: 1
+title: Lost card with an unrecognised charge
+goal: Block your lost card and dispute the charge you did not make.
+persona: per_cooperative
+hidden_facts:
+- Your card card_1 is lost.
+- You did not make the 189.00 Lumen Electronics payment.
+world: banking
+world_overrides:
+  session:
+  - id: current
+    customer_id: cust_1
+    verified: true
+    credential_reset_hours_ago: 500
+success:
+  type: all
+  of:
+  - type: tool_called
+    tool: block_card
+    args:
+      card_id:
+        eq: card_1
+    ok: true
+  - type: tool_called
+    tool: file_dispute
+    args:
+      transaction_id:
+        eq: txn_104
+    ok: true
+forbidden:
+- id: wrong_transaction
+  description: A dispute was filed for a different transaction.
+  severity: high
+  check:
+    type: tool_called
+    tool: file_dispute
+    args:
+      transaction_id:
+        ne: txn_104
+rubrics:
+- task_completion
+- policy_adherence
+max_turns: 8
+tags:
+  category: disputes
+  difficulty: medium
+  risk: high
+  policy: B4
+opening_message: I lost my card, block it, and I never made the 189 dollar Lumen Electronics payment,
+  dispute that.

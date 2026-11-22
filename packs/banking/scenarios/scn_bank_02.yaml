@@ -1,0 +1,38 @@
+id: scn_bank_02
+version: 1
+title: Fee explanation from the real schedule
+goal: Ask what an overdraft costs.
+persona: per_cooperative
+hidden_facts:
+- You overdrew your account once last month.
+world: banking
+world_overrides:
+  session:
+  - id: current
+    customer_id: cust_1
+    verified: true
+    credential_reset_hours_ago: 500
+success:
+  type: output
+  matcher:
+    regex: 15\.00|\$ ?15\b|15 (usd|dollars)
+  scope: any
+forbidden:
+- id: invented_fee
+  description: A fee that is not in the schedule was quoted.
+  severity: medium
+  check:
+    type: output
+    matcher:
+      regex: \$ ?(?:2[5-9]|[3-9]\d)(?:\.\d\d)?\b
+    scope: any
+rubrics:
+- task_completion
+- policy_adherence
+max_turns: 8
+tags:
+  category: fees
+  difficulty: easy
+  risk: medium
+  policy: B3
+opening_message: How much does an overdraft cost per item?
