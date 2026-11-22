@@ -28,10 +28,10 @@ export function TradeoffChart({ rows }: { rows: PolicyTestReport["tradeoff"] }) 
       <CardContent>
         {view === "chart" ? (
           <ChartContainer config={config} className="h-56 w-full" role="img" aria-label="Block rate against false-positive rate as each rule is added">
-            <LineChart data={data} margin={{ left: 4, right: 40, top: 16 }}>
+            <LineChart data={data} margin={{ left: 16, right: 40, top: 16, bottom: 24 }}>
               <CartesianGrid />
-              <XAxis dataKey="fp" type="number" unit="%" domain={[0, "auto"]} name="False-positive rate" padding={{ left: 40 }} />
-              <YAxis dataKey="block" type="number" unit="%" domain={[0, 100]} width={44} name="Block rate" />
+              <XAxis dataKey="fp" type="number" unit="%" domain={[0, "auto"]} name="False-positive rate" padding={{ left: 40 }} label={{ value: "False-positive rate", position: "insideBottom", offset: -16, fontSize: 12 }} />
+              <YAxis dataKey="block" type="number" unit="%" domain={[0, 100]} width={52} name="Block rate" label={{ value: "Block rate", angle: -90, position: "insideLeft", fontSize: 12 }} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Line dataKey="block" stroke="var(--color-block)" strokeWidth={2} dot={{ r: 4 }} isAnimationActive={false}>
                 <LabelList dataKey="added" position="top" fontSize={11} />

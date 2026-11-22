@@ -3,6 +3,7 @@
 import { SeverityBadge } from "@/components/shared/badges";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Proposal } from "@/lib/api/hooks/policies";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +15,7 @@ const ACTION_TONE: Record<string, string> = {
 };
 
 /** The policy's clauses with their proposed rules; selecting one opens it in the form. */
-export function RuleList({ proposals, selected, onSelect, onStatus }: { proposals: Proposal[]; selected: string | null; onSelect: (clauseId: string) => void; onStatus: (clauseId: string, status: "accepted" | "rejected") => void }) {
+export function RuleList({ proposals, selected, onSelect, onStatus, onDuplicate, onDelete }: { proposals: Proposal[]; selected: string | null; onSelect: (clauseId: string) => void; onStatus: (clauseId: string, status: "accepted" | "rejected") => void; onDuplicate: (ruleId: string) => void; onDelete: (ruleId: string) => void }) {
   return (
     <ul className="flex flex-col gap-1" data-testid="rule-list">
       {proposals.map((p) => (
@@ -33,6 +34,13 @@ export function RuleList({ proposals, selected, onSelect, onStatus }: { proposal
               <div className="flex gap-1">
                 <Button size="xs" variant="outline" disabled={p.status === "accepted"} onClick={() => onStatus(p.clause_id, "accepted")}>Accept</Button>
                 <Button size="xs" variant="ghost" disabled={p.status === "rejected"} onClick={() => onStatus(p.clause_id, "rejected")}>Reject</Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={<Button size="xs" variant="ghost" aria-label={`More for ${p.rule.id}`} />}>More</DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem onClick={() => p.rule && onDuplicate(p.rule.id)}>Duplicate</DropdownMenuItem>
+                    <DropdownMenuItem variant="destructive" onClick={() => p.rule && onDelete(p.rule.id)}>Delete</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : null}
           </div>

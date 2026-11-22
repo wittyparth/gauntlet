@@ -1657,6 +1657,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/policies/{policy_id}/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Rule
+         * @description Add a rule (for example a finding's suggested rule) as an accepted proposal of the draft.
+         */
+        post: operations["post_rule_v1_policies__policy_id__rules_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/policies/{policy_id}/rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Rule */
+        delete: operations["remove_rule_v1_policies__policy_id__rules__rule_id__delete"];
+        options?: never;
+        head?: never;
+        /** Patch Rule */
+        patch: operations["patch_rule_v1_policies__policy_id__rules__rule_id__patch"];
+        trace?: never;
+    };
     "/v1/gateway/decisions": {
         parameters: {
             query?: never;
@@ -2873,6 +2911,8 @@ export interface components {
             overhead_us: number;
             /** Guard Error */
             guard_error?: string | null;
+            /** Episode Id */
+            episode_id?: string | null;
         };
         /** DecisionsPage */
         DecisionsPage: {
@@ -4985,6 +5025,8 @@ export interface components {
             run_id: string;
             /** Compare Run Id */
             compare_run_id?: string | null;
+            /** Policy Id */
+            policy_id?: string | null;
             /** Failed Episode Id */
             failed_episode_id: string | null;
         };
@@ -9191,6 +9233,109 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CoverageReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_rule_v1_policies__policy_id__rules_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                policy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PolicyRule"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompiledPolicy"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_rule_v1_policies__policy_id__rules__rule_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                policy_id: string;
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompiledPolicy"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_rule_v1_policies__policy_id__rules__rule_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                policy_id: string;
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PolicyRule"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompiledPolicy"];
                 };
             };
             /** @description Validation Error */

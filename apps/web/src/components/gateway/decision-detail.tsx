@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { CheckTree } from "@/components/scenarios/check-tree";
 import { SeverityBadge } from "@/components/shared/badges";
 import { JsonBlock } from "@/components/shared/json-block";
@@ -49,10 +51,20 @@ export function DecisionDetail({ decision, onClose }: { decision: Decision | nul
                   <h3 className="text-sm font-medium">Evidence</h3>
                   <ul className="flex flex-col gap-1 text-sm">
                     {decision.evidence.map((e, i) => (
-                      <li key={i}><span className="text-muted-foreground font-mono text-xs">[{e.seq}]</span> {e.quote ?? e.note ?? ""}</li>
+                      <li key={i}>
+                        {decision.episode_id ? (
+                          <Link href={`/episodes/${decision.episode_id}#e-${e.seq}`} className="font-mono text-xs underline" data-testid="evidence-link">[{e.seq}]</Link>
+                        ) : (
+                          <span className="text-muted-foreground font-mono text-xs">[{e.seq}]</span>
+                        )}{" "}
+                        {e.quote ?? e.note ?? ""}
+                      </li>
                     ))}
                   </ul>
                 </section>
+              ) : null}
+              {decision.episode_id ? (
+                <Link href={`/episodes/${decision.episode_id}`} className="text-sm underline" data-testid="episode-link">Open the simulated episode</Link>
               ) : null}
               <p className="text-muted-foreground font-mono text-xs">session {decision.session_id}, overhead {decision.overhead_us} µs</p>
             </div>

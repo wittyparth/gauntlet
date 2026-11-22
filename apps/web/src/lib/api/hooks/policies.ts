@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { bodyOf, client } from "@/lib/api/client";
+import { ApiError, bodyOf, client } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { qkG } from "@/lib/query-keys";
 
@@ -104,5 +104,52 @@ export function useRunPolicyTest(policyId: string) {
         }),
       ),
     onSuccess: () => qc.invalidateQueries({ queryKey: qkG.tests(policyId) }),
+  });
+}
+
+/** Adds a rule to the policy's draft (the next version). */
+export function useAddRule(policyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (rule: PolicyRule) =>
+      bodyOf(await client.POST("/v1/policies/{policy_id}/rules", { params: { path: { policy_id: policyId } }, body: rule })),
+    onSuccess: (data) => {
+      qc.setQueryData(qkG.proposals(policyId), data);
+      void qc.invalidateQueries({ queryKey: qkG.policy(policyId) });
+      void qc.invalidateQueries({ queryKey: qkG.policies });
+    },
+  });
+}
+
+export function useDeleteRule(policyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (ruleId: string) =>
+      bodyOf(await client.DELETE("/v1/policies/{policy_id}/rules/{rule_id}", { params: { path: { policy_id: policyId, rule_id: ruleId } } })),
+    onSuccess: (data) => qc.setQueryData(qkG.proposals(policyId), data),
+  });
+}
+
+/** Adds `rule` to any policy by id, choosing a free rule id when it is taken (a rule from a finding). */
+export function useAddRuleTo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ policyId, rule }: { policyId: string; rule: PolicyRule }) => {
+      let candidate = rule;
+      for (let n = 2; n < 12; n++) {
+        try {
+          return bodyOf(await client.POST("/v1/policies/{policy_id}/rules", { params: { path: { policy_id: policyId } }, body: candidate }));
+        } catch (e) {
+          if (!(e instanceof ApiError) || e.code !== "rule_exists") throw e;
+          candidate = { ...rule, id: `${rule.id}-${n}` };
+        }
+      }
+      throw new Error("Could not find a free rule id.");
+    },
+    onSuccess: (_d, v) => {
+      void qc.invalidateQueries({ queryKey: qkG.proposals(v.policyId) });
+      void qc.invalidateQueries({ queryKey: qkG.policy(v.policyId) });
+      void qc.invalidateQueries({ queryKey: qkG.policies });
+    },
   });
 }

@@ -1,13 +1,14 @@
 "use client";
 
 import { ChevronRight } from "@/components/animate-ui/icons/chevron-right";
+import { AddToPolicyDialog } from "@/components/findings/add-to-policy-dialog";
 import { CheckTree } from "@/components/scenarios/check-tree";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import type { FindingDetail } from "@/lib/api/hooks/findings";
 
-/** Read-only until policies can be edited; shown only when the API suggests one. */
+/** Shown only when the API suggests a rule; "Add to policy" puts it on a policy draft. */
 export function SuggestedRuleCard({ rule }: { rule: NonNullable<FindingDetail["suggested_policy"]> }) {
   return (
     <Card size="sm" data-testid="suggested-rule-card">
@@ -27,6 +28,7 @@ export function SuggestedRuleCard({ rule }: { rule: NonNullable<FindingDetail["s
           <CardContent className="flex flex-col gap-2">
             <p className="text-sm">{rule.description}</p>
             <CheckTree check={rule.when} />
+            <div><AddToPolicyDialog rule={rule} /></div>
           </CardContent>
         </CollapsibleContent>
       </Collapsible>

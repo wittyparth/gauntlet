@@ -2,6 +2,7 @@
 
 import { use, useState } from "react";
 
+import { AddRuleDialog } from "@/components/gateway/add-rule-dialog";
 import { ModeControl } from "@/components/gateway/mode-control";
 import { PolicyTestResults } from "@/components/gateway/policy-test-results";
 import { RuleForm } from "@/components/gateway/rule-form";
@@ -18,6 +19,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   reportOf,
+  useAddRule,
+  useDeleteRule,
   useEnforcePolicy,
   usePolicy,
   usePolicyTests,
@@ -39,6 +42,8 @@ export default function PolicyEditorPage({ params }: { params: Promise<{ policyI
   const publish = usePublishPolicy(policyId);
   const enforce = useEnforcePolicy(policyId);
   const runTest = useRunPolicyTest(policyId);
+  const addRule = useAddRule(policyId);
+  const delRule = useDeleteRule(policyId);
   const [selected, setSelected] = useState<string | null>(null);
   const [versionId, setVersionId] = useState<string | null>(null);
 
@@ -94,14 +99,29 @@ export default function PolicyEditorPage({ params }: { params: Promise<{ policyI
               <TabsTrigger value="json">JSON</TabsTrigger>
             </TabsList>
             <TabsContent value="rules">
+              <div className="flex justify-end pb-2">
+                <AddRuleDialog
+                  taken={list.flatMap((x) => (x.rule ? [x.rule.id] : []))}
+                  onAdd={(rule) => toast.promise(addRule.mutateAsync(rule), { loading: "Adding the rule", success: "Rule added to the draft", error: "Could not add the rule" })}
+                />
+              </div>
               {list.length === 0 ? (
-                <EmptyState title="No clauses" body="This policy has no proposals to edit." />
+                <EmptyState title="No rules yet" body="Add a rule, or add a finding's suggested rule to this policy." />
               ) : (
                 <div className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
                   <RuleList
                     proposals={list}
                     selected={current?.clause_id ?? null}
                     onSelect={setSelected}
+                    onDuplicate={(ruleId) => {
+                      const src = list.find((x) => x.rule?.id === ruleId)?.rule;
+                      if (!src) return;
+                      const taken = new Set(list.flatMap((x) => (x.rule ? [x.rule.id] : [])));
+                      let id = `${ruleId}-copy`;
+                      for (let n = 2; taken.has(id); n++) id = `${ruleId}-copy${n}`;
+                      void toast.promise(addRule.mutateAsync({ ...src, id }), { loading: "Duplicating", success: "Rule duplicated", error: "Could not duplicate the rule" }).catch(() => undefined);
+                    }}
+                    onDelete={(ruleId) => void toast.promise(delRule.mutateAsync(ruleId), { loading: "Deleting", success: "Rule removed from the draft", error: "Could not delete the rule" }).catch(() => undefined)}
                     onStatus={(clauseId, status) => void toast.promise(save.mutateAsync({ clauseId, status }), { loading: "Saving", success: `Rule ${status}`, error: "Could not change the rule" }).catch(() => undefined)}
                   />
                   {current?.rule ? (

@@ -124,3 +124,43 @@ test("approvals: approve and deny", async ({ page }) => {
   await expect(page.getByTestId("empty-state")).toContainText("Nothing waiting");
   expect(decided).toEqual(["a1:approve", "a2:deny"]);
 });
+
+test("closed loop: finding, add to policy, offline test, results", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto("/findings/fnd_demo_policy");
+  await page.getByTestId("suggested-rule-card").getByRole("button").first().click();
+  await page.getByRole("button", { name: "Add to policy" }).click();
+  await page.getByRole("button", { name: "Add rule", exact: true }).click();
+  await expect(page).toHaveURL(/\/gateway\/policies\/pol_demo/);
+  await expect(page.getByTestId("policy-version")).toHaveText("v2");
+  await expect(page.getByTestId("rule-row").filter({ hasText: "cap-refund-after-note" })).toBeVisible();
+  // the offline test replays stored trajectories: no model calls, no runs
+  await page.getByRole("tab", { name: "Test results" }).click();
+  await page.getByRole("button", { name: "Run test" }).click();
+  await expect(page.getByTestId("test-results").or(page.getByTestId("empty-state"))).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByTestId("stat-block-rate")).toBeVisible();
+});
+
+test("policy editor: add, duplicate and delete a rule", async ({ page }) => {
+  await page.goto("/gateway/policies/pol_demo");
+  await page.getByRole("button", { name: "Add rule", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Rule id").fill("watch-search");
+  await dialog.getByLabel("Description").fill("Watch the search tool");
+  await dialog.getByLabel("Tool to watch").fill("search_orders");
+  await dialog.getByRole("button", { name: "Add rule" }).click();
+  const added = page.getByTestId("rule-row").filter({ hasText: "watch-search" });
+  await expect(added).toBeVisible();
+  await added.getByRole("button", { name: "More for watch-search" }).click();
+  await page.getByRole("menuitem", { name: "Duplicate" }).click();
+  await expect(page.getByTestId("rule-row").filter({ hasText: "watch-search-copy" })).toBeVisible();
+  await page.getByTestId("rule-row").filter({ hasText: "watch-search-copy" }).getByRole("button", { name: /More for/ }).click();
+  await page.getByRole("menuitem", { name: "Delete" }).click();
+  await expect(page.getByTestId("rule-row").filter({ hasText: "watch-search-copy" })).toHaveCount(0);
+});
+
+test("gateway console: evidence links to the episode", async ({ page }) => {
+  await page.goto("/gateway");
+  await page.getByTestId("decision-row").filter({ hasText: "no-card-email" }).first().click();
+  await expect(page.getByTestId("evidence-link").first()).toHaveAttribute("href", /\/episodes\/ep_demo_0#e-4/);
+});
