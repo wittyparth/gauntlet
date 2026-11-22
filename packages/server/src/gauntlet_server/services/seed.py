@@ -98,6 +98,7 @@ async def _reset(s: AsyncSession) -> None:
         "DELETE FROM runs WHERE id IN ('run_demo', 'run_demo_b')",
         "DELETE FROM gateway_approvals WHERE id = 'gap_demo'",
         "DELETE FROM gateway_decisions WHERE id LIKE 'gdc_demo_%'",
+        "DELETE FROM findings WHERE id = 'fnd_demo_policy'",
         "DELETE FROM policy_tests WHERE id = 'ptt_demo'",
         "DELETE FROM policy_proposals WHERE policy_id = 'pol_demo'",
         "DELETE FROM policies WHERE id = 'pol_demo'",

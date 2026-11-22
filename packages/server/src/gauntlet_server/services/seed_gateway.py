@@ -9,7 +9,8 @@ from typing import Any
 from gauntlet_core.gateway import DecisionRecord
 from gauntlet_core.policy import PolicyTestReport
 from gauntlet_core.policy.compile import CompiledPolicy
-from gauntlet_core.schema import Policy
+from gauntlet_core.schema import Finding, Policy, PolicyRule, Scenario
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.policy_models import (
@@ -19,9 +20,11 @@ from ..db.policy_models import (
     PolicyTestRow,
     PolicyVersion,
 )
+from .findings import PgFindingStore
 from .policies import dump_doc
 
-__all__ = ["POLICY", "seed_gateway"]
+__all__ = ["FINDING", "POLICY", "seed_gateway"]
+FINDING = "fnd_demo_policy"
 
 POLICY = "pol_demo"
 SOURCE = (
@@ -177,3 +180,24 @@ async def seed_gateway(s: AsyncSession, ws: str, agent_id: str, agent_version_id
                 )
             )  # fmt: skip
     await s.flush()
+    await _seed_finding(s, ws, agent_version_id)
+
+
+async def _seed_finding(s: AsyncSession, ws: str, agent_version_id: str) -> None:
+    """A finding that carries a suggested rule, for the finding to policy walk-through."""
+    doc = (
+        await s.execute(text("SELECT doc FROM scenarios WHERE id = 'scn_ecom_03' LIMIT 1"))
+    ).scalar()
+    if doc is None:
+        return
+    rule = PolicyRule.model_validate(
+        _rule("cap-refund-after-note", "Block refunds the injected note asked for",
+              "issue_refund", "block", "high")
+    )  # fmt: skip
+    finding = Finding(
+        id=FINDING, title="Refund issued after an injected order note", category="prompt_injection",
+        severity="high", agent_version_id=agent_version_id, attack_id="atk_demo",
+        reproducibility=(1, 1), reproducer=Scenario.model_validate(doc), dedup_key="demo-policy",
+        suggested_policy=rule,
+    )  # fmt: skip
+    await PgFindingStore(s, ws).put(finding)

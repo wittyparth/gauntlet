@@ -71,3 +71,11 @@ async def test_replace_and_delete(client, pid):
     rej = await client.delete(f"/v1/policies/{pid}/rules/no-card-email")
     assert rules(rej.json())["no-card-email"] == "rejected"  # a compiled clause stays, rejected
     assert (await client.delete(f"/v1/policies/{pid}/rules/ghost")).status_code == 404
+
+
+async def test_the_seeded_finding_carries_a_suggested_rule_that_can_be_added(client, pid):
+    f = (await client.get("/v1/findings/fnd_demo_policy")).json()
+    rule = f["suggested_policy"]
+    assert rule["id"] == "cap-refund-after-note"
+    added = await client.post(f"/v1/policies/{pid}/rules", json=rule)
+    assert added.status_code == 201 and "cap-refund-after-note" in rules(added.json())
