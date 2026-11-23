@@ -12,12 +12,54 @@ import argparse
 import asyncio
 import json
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from .app import build_state
 from .auth import ensure_default_workspace
 from .config import Settings
-from .services.seed import seed_demo
+from .db import models as m
+from .services.seed import PROJECT, WORLD, pack, seed_demo
 
 __all__ = ["main", "seed"]
+
+
+DVA_AGENT, DVA_VERSION = "agt_dva", "agv_dva_wired"
+
+
+async def _seed_dva(s: AsyncSession, ws: str) -> None:
+    """The wired Damn Vulnerable Agent as a target (compose service `dva`, internal network)."""
+    if await s.get(m.Agent, DVA_AGENT) is None:
+        s.add(
+            m.Agent(
+                id=DVA_AGENT,
+                workspace_id=ws,
+                project_id=PROJECT,
+                name="Damn Vulnerable Agent (wired)",
+            )
+        )
+        await s.flush()
+    if await s.get(m.AgentVersion, DVA_VERSION) is None:
+        s.add(
+            m.AgentVersion(
+                id=DVA_VERSION,
+                workspace_id=ws,
+                agent_id=DVA_AGENT,
+                label="dva-wired",
+                world_id=WORLD,
+                config={
+                    "target": {
+                        "kind": "openai_compat",
+                        "base_url": "http://dva:8100/v1",
+                        "model": "dva",
+                        "wired": True,
+                    },
+                    "profile": {
+                        "purpose": "Customer support for an online outdoor gear store",
+                        "policies_text": pack().policy_text,
+                    },
+                },
+            )
+        )
 
 
 async def seed(settings: Settings, *, reset: bool = False) -> dict[str, object]:
@@ -25,7 +67,10 @@ async def seed(settings: Settings, *, reset: bool = False) -> dict[str, object]:
     try:
         async with state.sm() as s, s.begin():
             ws = await ensure_default_workspace(s)
-        return await seed_demo(state, ws, reset=reset, compare_run=True, gateway=True)
+        out = await seed_demo(state, ws, reset=reset, compare_run=True, gateway=True)
+        async with state.sm() as s, s.begin():
+            await _seed_dva(s, ws)
+        return {**out, "dva_agent_id": DVA_AGENT, "dva_agent_version_id": DVA_VERSION}
     finally:
         for close in state.closers:
             await close()
