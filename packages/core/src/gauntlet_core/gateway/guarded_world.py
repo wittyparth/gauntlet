@@ -96,15 +96,18 @@ class GuardedWorld(World):
             args = decision.modified["args"]  # redact: the call goes ahead rewritten
         res = await inner.call_tool(ctx, tool, args, via=via)
         spec = inner.built.tools.get(tool)
-        untrusted = bool(spec and spec.untrusted_output)
         text = json.dumps(res.result, default=str)
+        hit = [mk for mk in inner.built.markers if mk in text]
+        # A result carrying an injected marker is untrusted whatever the tool's declaration says:
+        # an attack can plant text in a channel (order notes) the world did not flag.
+        untrusted = bool(spec and spec.untrusted_output) or bool(hit)
         await self.session.record_tool_result(
             res.call_id,
             tool,
             res.result if res.ok else {"error": res.error},
             untrusted=untrusted,
             ok=res.ok,
-            markers=[mk for mk in inner.built.markers if mk in text] if untrusted else None,
+            markers=hit if untrusted else None,
         )
         return res
 
