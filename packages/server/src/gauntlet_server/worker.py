@@ -39,6 +39,7 @@ from .limits import HostLimiter, LimitedTransport
 from .models_gateway import gateway_for_roles
 from .services import alerts as _alerts  # registers alert_deliver
 from .services import calibration as _calibration
+from .services import evidence as _evidence  # noqa: F401  (registers evidence_pack)
 from .services import gateway as _gateway
 from .services import loop as _loop  # noqa: F401  (registers suggest_policy, policy_test)
 from .services import mining as _mining  # noqa: F401  (registers the mining jobs)

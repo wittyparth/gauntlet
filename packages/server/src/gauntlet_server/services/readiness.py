@@ -126,7 +126,7 @@ async def _thresholds(s: AsyncSession, ws: str, tier: Tier) -> dict[str, float |
 
 async def _episodes(
     s: AsyncSession, ws: str, vid: str, attack: bool
-) -> list[tuple[str, str, str, int | None, int]]:
+) -> list[tuple[str, str | None, str, int | None, int]]:
     q = (
         select(m.Episode.scenario_id, m.Episode.outcome, m.Run.id, m.Episode.latency_ms,
                m.Episode.cost_usd_micros)

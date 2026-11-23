@@ -4,11 +4,11 @@ linear; a database trigger refuses UPDATE and DELETE."""
 
 from __future__ import annotations
 
-import hashlib
 import json
 from datetime import UTC, datetime
 from typing import Any
 
+from gauntlet_core.audit_chain import GENESIS, row_hash
 from gauntlet_core.ids import new_id
 from pydantic import BaseModel
 from sqlalchemy import select, text
@@ -18,33 +18,11 @@ from ..db.sec_models import AuditLog
 
 __all__ = ["GENESIS", "ChainReport", "audit", "row_hash", "verify_chain"]
 
-GENESIS = "0" * 64
-
 
 class ChainReport(BaseModel):
     ok: bool
     checked: int
     first_bad_id: str | None = None
-
-
-def row_hash(
-    prev_hash: str,
-    *,
-    id: str,
-    workspace_id: str,
-    ts: datetime,
-    actor: str,
-    action: str,
-    subject_type: str,
-    subject_id: str,
-    detail: dict[str, Any],
-) -> str:
-    body = json.dumps(
-        [id, workspace_id, ts.astimezone(UTC).isoformat(), actor, action, subject_type,
-         subject_id, detail],
-        sort_keys=True, separators=(",", ":"),
-    )  # fmt: skip
-    return hashlib.sha256((prev_hash + body).encode()).hexdigest()
 
 
 async def audit(

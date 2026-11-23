@@ -197,7 +197,8 @@ async def _episode_rows(
         .order_by(m.Episode.finished_at.desc())
         .limit(MAX_SAMPLES)
     )  # fmt: skip
-    return [(r[0], r[1], r[2], r[3]) for r in (await s.execute(q)).all() if r[0] is not None]
+    rows = (await s.execute(q)).all()
+    return [(ts, out, lat, cost) for ts, out, lat, cost in rows if ts is not None]
 
 
 async def slo_samples(s: AsyncSession, slo: Slo, now: datetime) -> list[Sample]:
