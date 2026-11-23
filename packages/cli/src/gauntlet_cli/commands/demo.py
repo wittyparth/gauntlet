@@ -30,8 +30,9 @@ def seed(
         raise typer.Exit(3) from e
     if resp.status_code in (404, 403):
         typer.echo(
-            "the server refused the seed request: it is not running in dev mode "
-            "(set GAUNTLET_ENV=dev on the server)",
+            "the server refused the seed request: it is not running in dev mode. "
+            "On a prod deployment run `docker compose exec api python -m gauntlet_server.demo "
+            "seed` instead (no model calls); see deploy/README.md",
             err=True,
         )
         raise typer.Exit(3)
