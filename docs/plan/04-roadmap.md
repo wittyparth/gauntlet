@@ -8,9 +8,9 @@ Each phase ends with something demonstrable and a lead review (architecture drif
 
 | ID | Owner | Task | Depends |
 |---|---|---|---|
-| P0-1 | SUB a | `git init`, uv workspace (`core`, `server`, `cli`), pnpm + Turborepo, ruff, pyright, pytest config, pre-commit, `.gitignore`, package READMEs | |
-| P0-2 | SUB a | `infra/docker-compose.yml`: Postgres 16 + pgvector, Redis 7, MinIO, api, worker; Dockerfiles; `.env.example` | P0-1 |
-| P0-3 | SUB a | GitHub Actions: lint, types, unit, integration against compose services | P0-1 |
+| P0-1 | DONE | `git init`, uv workspace (`core`, `server`, `cli`), pnpm + Turborepo, ruff, pyright, pytest config, pre-commit, `.gitignore`, package READMEs | |
+| P0-2 | DONE | `infra/docker-compose.yml`: Postgres 16 + pgvector, Redis 7, MinIO, api, worker; Dockerfiles; `.env.example` | P0-1 |
+| P0-3 | DONE | GitHub Actions: lint, types, unit, integration against compose services | P0-1 |
 | L1 | DONE | `gauntlet_core.schema`: every model in `02-contracts.md` sections 1 to 5, YAML load and dump, JSON Schema export | P0-1 |
 
 ## Phase 1: Vertical slice
@@ -24,20 +24,20 @@ Definition of done: `gauntlet run packs/ecommerce --target hosted.yaml` prints a
 | L4 | DONE | Stats: Wilson, bootstrap, pass^k, comparison, flips, sequential, agreement | L1 |
 | L5 | DONE | Checks: AST, final and prefix evaluation, matcher and ref resolution, detector registry | L1, L3 |
 | L6 | DONE | Judges: rendering, evidence validation, cascade, cache, calibration, simulator guard | L1, L4, L5 |
-| P1-1 | SUB b | LLM gateway over LiteLLM: roles from `gauntlet.toml`, cost, retries, rate limiting, `FakeLLM`, structured output | L1 |
-| P1-2 | SUB b | Targets: hosted (tool loop through `ctx`), openai_compat, http; contract tests with a fake server | L2, P1-1 |
-| P1-3 | SUB b | User simulator: persona rendering, hidden facts, turn prompt, done detection; 10-persona library | L2, P1-1 |
-| P1-4 | SUB c | Deterministic detectors: pii, secret, profanity, markdown_image_exfil, loop, commitment_phrase | L5 |
-| P1-5 | SUB c | Rubric library v1 (task completion, groundedness, policy adherence, hallucinated policy, binding commitment, tone, escalation) with examples; scoring and report aggregation | L6, L4 |
-| P1-6 | SUB c | E-commerce pack: world (6 tools, seed data, python handlers), 30 scenarios, policy text, checks | L3, L5 |
-| P1-7 | SUB c | OpenAPI import to `ToolSpec` + seed; scenario auto-generation from agent profile (drafts) | L3, P1-1 |
-| P1-8 | SUB d | Server: SQLAlchemy models, Alembic, Postgres `JournalStore`, `EpisodeQueue`, `BudgetLedger` per `03` section 1.4 and 1.5 (lead reviews this one line by line) | L2 |
-| P1-9 | SUB d | Server: REST API per contracts section 9, API-key auth, secrets, SSE stream via Redis pub/sub, worker process | P1-8 |
-| P1-10 | SUB d | CLI: `gauntlet run`, `init`, `validate`, `report`, `demo seed`, local SQLite mode, JSON output and exit codes | L2, P1-5 |
-| P1-11 | SUB e | DVA support agent (`apps/dva`): wired target with a catalog of planted flaws (`apps/dva/CATALOG.md`), plus a hosted-config variant | P1-6 |
-| P1-12 | SUB f | Web foundation: Next.js, Animate UI setup, app shell, generated API client, auth | P1-9 |
-| P1-13 | SUB f | Web: onboarding wizard, agent overview, scenario list and viewer | P1-12 |
-| P1-14 | SUB f | Web: run console (live SSE), run report, episode viewer (transcript, tool timeline, state diff, verdicts with evidence highlighting) | P1-12 |
+| P1-1 | DONE | LLM gateway over LiteLLM: roles from `gauntlet.toml`, cost, retries, rate limiting, `FakeLLM`, structured output | L1 |
+| P1-2 | DONE | Targets: hosted (tool loop through `ctx`), openai_compat, http; contract tests with a fake server | L2, P1-1 |
+| P1-3 | DONE | User simulator: persona rendering, hidden facts, turn prompt, done detection; 10-persona library | L2, P1-1 |
+| P1-4 | DONE | Deterministic detectors: pii, secret, profanity, markdown_image_exfil, loop, commitment_phrase | L5 |
+| P1-5 | DONE | Rubric library v1 (task completion, groundedness, policy adherence, hallucinated policy, binding commitment, tone, escalation) with examples; scoring and report aggregation | L6, L4 |
+| P1-6 | DONE | E-commerce pack: world (6 tools, seed data, python handlers), 30 scenarios, policy text, checks | L3, L5 |
+| P1-7 | DONE | OpenAPI import to `ToolSpec` + seed; scenario auto-generation from agent profile (drafts) | L3, P1-1 |
+| P1-8 | DONE | Server: SQLAlchemy models, Alembic, Postgres `JournalStore`, `EpisodeQueue`, `BudgetLedger` per `03` section 1.4 and 1.5 (lead reviews this one line by line) | L2 |
+| P1-9 | DONE | Server: REST API per contracts section 9, API-key auth, secrets, SSE stream via Redis pub/sub, worker process | P1-8 |
+| P1-10 | DONE | CLI: `gauntlet run`, `init`, `validate`, `report`, `demo seed`, local SQLite mode, JSON output and exit codes | L2, P1-5 |
+| P1-11 | DONE | DVA support agent (`apps/dva`): wired target with a catalog of planted flaws (`apps/dva/CATALOG.md`), plus a hosted-config variant | P1-6 |
+| P1-12 | DONE | Web foundation: Next.js, Animate UI setup, app shell, generated API client, auth | P1-9 |
+| P1-13 | DONE | Web: onboarding wizard, agent overview, scenario list and viewer | P1-12 |
+| P1-14 | DONE | Web: run console (live SSE), run report, episode viewer (transcript, tool timeline, state diff, verdicts with evidence highlighting) | P1-12 |
 | L-R1 | DONE | Chaos test of engine on Postgres; phase review; end-to-end verification in a browser | all |
 
 ## Phase 2: Security core
