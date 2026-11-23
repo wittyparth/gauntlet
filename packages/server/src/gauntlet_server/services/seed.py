@@ -245,7 +245,8 @@ async def seed_demo(
                 episode_ids=EPISODES,
                 enforce_daily=False,
             )
-        await _execute(state, RUN)
+            leases = await _lease_own(s, RUN)  # same transaction: no worker can claim them
+        await _execute(state, leases)
     async with state.sm() as s:
         run_b = await s.get(m.Run, RUN_B)
     if compare_run and run_b is None:
@@ -264,7 +265,8 @@ async def seed_demo(
                 episode_ids=EPISODES_B,
                 enforce_daily=False,
             )
-        await _execute(state, RUN_B)
+            leases = await _lease_own(s, RUN_B)  # same transaction: no worker can claim them
+        await _execute(state, leases)
     if gateway:
         async with state.sm() as s, s.begin():
             await seed_gateway(s, ws, AGENT, VERSION)
@@ -293,25 +295,29 @@ async def seed_demo(
     }
 
 
-async def _execute(state: AppState, run_id: str) -> None:
-    """Run a demo run's episodes through the worker code, claiming only its own episodes."""
-    scripted = dataclasses.replace(state, gateway=ScriptedLLM(script()))
-    worker = Worker(scripted, worker_id="seed", lease_s=300)
-    async with state.sm() as s, s.begin():
-        rows = (
-            await s.execute(
-                text(
-                    "UPDATE episodes SET status = 'leased', lease_owner = 'seed', "
-                    "epoch = epoch + 1, started_at = now(), "
-                    "lease_expires_at = now() + interval '300 seconds' "
-                    "WHERE run_id = :r AND status = 'queued' "
-                    "RETURNING id, run_id, epoch, attempt"
-                ),
-                {"r": run_id},
-            )
-        ).all()
-        await s.execute(text("UPDATE runs SET status = 'running' WHERE id = :r"), {"r": run_id})
+async def _lease_own(s: AsyncSession, run_id: str) -> list[Any]:
+    """Lease a demo run's queued episodes to the seed itself. Called in the transaction that
+    creates the run, so a live worker (real gateway) can never claim them first."""
     from gauntlet_core.engine import EpisodeLease
 
-    leases = [EpisodeLease(r.id, r.run_id, r.epoch, "seed", 300, r.attempt) for r in rows]
+    rows = (
+        await s.execute(
+            text(
+                "UPDATE episodes SET status = 'leased', lease_owner = 'seed', "
+                "epoch = epoch + 1, started_at = now(), "
+                "lease_expires_at = now() + interval '300 seconds' "
+                "WHERE run_id = :r AND status = 'queued' "
+                "RETURNING id, run_id, epoch, attempt"
+            ),
+            {"r": run_id},
+        )
+    ).all()
+    await s.execute(text("UPDATE runs SET status = 'running' WHERE id = :r"), {"r": run_id})
+    return [EpisodeLease(r.id, r.run_id, r.epoch, "seed", 300, r.attempt) for r in rows]
+
+
+async def _execute(state: AppState, leases: list[Any]) -> None:
+    """Run a demo run's leased episodes through the worker code with the scripted model."""
+    scripted = dataclasses.replace(state, gateway=ScriptedLLM(script()))
+    worker = Worker(scripted, worker_id="seed", lease_s=300)
     await worker.run_leases(leases)
