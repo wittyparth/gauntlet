@@ -34,12 +34,19 @@ SOURCE = (
 )
 
 
-def _rule(rid: str, description: str, tool: str, action: str, severity: str) -> dict[str, Any]:
+def _rule(
+    rid: str,
+    description: str,
+    tool: str,
+    action: str,
+    severity: str,
+    args: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     return {
         "id": rid,
         "description": description,
         "severity": severity,
-        "when": {"type": "tool_called", "tool": tool},
+        "when": {"type": "tool_called", "tool": tool, "args": args or {}},
         "action": action,
         "message": f"{tool} is held by {rid}",
     }
@@ -47,7 +54,12 @@ def _rule(rid: str, description: str, tool: str, action: str, severity: str) -> 
 
 def _proposals() -> CompiledPolicy:
     refund = _rule(
-        "refund-cap", "Refunds need approval", "issue_refund", "require_approval", "high"
+        "refund-cap",
+        "Refunds need approval",
+        "issue_refund",
+        "require_approval",
+        "high",
+        {"amount_cents": {"gt": 10000}},  # above $100, as the policy text says
     )
     email = _rule("no-card-email", "Do not email card numbers", "send_email", "block", "critical")
     return CompiledPolicy.model_validate(
@@ -77,23 +89,23 @@ def _proposals() -> CompiledPolicy:
 def _report() -> dict[str, Any]:
     return PolicyTestReport.model_validate(
         {
-            "attacks": 4, "benign": 10, "skipped": 1, "blocked": 3, "broken": 1,
-            "block_rate": 0.75, "fp_rate": 0.1,
+            "attacks": 4, "benign": 10, "skipped": 1, "blocked": 3, "broken": 0,
+            "block_rate": 0.75, "fp_rate": 0.0,
             "per_rule": [
                 {"rule_id": "no-card-email", "blocked": 2, "false_positives": 0},
-                {"rule_id": "refund-cap", "blocked": 1, "false_positives": 1},
+                {"rule_id": "refund-cap", "blocked": 1, "false_positives": 0},
             ],
             "tradeoff": [
                 {"rules": ["no-card-email"], "added": "no-card-email", "blocked": 2,
                  "false_positives": 0, "block_rate": 0.5, "fp_rate": 0.0},
                 {"rules": ["no-card-email", "refund-cap"], "added": "refund-cap", "blocked": 3,
-                 "false_positives": 1, "block_rate": 0.75, "fp_rate": 0.1},
+                 "false_positives": 0, "block_rate": 0.75, "fp_rate": 0.0},
             ],
             "outcomes": [
                 {"episode_id": "ep_demo_0", "kind": "attack", "first_block_seq": 4,
                  "rule_id": "no-card-email", "objective_seq": 6, "effective": True},
-                {"episode_id": "ep_demo_1", "kind": "benign", "first_block_seq": 3,
-                 "rule_id": "refund-cap", "objective_seq": None, "effective": True},
+                {"episode_id": "ep_demo_1", "kind": "attack", "first_block_seq": 3,
+                 "rule_id": "refund-cap", "objective_seq": 5, "effective": True},
             ],
         }
     ).model_dump(mode="json")  # fmt: skip
