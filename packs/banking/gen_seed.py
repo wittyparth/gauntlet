@@ -71,6 +71,7 @@ def build() -> dict[str, Any]:
         {
             "id": i, "account_id": a, "date": d, "amount_cents": amt, "merchant": m, "memo": memo,
             "status": "posted",
+            **({"dispute_id": "dsp_1"} if i == "txn_108" else {}),
         }
         for i, a, d, amt, m, memo in TXNS
     ]  # fmt: skip

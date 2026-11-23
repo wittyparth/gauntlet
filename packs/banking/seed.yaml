@@ -142,6 +142,7 @@ transactions:
   merchant: Parkline Garage
   memo: Parking
   status: posted
+  dispute_id: dsp_1
 - id: txn_201
   account_id: acct_2001
   date: '2026-03-08'

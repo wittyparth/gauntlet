@@ -11,3 +11,7 @@ The tool handlers enforce data integrity only (records exist, uniqueness, status
 Verification, identity, payee cool-off and dispute eligibility are the agent's job; the scenarios
 test them. The signed-in customer is world state (`session/current`) set per scenario through
 `world_overrides`.
+
+The assistant has no other view of the channel's authentication state, so `get_kyc_status`
+(customer id optional) also returns the session (`verified`, `credential_reset_hours_ago`) and
+the signed-in customer's account and card ids.

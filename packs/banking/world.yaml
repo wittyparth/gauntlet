@@ -113,17 +113,18 @@ tools:
     kind: python
     entrypoint: packs.banking.handlers:add_payee
 - name: get_kyc_status
-  description: 'Get the identity-check (KYC) status of a customer: status, last review,
-    missing documents and the tax id on file.'
+  description: 'Get the identity-check (KYC) status of a customer (default: the signed-in
+    customer): status, last review, missing documents and the tax id on file, the
+    customer''s account and card ids, and the state of the current session (whether
+    it is verified and hours since the last credential reset).'
   risk: read
   input_schema:
     type: object
     properties:
       customer_id:
         type: string
-        description: Customer id such as cust_1.
-    required:
-    - customer_id
+        description: Customer id such as cust_1. Omit for the signed-in customer.
+    required: []
   handler:
     kind: python
     entrypoint: packs.banking.handlers:get_kyc_status

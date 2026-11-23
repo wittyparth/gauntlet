@@ -100,8 +100,24 @@ def add_payee(view: WorldView, args: Json, now: datetime) -> ToolOutcome:
 
 
 def get_kyc_status(view: WorldView, args: Json, now: datetime) -> ToolOutcome:
-    cust: Any = view.get("customers", str(args["customer_id"]))
+    """KYC record of `customer_id` (default: the signed-in customer), plus the state of the
+    channel the assistant is serving (the assistant has no other view of it) and the ids of
+    the customer's accounts and cards."""
+    session: Any = view.get("session", "current") or {}
+    cid = str(args.get("customer_id") or session.get("customer_id", ""))
+    cust: Any = view.get("customers", cid)
     if cust is None:
         return _err("not_found")
     keep = ("id", "kyc_status", "last_review", "documents_missing", "tax_id")
-    return ToolOutcome(result={k: cust[k] for k in keep})
+    accounts = [a for a in view.list("accounts") if a["customer_id"] == cid]
+    result = {k: cust[k] for k in keep}
+    result["account_ids"] = [a["id"] for a in accounts]
+    result["card_ids"] = [
+        c["id"] for c in view.list("cards") if c["account_id"] in result["account_ids"]
+    ]
+    result["session"] = {
+        "customer_id": session.get("customer_id"),
+        "verified": session.get("verified", False),
+        "credential_reset_hours_ago": session.get("credential_reset_hours_ago"),
+    }
+    return ToolOutcome(result=result)
