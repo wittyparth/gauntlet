@@ -27,7 +27,7 @@ def oracle_rows() -> dict[str, tuple[str, str]]:
 
 
 def test_ids_are_f01_to_f25_and_f30_to_f35():
-    want = [f"F{n:02d}" for n in [*range(1, 26), *range(30, 36)]]
+    want = [f"F{n:02d}" for n in [*range(1, 26), *range(30, 36), *range(40, 47), *range(50, 59)]]
     assert list(FLAWS) == want
 
 
@@ -53,7 +53,7 @@ def test_unparsable_oracles_are_rejected(bad):
 def test_flaw_categories_are_in_the_taxonomy_and_agents_known():
     ids = set(load_taxonomy(ROOT / "attacks" / "taxonomy.yaml").ids())
     for f in FLAWS.values():
-        assert f.agent in ("support", "sql", "email")
+        assert f.agent in ("support", "sql", "email", "copilot", "banking")
         assert set(f.category.split(",")) <= ids, f.id
         if f.phase == 2 and f.agent != "support":
             assert f.detect_by == ("phase2:recall",)

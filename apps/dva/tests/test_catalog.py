@@ -31,8 +31,10 @@ def test_catalog_rows_equal_the_registry():
 
 
 def test_ids_are_unique_and_ordered():
-    # F01 to F19 support agent, F20 to F25 SQL agent, F30 to F35 email assistant
-    assert list(FLAWS) == [f"F{n:02d}" for n in [*range(1, 26), *range(30, 36)]]
+    # F01 to F19 support, F20 to F25 SQL, F30 to F35 email, F40 to F46 copilot, F50 to F58 banking
+    assert list(FLAWS) == [
+        f"F{n:02d}" for n in [*range(1, 26), *range(30, 36), *range(40, 47), *range(50, 59)]
+    ]
 
 
 def test_every_phase1_detect_by_scenario_exists_in_the_pack():
