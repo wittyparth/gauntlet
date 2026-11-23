@@ -243,6 +243,7 @@ async def seed_demo(
                 ),
                 run_id=RUN,
                 episode_ids=EPISODES,
+                enforce_daily=False,
             )
         await _execute(state, RUN)
     async with state.sm() as s:
@@ -261,6 +262,7 @@ async def seed_demo(
                 ),
                 run_id=RUN_B,
                 episode_ids=EPISODES_B,
+                enforce_daily=False,
             )
         await _execute(state, RUN_B)
     if gateway:

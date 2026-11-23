@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import random
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 
@@ -145,6 +145,33 @@ async def _latest(session: AsyncSession, model: Any, ws: str, ids: list[str]) ->
     return latest
 
 
+async def enforce_daily_budget(
+    session: AsyncSession, state: AppState, workspace_id: str, budget: int
+) -> None:
+    """GAUNTLET_DAILY_BUDGET_USD: refuse a run when the budgets of the runs created in the last
+    24 hours plus this one would exceed the cap (committed budget, not spend: a safe upper bound)."""
+    cap = state.settings.daily_budget_usd_micros
+    if cap <= 0:
+        return
+    since = datetime.now(UTC) - timedelta(hours=24)
+    committed = (
+        await session.execute(
+            select(func.coalesce(func.sum(Run.budget_usd_micros), 0)).where(
+                Run.workspace_id == workspace_id,
+                Run.created_at >= since,
+                ~Run.id.like("run\\_demo%", escape="\\"),  # scripted demo seed: no spend
+            )
+        )
+    ).scalar_one()
+    if committed + budget > cap:
+        raise ApiError(
+            429,
+            "daily_budget_exceeded",
+            "the daily spend cap would be exceeded; raise GAUNTLET_DAILY_BUDGET_USD or wait",
+            {"cap_usd_micros": cap, "committed_usd_micros": int(committed)},
+        )
+
+
 async def create_run(
     session: AsyncSession,
     state: AppState,
@@ -157,6 +184,7 @@ async def create_run(
     purpose: str = "eval",
     finding_id: str | None = None,
     actor: str = "system",
+    enforce_daily: bool = True,
 ) -> tuple[dict[str, Any], int]:
     """Returns (response, http status). Creates nothing when `dry_run`."""
     suite = await session.get(Suite, body.suite_id)
@@ -246,6 +274,8 @@ async def create_run(
         }, 200
     if errors:
         raise ApiError(422, "validation_error", "the suite cannot run", errors)
+    if enforce_daily:
+        await enforce_daily_budget(session, state, workspace_id, budget)
     attack = is_attack_run(scenarios)
     if attack:
         await enforce_attack_run(

@@ -33,6 +33,7 @@ class Settings:
     config_path: str | None = None
     public_api_url: str = "http://api:8000"
     max_run_budget_usd_micros: int = 50_000_000
+    daily_budget_usd_micros: int = 0  # 0 = no cap; else the sum of run budgets per rolling 24 h
     worker_concurrency: int = 4
     job_concurrency: int = 2
     drift_check: bool = False  # worker re-checks calibrations daily (P3-5)
@@ -80,6 +81,9 @@ class Settings:
             config_path=e.get("GAUNTLET_CONFIG") or None,
             public_api_url=e.get("GAUNTLET_PUBLIC_API_URL") or "http://api:8000",
             max_run_budget_usd_micros=_int(e, "GAUNTLET_MAX_RUN_BUDGET_USD_MICROS", 50_000_000),
+            daily_budget_usd_micros=round(
+                float(e.get("GAUNTLET_DAILY_BUDGET_USD") or 0) * 1_000_000
+            ),
             worker_concurrency=_int(e, "WORKER_CONCURRENCY", 4),
             job_concurrency=_int(e, "WORKER_JOB_CONCURRENCY", 2),
             drift_check=(e.get("GAUNTLET_DRIFT_CHECK") or "").lower() in ("1", "true", "yes"),
