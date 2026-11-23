@@ -28,6 +28,7 @@ CONTRACT_TABLES = {
     "gateway_decisions", "gateway_approvals", "policy_tests",
     "prod_conversations", "prod_events", "prod_spans_seen", "ingest_stats",
     "mining_runs", "mining_candidates",
+    "schedules", "slos", "alert_channels", "alert_rules", "alerts", "evidence_packs",
 }  # fmt: skip
 
 

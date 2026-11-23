@@ -22,6 +22,7 @@ from .errors import ErrorEnvelope, install_errors
 from .events import RedisPublisher
 from .facade import router as facade_router
 from .routes import (
+    alerts,
     attacks,
     audit,
     badges,
@@ -46,8 +47,10 @@ from .routes import (
     production,
     review,
     runs,
+    schedules,
     scorecard,
     settings,
+    slo,
     stability,
     targets,
     traces,
@@ -146,6 +149,7 @@ def create_app(state: AppState | None = None) -> FastAPI:
         cassettes.router, jobs.router, review.router, calibrations.router, clusters.router,
         badges.router, badges.public, migration.router, scorecard.router, policies.router,
         gateway.router, loop.router, traces.router, production.router, mining.router, meta.router,
+        slo.router, schedules.router, alerts.router,
     ):  # fmt: skip
         application.include_router(r)
 

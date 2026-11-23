@@ -327,6 +327,7 @@ class WorkspaceSettings(Base):
 
 from . import (  # noqa: E402,F401
     cluster_models,
+    ops_models,
     policy_models,
     prod_models,
     review_models,

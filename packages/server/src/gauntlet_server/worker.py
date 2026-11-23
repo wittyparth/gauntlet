@@ -37,11 +37,13 @@ from .facade import RemoteFacade
 from .jobs import load_episode_job
 from .limits import HostLimiter, LimitedTransport
 from .models_gateway import gateway_for_roles
+from .services import alerts as _alerts  # registers alert_deliver
 from .services import calibration as _calibration
 from .services import gateway as _gateway
 from .services import loop as _loop  # noqa: F401  (registers suggest_policy, policy_test)
 from .services import mining as _mining  # noqa: F401  (registers the mining jobs)
 from .services import production as _production
+from .services import schedules as _schedules
 from .services.adaptive import adaptive_after_episode
 from .services.finding_hooks import after_episode
 from .services.jobs import run_job
@@ -129,6 +131,7 @@ class Worker:
         last_drift = float("-inf")
         last_sweep = float("-inf")
         last_retention = float("-inf")
+        last_ops = float("-inf")
         while not stop.is_set() and not self._killed:
             free = self.job_concurrency - len(self._job_tasks)
             if free > 0:
@@ -139,6 +142,13 @@ class Worker:
                         t.add_done_callback(self._job_tasks.discard)
                 except Exception:
                     log.exception("job claim failed")
+            if time.monotonic() - last_ops > 30:
+                last_ops = time.monotonic()
+                try:
+                    await _schedules.tick(self.state)
+                    await _alerts.evaluate_all(self.state)
+                except Exception:
+                    log.exception("schedule tick or alert evaluation failed")
             if time.monotonic() - last_retention > 3600:
                 last_retention = time.monotonic()
                 try:
