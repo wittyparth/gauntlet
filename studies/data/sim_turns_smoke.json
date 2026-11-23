@@ -1,0 +1,6 @@
+[
+{"text":"I want to return my order","agent_messages":["How can I help?"],"hidden_facts":[],"language":"en","rubric_pass":true},
+{"text":"","agent_messages":[],"hidden_facts":[],"language":"en","rubric_pass":false},
+{"text":"As an AI assistant, I can help you with that.","agent_messages":[],"hidden_facts":[],"language":"en","rubric_pass":false},
+{"text":"Order 4821 arrived broken","agent_messages":["What is the problem?"],"hidden_facts":[],"language":"en","rubric_pass":true}
+]

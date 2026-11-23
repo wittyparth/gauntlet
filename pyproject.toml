@@ -42,7 +42,7 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Body"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-testpaths = ["packages", "apps", "tests", "tools", "benchmarks"]
+testpaths = ["packages", "apps", "tests", "tools", "benchmarks", "studies"]
 pythonpath = ["."]
 markers = [
     "slow: slow statistical simulations",

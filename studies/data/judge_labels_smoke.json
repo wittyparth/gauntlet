@@ -1,0 +1,12 @@
+[
+{"rubric":"task_success","human_fail":true,"judge_fail":true,"cost_usd_micros":120,"escalated":false},
+{"rubric":"task_success","human_fail":true,"judge_fail":true,"cost_usd_micros":300,"escalated":true},
+{"rubric":"task_success","human_fail":false,"judge_fail":false,"cost_usd_micros":100,"escalated":false},
+{"rubric":"task_success","human_fail":false,"judge_fail":true,"cost_usd_micros":110,"escalated":false},
+{"rubric":"task_success","human_fail":true,"judge_fail":false,"cost_usd_micros":105,"escalated":false},
+{"rubric":"task_success","human_fail":false,"judge_fail":false,"cost_usd_micros":95,"escalated":false},
+{"rubric":"tone","human_fail":false,"judge_fail":false,"cost_usd_micros":90,"escalated":false},
+{"rubric":"tone","human_fail":true,"judge_fail":true,"cost_usd_micros":280,"escalated":true},
+{"rubric":"tone","human_fail":false,"judge_fail":false,"cost_usd_micros":92,"escalated":false},
+{"rubric":"tone","human_fail":true,"judge_fail":true,"cost_usd_micros":98,"escalated":false}
+]
