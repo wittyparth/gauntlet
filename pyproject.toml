@@ -31,7 +31,7 @@ dev = [
 
 [tool.ruff]
 line-length = 100
-extend-exclude = ["docs", ".claude"]
+extend-exclude = ["docs", ".claude", "tests/fixtures/benchmarks"]
 target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]

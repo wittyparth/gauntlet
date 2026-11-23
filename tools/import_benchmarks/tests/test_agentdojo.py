@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import pytest
 import yaml
+from bench_helpers import FIXTURES, holds, run_calls
 from gauntlet_core.packs import load_pack
 from gauntlet_core.schema import Attack, load_yaml
 from gauntlet_core.validate import validate_pack
-from helpers import FIXTURES, holds, run_calls
 
 from tools.import_benchmarks.agentdojo import PIN, import_agentdojo, read_task_classes
 from tools.import_benchmarks.common import PinError
