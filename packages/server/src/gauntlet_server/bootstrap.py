@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import os
 
 from .auth import DEFAULT_WORKSPACE, ensure_default_workspace, generate_key, upsert_key
 from .config import Settings
@@ -26,7 +27,12 @@ async def bootstrap(settings: Settings, *, new_key: bool = False) -> str | None:
             ws = await ensure_default_workspace(s)
             if settings.is_dev and settings.dev_api_key:
                 await upsert_key(s, ws, settings.dev_api_key, "dev")
-            if fresh or new_key:
+            admin_key = os.environ.get("GAUNTLET_ADMIN_API_KEY", "")
+            if admin_key:  # deploy-generated admin key (see deploy/bootstrap.sh); idempotent
+                if not admin_key.startswith("gk_") or len(admin_key) < 24:
+                    raise SystemExit("GAUNTLET_ADMIN_API_KEY must look like gk_ + 20 or more chars")
+                await upsert_key(s, ws, admin_key, "admin")
+            elif fresh or new_key:
                 printed = generate_key()
                 await upsert_key(s, ws, printed, "admin")
     finally:

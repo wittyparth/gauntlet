@@ -1,0 +1,32 @@
+# SITE_ADDRESS is the public DOMAIN (Caddy then obtains and renews a Let's Encrypt certificate
+# on its own) or ":80" for a plain-HTTP, IP-only demo. Set in docker-compose.prod.yml from DOMAIN.
+{
+	# no admin endpoint, no telemetry
+	admin off
+}
+
+{$SITE_ADDRESS} {
+	encode zstd gzip
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		-Server
+	}
+
+	# SDK, CLI and ingest clients speak to the API directly (API-key authenticated; the dev
+	# routes and /openapi.json do not exist when GAUNTLET_ENV=prod). The console uses its own
+	# same-origin proxy (/api/gauntlet), so no CORS is needed anywhere.
+	@api path /v1/* /healthz
+	handle @api {
+		reverse_proxy api:8000 {
+			flush_interval -1   # server-sent events
+		}
+	}
+
+	handle {
+		reverse_proxy web:3000 {
+			flush_interval -1
+		}
+	}
+}

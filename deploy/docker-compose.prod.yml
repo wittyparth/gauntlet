@@ -1,0 +1,227 @@
+# Gauntlet, production-style single-host deployment. Works with plain `docker compose`, and when
+# imported into Coolify or Dokploy (see deploy/README.md). Build context is the repo root.
+#
+#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.prod -p gauntlet up -d --build
+#
+# Profiles (set COMPOSE_PROFILES in .env.prod):
+#   caddy  Caddy reverse proxy: automatic HTTPS for DOMAIN, or plain HTTP on :80 without a domain.
+#          Leave it out under Coolify/Dokploy: their proxy routes to `web` (port 3000) instead.
+#   dva    The Damn Vulnerable Agent targets for the live security demo (internal network only).
+name: gauntlet
+
+x-app-env: &app-env
+  DATABASE_URL: postgresql+asyncpg://gauntlet:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/gauntlet
+  REDIS_URL: redis://redis:6379/0
+  S3_ENDPOINT_URL: http://minio:9000
+  S3_ACCESS_KEY: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
+  S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+  S3_BUCKET: gauntlet
+  S3_REGION: us-east-1
+  GAUNTLET_ENV: prod
+  GAUNTLET_SECRET_KEY: ${GAUNTLET_SECRET_KEY:?set GAUNTLET_SECRET_KEY (a Fernet key)}
+  GAUNTLET_ADMIN_API_KEY: ${GAUNTLET_ADMIN_API_KEY:?set GAUNTLET_ADMIN_API_KEY (gk_...)}
+  GAUNTLET_PUBLIC_API_URL: ${GAUNTLET_PUBLIC_API_URL:-http://api:8000}
+  GAUNTLET_PACK_DIR: /app/packs/ecommerce
+  GAUNTLET_ALLOW_PRIVATE_TARGETS: "false"
+  GAUNTLET_LOCAL_TARGET_HOSTS: dva,dva-sql,dva-email
+  GAUNTLET_MAX_RUN_BUDGET_USD_MICROS: ${GAUNTLET_MAX_RUN_BUDGET_USD_MICROS:-5000000}
+  GAUNTLET_DAILY_BUDGET_USD: ${GAUNTLET_DAILY_BUDGET_USD:-10}
+  GAUNTLET_ATTACKS_DISABLED: ${GAUNTLET_ATTACKS_DISABLED:-false}
+  WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-4}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+
+x-app-depends: &app-depends
+  postgres: { condition: service_healthy }
+  redis: { condition: service_healthy }
+  migrate: { condition: service_completed_successfully }
+  minio-init: { condition: service_completed_successfully }
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  postgres:
+    <<: *restart
+    image: pgvector/pgvector:pg16   # multi-arch (amd64 + arm64)
+    mem_limit: 768m
+    environment:
+      POSTGRES_USER: gauntlet
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: gauntlet
+    command: ["postgres", "-c", "shared_buffers=128MB", "-c", "max_connections=100"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gauntlet -d gauntlet"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    <<: *restart
+    image: redis:7-alpine
+    mem_limit: 160m
+    # Cache and pub/sub only: nothing durable lives here.
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "96mb"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    <<: *restart
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z   # multi-arch
+    mem_limit: 384m
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+    volumes: [miniodata:/data]
+    healthcheck:
+      test: ["CMD-SHELL", "mc ready local || curl -f http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio-init:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+        mc mb --ignore-existing local/gauntlet
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    depends_on:
+      minio: { condition: service_healthy }
+    restart: "no"
+
+  migrate:
+    # Runs on every start: alembic upgrade head, then the idempotent bootstrap (default
+    # workspace, and the admin key from GAUNTLET_ADMIN_API_KEY).
+    build: { context: .., dockerfile: infra/docker/python.Dockerfile, target: api }
+    image: gauntlet-api
+    command:
+      - sh
+      - -c
+      - alembic -c /app/packages/server/alembic.ini upgrade head && python -m gauntlet_server.bootstrap
+    environment: *app-env
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    <<: *restart
+    build: { context: .., dockerfile: infra/docker/python.Dockerfile, target: api }
+    image: gauntlet-api
+    mem_limit: 768m
+    command: ["uvicorn", "gauntlet_server.app:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
+    environment: *app-env
+    expose: ["8000"]
+    depends_on: *app-depends
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/healthz')"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  worker:
+    <<: *restart
+    # No container_name: `up -d --scale worker=2` works.
+    build: { context: .., dockerfile: infra/docker/python.Dockerfile, target: worker }
+    image: gauntlet-worker
+    mem_limit: 1g
+    command: ["python", "-m", "gauntlet_server.worker"]
+    environment: *app-env
+    depends_on: *app-depends
+    stop_grace_period: 30s
+
+  web:
+    <<: *restart
+    build: { context: .., dockerfile: infra/docker/web.Dockerfile, target: web }
+    image: gauntlet-web
+    mem_limit: 512m
+    environment:
+      # The console proxies the browser's calls to the API server-side; the API itself needs no CORS.
+      GAUNTLET_API_URL: http://api:8000
+      # Plain-HTTP (IP-only) demo: the session cookie must not be Secure. Leave 0 behind HTTPS.
+      GAUNTLET_INSECURE_COOKIE: ${GAUNTLET_INSECURE_COOKIE:-0}
+    expose: ["3000"]
+    depends_on:
+      api: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  caddy:
+    <<: *restart
+    profiles: ["caddy"]
+    image: caddy:2-alpine   # multi-arch
+    mem_limit: 96m
+    environment:
+      SITE_ADDRESS: ${DOMAIN:-:80}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTPS_PORT:-443}:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web: { condition: service_healthy }
+      api: { condition: service_healthy }
+
+  # --- Damn Vulnerable Agent targets: INTENTIONALLY VULNERABLE. No published ports; they are only
+  # reachable from the worker over the compose network (GAUNTLET_LOCAL_TARGET_HOSTS allows them).
+  dva:
+    <<: *restart
+    profiles: ["dva"]
+    build: { context: .., dockerfile: infra/docker/dva.Dockerfile, target: dva }
+    image: gauntlet-dva
+    mem_limit: 192m
+    environment:
+      GAUNTLET_MOCK_BASE: http://api:8000
+      DVA_BRAIN: ${DVA_BRAIN:-llm}
+      DVA_FLAWS: ${DVA_FLAWS:-all}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+    depends_on:
+      api: { condition: service_healthy }
+
+  dva-sql:
+    <<: *restart
+    profiles: ["dva"]
+    image: gauntlet-dva
+    mem_limit: 192m
+    command: ["uvicorn", "dva.sql_agent.app:app", "--host", "0.0.0.0", "--port", "8101"]
+    environment:
+      GAUNTLET_MOCK_BASE: http://api:8000
+      DVA_BRAIN: ${DVA_BRAIN:-llm}
+      DVA_FLAWS: ${DVA_FLAWS:-all}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+    depends_on: [dva]
+
+  dva-email:
+    <<: *restart
+    profiles: ["dva"]
+    image: gauntlet-dva
+    mem_limit: 192m
+    command: ["uvicorn", "dva.email_agent.app:app", "--host", "0.0.0.0", "--port", "8102"]
+    environment:
+      GAUNTLET_MOCK_BASE: http://api:8000
+      DVA_BRAIN: ${DVA_BRAIN:-llm}
+      DVA_FLAWS: ${DVA_FLAWS:-all}
+      DVA_WORLD: ${DVA_WORLD:-unfixed}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+    depends_on: [dva]
+
+volumes:
+  pgdata:
+  miniodata:
+  caddy_data:
+  caddy_config:
