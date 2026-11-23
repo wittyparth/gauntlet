@@ -44,13 +44,18 @@ class CampaignCreate(BaseModel):
     budget_usd_micros: int
     max_attacks: int = Field(default=100, ge=1)
     seed: int = 0
+    # Where tool_result attacks without their own target inject (a tool name or a state path
+    # such as `orders/ord_1001/notes`); default: the first untrusted or read tool of the world.
+    inject_target: str | None = None
 
 
-def with_default_target(attack: Attack, world: WorldSpec) -> Attack:
+def with_default_target(attack: Attack, world: WorldSpec, override: str | None = None) -> Attack:
     """Library tool_result attacks carry no target: inject into the first tool that returns
     untrusted output (else the first read tool), so every result of that tool carries it."""
     if attack.vector != "tool_result" or attack.target:
         return attack
+    if override:
+        return attack.model_copy(update={"target": override})
     names = [t.name for t in world.tools if t.untrusted_output] or [
         t.name for t in world.tools if t.risk == "read"
     ]
@@ -125,7 +130,7 @@ async def build_campaign(
     used = []
     for i, attack in enumerate(usable):
         base = benign[i % len(benign)]
-        attack = with_default_target(attack, world)
+        attack = with_default_target(attack, world, body.inject_target)
         try:
             placed = place(attack, world, base, seed=body.seed)
         except PlacementError as e:

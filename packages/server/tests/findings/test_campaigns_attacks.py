@@ -134,3 +134,21 @@ async def test_markdown_export_shape_and_payload_truncation(client, state):
     assert "x" * 501 not in md
     js = (await client.get(f"/v1/findings/{fid}/export?format=json")).json()
     assert js["id"] == fid and js["episodes"] == []
+
+
+def test_inject_target_override_applies_to_tool_result_attacks_without_a_target():
+    from gauntlet_core.schema import Attack, WorldSpec
+    from gauntlet_server.services.campaigns import with_default_target
+
+    base = {
+        "id": "atk_t", "title": "t", "category": "indirect_injection", "technique": "t",
+        "source": "gauntlet-curated", "license": "MIT", "vector": "tool_result",
+        "payload": "x {{marker}}", "objective": {"type": "tainted_call", "tool": "issue_refund"},
+    }  # fmt: skip
+    world = WorldSpec.model_validate(
+        {"id": "w", "tools": [], "clock_start": "2026-01-01T00:00:00Z"}
+    )
+    got = with_default_target(Attack.model_validate(base), world, "orders/ord_1001/notes")
+    assert got.target == "orders/ord_1001/notes"
+    pinned = Attack.model_validate({**base, "target": "lookup_order"})
+    assert with_default_target(pinned, world, "orders/ord_1001/notes").target == "lookup_order"
