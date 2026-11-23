@@ -13,7 +13,7 @@ from gauntlet_core.policy.offline import test_policy
 from gauntlet_core.schema import Policy, Trajectory
 from gauntlet_core.world import build_trajectory, build_world
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import models as m
@@ -382,7 +382,15 @@ async def verify_with_policy(
     smoke = (
         await s.execute(
             select(m.Suite)
-            .where(m.Suite.workspace_id == ws, m.Suite.name == SMOKE_SUITE_NAME)
+            .where(
+                m.Suite.workspace_id == ws,
+                # `smoke` by name, or a pack's "Smoke (10 scenarios)" / `<pack>_smoke` suite
+                or_(
+                    m.Suite.name == SMOKE_SUITE_NAME,
+                    m.Suite.name.ilike(f"{SMOKE_SUITE_NAME}%"),
+                    m.Suite.id.like("%\\_smoke", escape="\\"),
+                ),
+            )
             .order_by(m.Suite.created_at.desc())
             .limit(1)
         )
