@@ -42,6 +42,8 @@ class Settings:
     attribute_with_llm: bool = False  # root-cause fallback through judge_small
     max_fp_rate: float = 0.02  # enforce gate: offline-test false-positive rate (P4-5)
     min_block_rate: float = 0.5  # enforce gate: offline-test block rate
+    benchmarks_dir: str = ""  # committed study results; "" = benchmarks/results (P5-5)
+    evidence_signing_key: str = ""  # base64 Ed25519 seed; "" = packs are unsigned (P5-7)
     prod_retention_days: int = 30  # production conversations (P5-1)
     ingest_max_spans: int = 5000
     ingest_max_bytes: int = 4 * 1024 * 1024
@@ -93,6 +95,8 @@ class Settings:
             in ("1", "true", "yes"),
             max_fp_rate=float(e.get("GAUNTLET_MAX_FP_RATE") or 0.02),
             min_block_rate=float(e.get("GAUNTLET_MIN_BLOCK_RATE") or 0.5),
+            benchmarks_dir=e.get("GAUNTLET_BENCHMARKS_DIR", ""),
+            evidence_signing_key=e.get("GAUNTLET_EVIDENCE_SIGNING_KEY", ""),
             prod_retention_days=_int(e, "GAUNTLET_PROD_RETENTION_DAYS", 30),
             ingest_max_spans=_int(e, "GAUNTLET_INGEST_MAX_SPANS", 5000),
             ingest_max_bytes=_int(e, "GAUNTLET_INGEST_MAX_BYTES", 4 * 1024 * 1024),
