@@ -2,7 +2,7 @@
 
 Story: "We test an AI support agent the way an attacker and a QA team would, find a real hole, turn it into a policy rule, prove the rule works offline, enforce it, and show the evidence."
 
-Runtime about 12 minutes. Steps 1 to 4 and the policy pages of step 8 use only data created by the seed (scripted model, no spend), so they work with no provider key. Steps 5 to 7 start live runs against the Damn Vulnerable Agent (DVA) and spend model credits, capped by `GAUNTLET_MAX_RUN_BUDGET_USD_MICROS` and `GAUNTLET_DAILY_BUDGET_USD`. Page names are the left-nav labels. Expected values for the seeded data are exact; expected values for live steps are what the rehearsal should show, so confirm them once before presenting.
+Runtime about 12 minutes. Steps 1 to 4 and the policy pages of step 8 use only data created by the seed (scripted model, no spend), so they work with no provider key. Steps 5 to 7 start live runs against the Damn Vulnerable Agent (DVA) and spend model credits, capped by `GAUNTLET_MAX_RUN_BUDGET_USD_MICROS` and `GAUNTLET_DAILY_BUDGET_USD`. Page names are the left-nav labels. Steps 1 to 4 and the seeded policy pages were walked end to end with Playwright against the real prod stack (no model calls); their expected results below are what was observed. Steps 5 to 8 (live) are not yet rehearsed and are marked as such.
 
 ## Before the audience arrives
 
@@ -13,10 +13,10 @@ Runtime about 12 minutes. Steps 1 to 4 and the policy pages of step 8 use only d
 
 ## 1. An eval run with failures: Runs
 
-- Page: **Runs**, click `run_demo` (suite `ecommerce_smoke`, agent "Demo support agent").
-- Expected: status done, 10 episodes, 9 passed and 1 failed. The live panel shows the finished state.
+- Page: **Runs**. The list shows two Finished `ecommerce_smoke` runs, 10/10 episodes each. Open the first (`run_demo`, "ecommerce_smoke on Demo support agent v1").
+- Expected: Finished, 10 episodes. On the **Report** tab: pass rate 90 percent, 10 scenarios, 10 counted, 0 excluded, `policy_adherence` at 0 percent (1 fail), every other rubric at 100 percent, and a note that rubrics are uncalibrated and cannot fail a CI gate. The page briefly shows Running while it replays the live stream, then settles on Finished.
 - Say: "This is a regression suite for a refunds agent, judged by rubric checks, not vibes."
-- Click **Report** (`/runs/run_demo/report`): per-scenario table and a failure card for `scn_ecom_07`, a refund outside the return window.
+- Click **Report** (`/runs/run_demo/report`): per-scenario table and a failure card for "Refund after window, sad story" (`scn_ecom_07`), a refund outside the return window.
 
 ## 2. Episode view: the failing episode
 
@@ -26,19 +26,19 @@ Runtime about 12 minutes. Steps 1 to 4 and the policy pages of step 8 use only d
 
 ## 3. Replay and compare: Runs, compare view
 
-- Page: **Runs** then `run_demo` then **Compare with a baseline run**, choose `run_demo_b` as the baseline (`/runs/run_demo/compare`).
-- Expected: summary showing no detectable change (both runs are the same scripted suite), a flip table with no newly failing or newly passing scenarios, and **Compare trajectories** available per scenario.
+- Page: **Runs**, `run_demo`, **Compare** button (`/runs/run_demo/compare`). Click **Choose baseline**, open the dropdown, pick the other run, click **Compare**.
+- Expected: "No detectable change": pass rate +0.0 points across 10 shared scenarios, baseline 90 percent, candidate 90 percent, cost per episode +0.0 percent, then the reliability chart. Both runs are the same scripted suite, so the flip table is empty.
 - Say: "Same suite, same seed, so a change in results is the agent's change, not noise. Replays are deterministic where the cassette allows."
 - Optional live: on the failing episode choose **Replay** to start a replay (spends a little if it re-calls the model).
 
 ## 4. The agent's scorecard: Agents
 
 - Page: **Agents**, "Demo support agent", **Scorecard** (`/agents/agt_demo/scorecard`).
-- Expected: posture and coverage sections for the version; benign pass rate from the seeded runs; attack coverage empty or low until step 5 runs.
+- Expected: pass rate 90 percent (70 to 100 percent interval), pass^1 90 percent, cost per 1000 episodes about $0.11, a rubric table (`policy_adherence` 0 percent, others 100 percent, all "not calibrated"), and the two recent runs. Attack coverage appears only after step 5. The left nav also has **Posture** for the attack-side view.
 
 ## 5. Security campaign on the DVA: Security (live)
 
-- Page: **Security**, **New campaign** (`/security/campaigns/new`).
+- Page: **Launch campaign** in the left nav (`/security/campaigns/new`; the form loads with Agent version, Benign suite and Max attacks fields).
 - Fill in: **Agent version** "Damn Vulnerable Agent (wired), dva-wired"; **Benign suite** `ecommerce_smoke`; **Max attacks** 10 to 20; **Repetitions** 1; categories as offered.
 - The target `http://dva:8100` is on the allowed local-host list, so no ownership verification is needed. A real external target needs a verified DNS or HTTP challenge first (Security page, ownership card).
 - Start the campaign. Expected: "Campaign started", run progress streams in, attack episodes appear grouped by category, and some objectives hold (the attack succeeded) because the DVA has 19 planted flaws.
@@ -52,12 +52,12 @@ Runtime about 12 minutes. Steps 1 to 4 and the policy pages of step 8 use only d
 ## 7. Suggested rule, offline test, enforce, verify (live for the verify step)
 
 1. On the finding, the **Suggested policy rule** card shows a rule (for example require approval for `issue_refund` above a threshold). Click **Add to policy**, choose the demo policy `pol_demo`.
-2. Page: **Gateway** then **Policies** then `pol_demo`. Expected: the rule list with the new rule; run the policy test (no model calls: it replays recorded trajectories through the rule engine). Expected: a result with a block rate above the 50 percent gate and a false-positive rate at or under the 2 percent gate on benign trajectories, and the tradeoff chart.
-3. Set the gateway **Mode** control from **Shadow** (observe, log what would be blocked) to **Enforce**. Expected: the enforce gate passes only if the offline test met both gates; otherwise it explains which gate failed.
+2. Page: **Gateway** then **Policies** then "Support policy" (`pol_demo`, v1 published). Rules tab: `refund-cap` (require approval, high) and `no-card-email` (block, critical) accepted, and clause c3 "Be polite in every reply" marked human, no rule. **Test results** tab then **Run test** ("Replays stored trajectories. No model calls."). Seeded result: block rate 75 percent, false-positive rate 10 percent, 4 attack and 10 benign trajectories (1 skipped), a tradeoff chart, and per-rule rows: `no-card-email` stops 2 attacks and breaks 0 benign, `refund-cap` stops 1 and breaks 1. The trajectory table shows `ep_demo_1` benign "broken by a block".
+3. Click **Enforce** (next to **Shadow**; the fail-open/closed select sits beside them). Expected: a confirmation "Start enforcing this policy? Blocked actions will really be blocked". Note the seeded policy's 10 percent false-positive rate is above the 2 percent gate, so use it to show the gate: the message explains the trade-off before you confirm. After you add the suggested rule from a real finding, rerun the test and enforce.
 4. Back on the finding choose **Verify the fix**. Expected: "Verification started", the same attacks re-run through the enforced policy, and the finding moves to verified when they no longer succeed.
 - Say: "Find, propose, test offline, enforce, verify. A rule never ships on a hunch."
 
-The seeded `pol_demo` already has a published version, proposals, a finished policy test, a few gateway decisions and one pending approval, so this part of the story works without step 5. See **Gateway** then **Approvals** for the pending refund.
+The seeded policy already has a published version, proposals, a finished policy test, a few gateway decisions and one pending approval (the **Approvals** badge shows 1), so this part of the story works without step 5.
 
 ## 8. Scorecard and badge: Agents
 
