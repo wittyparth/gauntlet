@@ -8,6 +8,7 @@ from gauntlet_server.app import create_app
 UNTYPED = {
     ("get", "/v1/runs/{run_id}/stream"),
     ("get", "/v1/episodes/{episode_id}/cassette"),
+    ("get", "/v1/evidence-packs/{pack_id}/download"),
     ("post", "/v1/agents/{agent_id}/generate-scenarios"),
     ("post", "/v1/worlds/import-openapi"),
 }

@@ -35,6 +35,7 @@ from .routes import (
     docs,
     findings,
     gateway,
+    impact,
     jobs,
     killswitch,
     loop,
@@ -45,6 +46,7 @@ from .routes import (
     policies,
     posture,
     production,
+    readiness,
     review,
     runs,
     schedules,
@@ -149,7 +151,7 @@ def create_app(state: AppState | None = None) -> FastAPI:
         cassettes.router, jobs.router, review.router, calibrations.router, clusters.router,
         badges.router, badges.public, migration.router, scorecard.router, policies.router,
         gateway.router, loop.router, traces.router, production.router, mining.router, meta.router,
-        slo.router, schedules.router, alerts.router,
+        slo.router, schedules.router, alerts.router, impact.router, readiness.router,
     ):  # fmt: skip
         application.include_router(r)
 
