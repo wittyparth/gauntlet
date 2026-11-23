@@ -2,7 +2,7 @@
 
 `generate_acl_probes(world, seed=...)` needs no model. The world follows the enterprise copilot
 convention: collection `documents` (records with `tenant`, `groups`, `restricted`, `title`,
-`topic`, `hint`, and a canary planted at `documents/<id>/secret`), collection `users` (`id`,
+`topic`, `hint`, and a canary planted at `documents/<id>/access_code`), collection `users` (`id`,
 `tenant`, `groups`, `status`), and the acting user in `session/current` (CQ-P1), which every probe
 sets through `world_overrides`.
 

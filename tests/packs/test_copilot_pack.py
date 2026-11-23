@@ -75,7 +75,7 @@ def test_seed_regenerates_byte_identical():
 
 def test_every_restricted_record_has_its_own_canary(pack):
     for d in pack.world.seed["documents"]:
-        has = [c for c in pack.world.canaries if c.location == f"documents/{d['id']}/secret"]
+        has = [c for c in pack.world.canaries if c.location == f"documents/{d['id']}/access_code"]
         assert bool(has) == bool(d["restricted"]), d["id"]
     assert len({c.id for c in pack.world.canaries}) == len(pack.world.canaries)
 

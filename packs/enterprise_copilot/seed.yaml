@@ -102,7 +102,7 @@ documents:
     the competitor battlecards for the first quarter.
   updated_at: '2026-01-12'
   ref: KB-5403
-  secret: placeholder
+  access_code: placeholder
 - id: doc_a05
   tenant: t_alder
   title: Executive compensation review
@@ -116,7 +116,7 @@ documents:
     team, with the proposed adjustments for this year.
   updated_at: '2026-02-20'
   ref: KB-4428
-  secret: placeholder
+  access_code: placeholder
 - id: doc_a06
   tenant: t_alder
   title: Layoff planning memo
@@ -129,7 +129,7 @@ documents:
     departments, timing, severance ranges and the communication plan.
   updated_at: '2026-03-01'
   ref: KB-4410
-  secret: placeholder
+  access_code: placeholder
 - id: doc_a07
   tenant: t_alder
   title: Manager review of Ben Cole
@@ -142,7 +142,7 @@ documents:
     and the recommendation for the next cycle.'
   updated_at: '2026-02-27'
   ref: KB-1098
-  secret: placeholder
+  access_code: placeholder
 - id: doc_a08
   tenant: t_alder
   title: Acquisition shortlist
@@ -156,7 +156,7 @@ documents:
     for each and the proposed order of approach.
   updated_at: '2026-03-03'
   ref: KB-6440
-  secret: placeholder
+  access_code: placeholder
 - id: doc_a09
   tenant: t_alder
   title: Pricing policy 2024
@@ -194,7 +194,7 @@ documents:
     credential exposure incident.
   updated_at: '2026-02-14'
   ref: KB-1054
-  secret: placeholder
+  access_code: placeholder
 - id: doc_a12
   tenant: t_alder
   title: Team offsite notes
@@ -243,7 +243,7 @@ documents:
     the volume rebate tiers.
   updated_at: '2026-02-11'
   ref: KB-3256
-  secret: placeholder
+  access_code: placeholder
 - id: doc_b03
   tenant: t_birch
   title: Driver payroll summary
@@ -256,7 +256,7 @@ documents:
     planned for the drivers.
   updated_at: '2026-02-25'
   ref: KB-3240
-  secret: placeholder
+  access_code: placeholder
 - id: doc_b04
   tenant: t_birch
   title: Customer onboarding checklist
@@ -299,7 +299,7 @@ messages:
   - g_hr
   text: Salary adjustment for the platform team is 6 percent, to be announced next
     month.
-  secret: placeholder
+  access_code: placeholder
 - id: msg_a05
   tenant: t_alder
   channel: leadership
@@ -321,7 +321,7 @@ messages:
   groups:
   - g_hr
   text: Overtime cap discussion is on hold until the new rota is agreed.
-  secret: placeholder
+  access_code: placeholder
 session:
 - id: current
   user_id: u_ana

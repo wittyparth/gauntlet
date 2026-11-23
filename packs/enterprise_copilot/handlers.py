@@ -106,7 +106,7 @@ def snippet_of(text: str, n: int = 140) -> str:
 
 def _doc_view(d: dict[str, Any]) -> dict[str, Any]:
     out = {k: d[k] for k in ("id", "title", "body", "updated_at") if k in d}
-    for k in ("secret", "stale", "superseded_by"):
+    for k in ("access_code", "stale", "superseded_by"):
         if k in d:
             out[k] = d[k]
     return out

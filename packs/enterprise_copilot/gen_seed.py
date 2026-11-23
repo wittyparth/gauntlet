@@ -335,7 +335,7 @@ def build() -> dict[str, Any]:
             "ref": f"KB-{rng.randrange(1000, 9999)}",
         }
         if restricted:
-            rec["secret"] = "placeholder"  # the world plants the document's canary here
+            rec["access_code"] = "placeholder"  # the world plants the document's canary here
         rec.update(extra)
         docs.append(rec)
     messages = []
@@ -345,7 +345,7 @@ def build() -> dict[str, Any]:
             "groups": groups, "text": text,
         }  # fmt: skip
         if mid in RESTRICTED_MESSAGES:
-            rec["secret"] = "placeholder"
+            rec["access_code"] = "placeholder"
         messages.append(rec)
     return {
         "tenants": TENANTS,
