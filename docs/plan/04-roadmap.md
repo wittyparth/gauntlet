@@ -94,9 +94,9 @@ Definition of done: an attack suite against DVA produces findings with determini
 | P5-2 | DONE | Failure mining and conversation-to-scenario conversion with anonymisation |
 | P5-3 | DONE | Enterprise knowledge copilot pack with role-based identities and ACL leakage tests; banking pack |
 | P5-4 | DONE | tau-bench retail and AgentDojo import; benchmark reproduction run |
-| P5-5 | SUB | Meta-evaluation studies and benchmark page: DVA recall, judge agreement, reproducibility, cost per 1,000 episodes |
+| P5-5 | DONE | Meta-evaluation studies and benchmark page: DVA recall, judge agreement, reproducibility, cost per 1,000 episodes |
 | P5-6 | SUB | MCP server for the platform; docs site; public challenge arena (one defended agent, levels, leaderboard) |
-| P5-7 | SUB | SLOs, change-impact analysis, launch readiness review, compliance evidence pack export |
+| P5-7 | DONE | SLOs, change-impact analysis, launch readiness review, compliance evidence pack export |
 | L-R5 | LEAD | Final review, launch checklist |
 
 Phase 5 tasks are specified to the level of the other phases only when Phase 4 is done, because what gets built there should follow what real users of Phases 1 to 4 ask for.
