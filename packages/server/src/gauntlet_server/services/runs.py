@@ -149,7 +149,7 @@ async def enforce_daily_budget(
     session: AsyncSession, state: AppState, workspace_id: str, budget: int
 ) -> None:
     """GAUNTLET_DAILY_BUDGET_USD: refuse a run when the budgets of the runs created in the last
-    24 hours plus this one would exceed the cap (committed budget, not spend: a safe upper bound)."""
+    24 hours plus this one would exceed the cap (committed budget: a safe bound)."""
     cap = state.settings.daily_budget_usd_micros
     if cap <= 0:
         return
