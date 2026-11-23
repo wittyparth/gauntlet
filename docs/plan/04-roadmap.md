@@ -92,8 +92,8 @@ Definition of done: an attack suite against DVA produces findings with determini
 |---|---|---|
 | P5-1 | DONE | OpenTelemetry / OpenInference trace ingestion with PII redaction |
 | P5-2 | DONE | Failure mining and conversation-to-scenario conversion with anonymisation |
-| P5-3 | SUB | Enterprise knowledge copilot pack with role-based identities and ACL leakage tests; banking pack |
-| P5-4 | SUB | tau-bench retail and AgentDojo import; benchmark reproduction run |
+| P5-3 | DONE | Enterprise knowledge copilot pack with role-based identities and ACL leakage tests; banking pack |
+| P5-4 | DONE | tau-bench retail and AgentDojo import; benchmark reproduction run |
 | P5-5 | SUB | Meta-evaluation studies and benchmark page: DVA recall, judge agreement, reproducibility, cost per 1,000 episodes |
 | P5-6 | SUB | MCP server for the platform; docs site; public challenge arena (one defended agent, levels, leaderboard) |
 | P5-7 | SUB | SLOs, change-impact analysis, launch readiness review, compliance evidence pack export |
