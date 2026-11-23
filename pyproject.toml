@@ -12,6 +12,7 @@ gauntlet-core = { workspace = true }
 gauntlet-server = { workspace = true }
 gauntlet-cli = { workspace = true }
 gauntlet-dva = { workspace = true }
+gauntlet-mcp = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -27,6 +28,7 @@ dev = [
     "gauntlet-cli",
     "jsonschema>=4.26.0",
     "gauntlet-dva",
+    "gauntlet-mcp",
 ]
 
 [tool.ruff]

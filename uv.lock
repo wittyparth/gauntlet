@@ -12,6 +12,7 @@ members = [
     "gauntlet-cli",
     "gauntlet-core",
     "gauntlet-dva",
+    "gauntlet-mcp",
     "gauntlet-server",
     "gauntlet-workspace",
 ]
@@ -1050,6 +1051,21 @@ requires-dist = [
 ]
 
 [[package]]
+name = "gauntlet-mcp"
+version = "0.1.0"
+source = { editable = "packages/mcp_server" }
+dependencies = [
+    { name = "httpx" },
+    { name = "mcp" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "mcp", specifier = ">=1.0" },
+]
+
+[[package]]
 name = "gauntlet-server"
 version = "0.1.0"
 source = { editable = "packages/server" }
@@ -1110,6 +1126,7 @@ dev = [
     { name = "gauntlet-cli" },
     { name = "gauntlet-core" },
     { name = "gauntlet-dva" },
+    { name = "gauntlet-mcp" },
     { name = "gauntlet-server" },
     { name = "httpx" },
     { name = "hypothesis" },
@@ -1128,6 +1145,7 @@ dev = [
     { name = "gauntlet-cli", editable = "packages/cli" },
     { name = "gauntlet-core", editable = "packages/core" },
     { name = "gauntlet-dva", editable = "apps/dva" },
+    { name = "gauntlet-mcp", editable = "packages/mcp_server" },
     { name = "gauntlet-server", editable = "packages/server" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "hypothesis", specifier = ">=6.100" },
