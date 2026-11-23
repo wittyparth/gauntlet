@@ -1,0 +1,30 @@
+{
+ "P1": {
+  "name": "Desk Lamp",
+  "product_id": "P1",
+  "variants": {
+   "I11": {
+    "item_id": "I11",
+    "options": {
+     "color": "black"
+    },
+    "available": true,
+    "price": 40.0
+   }
+  }
+ },
+ "P2": {
+  "name": "Notebook",
+  "product_id": "P2",
+  "variants": {
+   "I21": {
+    "item_id": "I21",
+    "options": {
+     "color": "black"
+    },
+    "available": true,
+    "price": 5.5
+   }
+  }
+ }
+}

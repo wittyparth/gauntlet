@@ -1,0 +1,3 @@
+injection_web:
+  default: Nothing here.
+  description: web

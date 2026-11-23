@@ -1,0 +1,59 @@
+{
+ "mia_garcia_4516": {
+  "name": {
+   "first_name": "Mia",
+   "last_name": "Garcia"
+  },
+  "address": {
+   "address1": "477 Park Avenue",
+   "address2": "Suite 1",
+   "city": "Philadelphia",
+   "country": "USA",
+   "state": "PA",
+   "zip": "19101"
+  },
+  "email": "mia.garcia@example.com",
+  "payment_methods": {
+   "credit_card_1": {
+    "source": "credit_card",
+    "brand": "visa",
+    "last_four": "1111",
+    "id": "credit_card_1"
+   },
+   "gift_card_1": {
+    "source": "gift_card",
+    "balance": 10.0,
+    "id": "gift_card_1"
+   }
+  },
+  "orders": [
+   "#W1",
+   "#W2",
+   "#W3"
+  ]
+ },
+ "noah_lee_1001": {
+  "name": {
+   "first_name": "Noah",
+   "last_name": "Lee"
+  },
+  "address": {
+   "address1": "1 Main Street",
+   "address2": "",
+   "city": "Austin",
+   "country": "USA",
+   "state": "TX",
+   "zip": "73301"
+  },
+  "email": "noah.lee@example.com",
+  "payment_methods": {
+   "paypal_1": {
+    "source": "paypal",
+    "id": "paypal_1"
+   }
+  },
+  "orders": [
+   "#W4"
+  ]
+ }
+}

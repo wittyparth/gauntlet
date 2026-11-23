@@ -1,0 +1,3 @@
+injection_bill:
+  default: Thanks for paying.
+  description: bill
