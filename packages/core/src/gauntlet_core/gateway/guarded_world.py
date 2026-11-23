@@ -33,6 +33,7 @@ def guard_for_episode(
     *,
     mode: str | None = None,
     approve_all: bool = False,
+    tool_risk: dict[str, str] | None = None,
 ) -> tuple[Guard, MemorySink]:
     """A fresh guard whose clock is the episode's simulated time and whose records stay in
     memory. `mode="enforce"` overrides the stored mode (verification runs)."""
@@ -48,6 +49,7 @@ def guard_for_episode(
         sink=sink,
         approvals=approvals,
         clock=clock,
+        tool_risk=tool_risk,
     )
     return guard, sink
 
@@ -170,7 +172,10 @@ def guard_world(
 ) -> GuardedWorld:
     """Wrap `world` for this episode and bind it. The guard session is rebuilt from the events
     the episode already has, so a reopened episode (the api facade) decides as the live one."""
-    guard, _ = guard_for_episode(policy, ctx, mode=mode, approve_all=approve_all)
+    risk = {name: spec.risk for name, spec in world.built.tools.items()}
+    guard, _ = guard_for_episode(
+        policy, ctx, mode=mode, approve_all=approve_all, tool_risk=risk
+    )  # rules that filter by risk class (tainted_call) need the world's classification
     session = guard.session(session_id or f"ep:{ctx.episode_id}", episode_id=ctx.episode_id)
     session.preload(ctx.trajectory_so_far)
     guarded = GuardedWorld(world, session)
