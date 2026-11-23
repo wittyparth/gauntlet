@@ -36,7 +36,7 @@ Costs: hosting is 0 on Oracle Always Free and about 4 to 8 EUR a month on Hetzne
 
 1. Create a key at openrouter.ai and set a monthly spend limit on the key there. This is the hard stop that does not depend on Gauntlet.
 2. Put it in `deploy/.env.prod` as `OPENROUTER_API_KEY=...`, or export it before `sudo -E ./deploy/bootstrap.sh`.
-3. Choose caps: `GAUNTLET_MAX_RUN_BUDGET_USD_MICROS` (per run) and `GAUNTLET_DAILY_BUDGET_USD` (per day; the budgets of runs started in the last 24 hours plus the new run must fit). Apply with `docker compose -p gauntlet -f deploy/docker-compose.prod.yml --env-file deploy/.env.prod up -d`.
+3. Choose caps: `GAUNTLET_MAX_RUN_BUDGET_USD_MICROS` (per run) and `GAUNTLET_DAILY_BUDGET_USD` (per day; finished runs count what they actually spent, queued and running ones their budget, and the total plus the new run's budget must fit). Apply with `docker compose -p gauntlet -f deploy/docker-compose.prod.yml --env-file deploy/.env.prod up -d`.
 
 ## Oracle Cloud Always Free (Ampere A1, ARM64)
 
