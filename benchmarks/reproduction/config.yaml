@@ -1,0 +1,28 @@
+# Reproduction suites. `published` rows hold numbers copied from the benchmark's own paper or
+# leaderboard: value (0 to 1), source (URL or citation) and date read. None are recorded yet:
+# the numbers must be read from the source and verified before they are entered here, and the
+# models behind them (OpenAI and Anthropic models) are not run by this project, so such rows are
+# shown as context only. A row counts as comparable only if `model` equals the model we run.
+default_trials: 4
+suites:
+  taubench_retail:
+    pack: .cache/benchmarks/taubench_retail
+    importer: >-
+      uv run python -m tools.import_benchmarks tau-bench --src <tau-bench checkout>
+      --out .cache/benchmarks/taubench_retail --pin 59a200c6d575d595120f1cb70fea53cef0632f6b
+    metric: pass^k
+    published: []
+  agentdojo_banking:
+    pack: .cache/benchmarks/agentdojo_banking
+    importer: >-
+      uv run python -m tools.import_benchmarks agentdojo --suite banking --src <agentdojo checkout>
+      --out .cache/benchmarks/agentdojo_banking --pin 0.1.35
+    metric: utility
+    published: []
+  agentdojo_slack:
+    pack: .cache/benchmarks/agentdojo_slack
+    importer: >-
+      uv run python -m tools.import_benchmarks agentdojo --suite slack --src <agentdojo checkout>
+      --out .cache/benchmarks/agentdojo_slack --pin 0.1.35
+    metric: utility
+    published: []

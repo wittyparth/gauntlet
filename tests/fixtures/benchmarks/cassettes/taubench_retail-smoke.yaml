@@ -1,0 +1,83 @@
+# Scripted transcript for the reproduction harness smoke test (no model, no network).
+cost_usd_micros: 0
+roles:
+  simulator:
+  - match: 'Cancel order #W1'
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: 'Please cancel order #W1, I no longer need it.'
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: 'address of order #W2'
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: 'Please change the address of order #W2 to 9 Elm Street, Boston.'
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: Return the notebook
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: 'Please return the notebook from order #W3 to my credit card.'
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  - match: 'Ask how much order #W2 cost'
+    replies:
+    - parsed:
+        state_note: turn
+        action: say
+        message: 'How much did order #W2 cost?'
+    - parsed:
+        state_note: done
+        action: done
+        done_reason: goal_met
+  model:openrouter/qwen/qwen3.7-flash:
+  - match: 'Please cancel order #W1, I no longer need it.'
+    replies:
+    - tool_calls:
+      - name: cancel_pending_order
+        arguments:
+          order_id: '#W1'
+          reason: no longer needed
+    - 'Order #W1 is cancelled.'
+  - match: 'Please change the address of order #W2 to 9 Elm Street, Boston.'
+    replies:
+    - tool_calls:
+      - name: modify_pending_order_address
+        arguments:
+          order_id: '#W2'
+          address1: 9 Elm Street
+          address2: ''
+          city: Boston
+          state: MA
+          country: USA
+          zip: 02108
+    - 'The address of order #W2 is updated.'
+  - match: 'Please return the notebook from order #W3 to my credit card.'
+    replies:
+    - tool_calls:
+      - name: return_delivered_order_items
+        arguments:
+          order_id: '#W3'
+          item_ids:
+          - I21
+          payment_method_id: credit_card_1
+    - Your return is requested.
+  - match: 'How much did order #W2 cost?'
+    replies:
+    - tool_calls:
+      - name: get_order_details
+        arguments:
+          order_id: '#W2'
+    - 'Order #W2 cost 42.5 dollars.'
