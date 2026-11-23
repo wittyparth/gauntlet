@@ -39,7 +39,7 @@ Runtime about 12 minutes. Steps 1 to 4 and the policy pages of step 8 use only d
 ## 5. Security campaign on the DVA: Security (live)
 
 - Page: **Launch campaign** in the left nav (`/security/campaigns/new`; the form loads with Agent version, Benign suite and Max attacks fields).
-- Fill in: **Agent version** "Damn Vulnerable Agent (wired), dva-wired"; **Benign suite** `ecommerce_smoke`; **Max attacks** 10 to 20; **Repetitions** 1; categories as offered.
+- Fill in: **Agent version** "Damn Vulnerable Agent (wired), dva-wired"; **Benign suite** `ecommerce_smoke`; **Max attacks** 10 to 20; **Repetitions** 1; **categories: indirect_injection only**. The DVA's detectable flaw in this variant is F17 (it obeys instructions planted in order notes, a code-level flaw, so it holds with either brain). The default attack mix is jailbreak and direct injection, which the model refuses, so a default campaign finds nothing (rehearsal: 6 episodes, objective never held, no findings, about $0.002). The benign suite only feeds the policy test's false-positive measurement; it adds no episodes to the campaign run.
 - The target `http://dva:8100` is on the allowed local-host list, so no ownership verification is needed. A real external target needs a verified DNS or HTTP challenge first (Security page, ownership card).
 - Start the campaign. Expected: "Campaign started", run progress streams in, attack episodes appear grouped by category, and some objectives hold (the attack succeeded) because the DVA has 19 planted flaws.
 - Say: "The DVA is deliberately broken. This is what finding real holes looks like."
