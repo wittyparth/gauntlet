@@ -17,7 +17,7 @@ from gauntlet_core.schema import AgentVersion, RunManifest, Scenario, WorldSpec
 from gauntlet_core.sim import load_persona_library
 from gauntlet_core.validate import validate_scenario
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import func, select, text, update
+from sqlalchemy import case, func, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.models import AgentVersion as AgentVersionRow
@@ -149,14 +149,25 @@ async def enforce_daily_budget(
     session: AsyncSession, state: AppState, workspace_id: str, budget: int
 ) -> None:
     """GAUNTLET_DAILY_BUDGET_USD: refuse a run when the budgets of the runs created in the last
-    24 hours plus this one would exceed the cap (committed budget: a safe bound)."""
+    24 hours plus this one would exceed the cap. Finished runs count their real spend; queued
+    and running ones count their budget."""
     cap = state.settings.daily_budget_usd_micros
     if cap <= 0:
         return
     since = datetime.now(UTC) - timedelta(hours=24)
     committed = (
         await session.execute(
-            select(func.coalesce(func.sum(Run.budget_usd_micros), 0)).where(
+            select(
+                func.coalesce(
+                    func.sum(
+                        case(  # finished runs count what they spent; live ones their budget
+                            (Run.status.in_(("done", "cancelled", "failed")), Run.spent_usd_micros),
+                            else_=Run.budget_usd_micros,
+                        )
+                    ),
+                    0,
+                )
+            ).where(
                 Run.workspace_id == workspace_id,
                 Run.created_at >= since,
                 ~Run.id.like("run\\_demo%", escape="\\"),  # scripted demo seed: no spend
