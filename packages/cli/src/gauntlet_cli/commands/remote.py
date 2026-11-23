@@ -51,6 +51,17 @@ class Api:
             raise ApiFailure(resp.status_code, detail)
         return resp.json()
 
+    def download(self, path: str) -> bytes:
+        try:
+            resp = httpx.get(
+                self.base + path, headers=self._headers, timeout=max(self._timeout, 300.0)
+            )
+        except httpx.HTTPError as e:
+            raise ApiFailure(0, f"cannot reach {self.base}: {e}") from e
+        if resp.status_code >= 400:
+            raise ApiFailure(resp.status_code, resp.text[:200])
+        return resp.content
+
     def get(self, path: str, **params: Any) -> Any:
         return self.request("GET", path, params={k: v for k, v in params.items() if v is not None})
 

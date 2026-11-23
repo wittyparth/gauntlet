@@ -7,7 +7,9 @@ import typer
 from .commands.attacks import attacks_app
 from .commands.cassette import cassette_app
 from .commands.demo import demo_app
+from .commands.evidence import evidence_app
 from .commands.gate import gate
+from .commands.impact import impact
 from .commands.init import init
 from .commands.lint import lint
 from .commands.mcp_gateway import mcp_app, mcp_gateway_app
@@ -42,6 +44,8 @@ app.command()(replay)
 app.command()(rejudge)
 app.command()(gate)
 app.command()(lint)
+app.command()(impact)
+app.add_typer(evidence_app, name="evidence")
 
 if __name__ == "__main__":  # pragma: no cover
     app()
