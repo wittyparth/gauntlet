@@ -1,0 +1,23 @@
+id: tinyshop
+clock_start: 2026-03-15T10:00:00Z
+seed:
+  orders:
+    - {id: ord_1, status: shipped}
+    - {id: ord_2, status: processing}
+tools:
+  - name: lookup_order
+    description: Look up an order by id.
+    risk: read
+    input_schema:
+      type: object
+      properties: {order_id: {type: string}}
+      required: [order_id]
+    handler: {kind: crud, collection: orders, op: get, key_arg: order_id}
+  - name: cancel_order
+    description: Cancel an order by id.
+    risk: write
+    input_schema:
+      type: object
+      properties: {order_id: {type: string}, status: {type: string}}
+      required: [order_id]
+    handler: {kind: crud, collection: orders, op: update, key_arg: order_id}

@@ -1,0 +1,5 @@
+label: fixture-agent
+target:
+  kind: hosted
+  model: openrouter/deepseek/deepseek-v4-flash
+  system_prompt: You are a support assistant for a tiny shop.

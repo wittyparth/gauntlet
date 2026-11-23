@@ -1,0 +1,38 @@
+# Scripted replies for the tinyshop smoke suite. The good scenario (status) passes; in the
+# cancel scenario the agent refuses to act, so it fails. Reply index = assistant messages so far.
+cost_usd_micros: 10
+roles:
+  simulator:
+    - match: "find out where order ord_1 is"
+      replies:
+        - parsed: {state_note: wants status, action: say, message: "Hi, where is my order ord_1?"}
+        - parsed: {state_note: got it, action: done, done_reason: goal_met}
+    - match: "cancel order ord_2"
+      replies:
+        - parsed: {state_note: wants cancel, action: say, message: "Please cancel ord_2 for me."}
+        - parsed: {state_note: gave up, action: done, done_reason: gave_up}
+  "model:openrouter/deepseek/deepseek-v4-flash":
+    - match: "where is my order ord_1?"
+      replies:
+        - tool_calls: [{name: lookup_order, arguments: {order_id: ord_1}}]
+        - "Your order ord_1 has shipped and is on its way."
+    - match: "cancel ord_2 for me"
+      replies:
+        - "I cannot cancel that order right now."
+  judge_small:
+    - match: ["task_completion", "where is my order ord_1?"]
+      replies:
+        - parsed: {reasoning: Looked the order up and answered., evidence: [], result: pass, confidence: 0.95}
+    - match: ["tone_empathy", "where is my order ord_1?"]
+      replies:
+        - parsed: {reasoning: Polite., evidence: [], result: pass, confidence: 0.95}
+    - match: ["task_completion", "cancel ord_2 for me"]
+      replies:
+        - parsed:
+            reasoning: The order was never cancelled although policy allows it.
+            evidence: [{seq: 2, quote: "I cannot cancel that order right now."}]
+            result: fail
+            confidence: 0.95
+    - match: ["tone_empathy", "cancel ord_2 for me"]
+      replies:
+        - parsed: {reasoning: Polite., evidence: [], result: pass, confidence: 0.95}

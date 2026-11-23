@@ -1,0 +1,6 @@
+id: tinyshop
+title: Tiny shop (test fixture)
+version: 1
+world: world.yaml
+personas: [per_cooperative]
+policy: policy.md

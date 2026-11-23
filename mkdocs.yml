@@ -1,0 +1,39 @@
+site_name: Gauntlet
+site_description: Simulate, record and evaluate AI agents in a mock world.
+docs_dir: docs
+site_dir: site
+strict: true
+exclude_docs: |
+  plan/
+  demo/
+  user/examples/
+theme:
+  name: material
+  font: false # offline build: no Google Fonts requests
+  features: [navigation.sections, content.code.copy]
+extra:
+  generator: false
+markdown_extensions:
+  - tables
+  - admonition
+  - toc:
+      permalink: true
+nav:
+  - Home: user/index.md
+  - Quickstart: user/quickstart.md
+  - Concepts: user/concepts.md
+  - Guides:
+      - Targets: user/guides/targets.md
+      - CI gate: user/guides/ci-gate.md
+      - Gateway and MCP: user/guides/gateway.md
+      - Production ingest and mining: user/guides/production.md
+      - Scanning an MCP server: user/guides/mcp-server.md
+  - Reference:
+      - CLI: user/reference/cli.md
+      - REST API: user/reference/api.md
+      - Check language: user/reference/check-language.md
+  - Threat taxonomy: user/reference/taxonomy.md
+  - Safety and responsible use: user/safety.md
+  - Benchmarks:
+      - Index: benchmarks/index.md
+      - DVA recall (live, 2026-11): benchmarks/dva-recall-live-2026-11.md
