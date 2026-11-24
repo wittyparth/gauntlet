@@ -49,6 +49,17 @@ export function seededHelpers(request: APIRequest) {
       }
       return found[0] as never;
     },
+    /**
+     * The seeded DVA SQL agent's first version. The launch specs need this agent but no findings,
+     * so they do not depend on the compose `dva` profile having produced a campaign.
+     */
+    async sqlAgentVersion(): Promise<{ agent_version_id: string }> {
+      const agents = (await items("/v1/agents?limit=200")) as { id: string; name: string }[];
+      const agent = agents.find((a) => a.name === "DVA SQL agent");
+      if (!agent) throw new Error("no DVA SQL agent: the e2e global setup seeds it (seed-security.ts)");
+      const versions = await items(`/v1/agents/${agent.id}/versions`);
+      return { agent_version_id: (versions[0] as { id: string }).id };
+    },
     async agent(): Promise<{ id: string; name: string }> {
       const agents = (await items("/v1/agents?limit=200")) as { id: string; name: string }[];
       // The seed's agent has runs; the onboarding spec creates extra agents without any.

@@ -2,7 +2,7 @@ import { errorEnvelope, expect, test } from "./fixtures";
 import { REMOTE_AGENT, SQL_AGENT } from "./seed-security";
 
 test("campaign launch: requires confirmation", async ({ page, seeded, shot, consoleErrors }) => {
-  const f = await seeded.finding();
+  const f = await seeded.sqlAgentVersion();
   let body: Record<string, unknown> | null = null;
   await page.route("**/api/gauntlet/v1/campaigns", async (route) => {
     body = route.request().postDataJSON() as Record<string, unknown>;
@@ -70,7 +70,7 @@ test("campaign launch: engaged kill switch blocks the launch", async ({ page, se
 });
 
 test("campaign launch: empty selection, loading and error states", async ({ page, seeded, shot, consoleErrors }) => {
-  const f = await seeded.finding();
+  const f = await seeded.sqlAgentVersion();
   const url = `/security/campaigns/new?version=${f.agent_version_id}`;
   await page.goto(url);
   await expect(page.getByTestId("category-list")).toBeVisible();
