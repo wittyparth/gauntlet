@@ -40,7 +40,7 @@ rep="$(get /v1/runs/run_demo/report)"
 expect "run_demo judged 10 episodes" 10 "$(echo "$rep" | jq_ "d['counted']")"
 eps="$(get '/v1/runs/run_demo/episodes?limit=50')"
 failed="$(echo "$eps" | jq_ "next((e['id'] for e in (d.get('items') or d) if e.get('outcome')=='failed'), '')")"
-[ -n "$failed" ] && ok "a failing episode exists ($failed)" || bad "no failing episode in run_demo"
+if [ -n "$failed" ]; then ok "a failing episode exists ($failed)"; else bad "no failing episode in run_demo"; fi
 expect "run_demo_b (compare partner) finished" "done" "$(get /v1/runs/run_demo_b | jq_ "d['status']")"
 expect "episode detail loads" 200 "$(code -H "Authorization: Bearer $KEY" "$BASE/v1/episodes/${failed:-none}")"
 expect "demo policy present" 200 "$(code -H "Authorization: Bearer $KEY" "$BASE/v1/policies/pol_demo")"

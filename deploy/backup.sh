@@ -39,4 +39,4 @@ chmod 600 "$out.tar.gz"
 # Retention: the newest KEEP archives survive.
 # shellcheck disable=SC2012
 ls -1t "$DEST"/*.tar.gz 2>/dev/null | tail -n +"$((KEEP + 1))" | xargs rm -f
-echo "done: $out.tar.gz ($(ls -1 "$DEST"/*.tar.gz | wc -l | tr -d ' ') kept, max $KEEP)"
+echo "done: $out.tar.gz ($(find "$DEST" -maxdepth 1 -name '*.tar.gz' | wc -l | tr -d ' ') kept, max $KEEP)"
