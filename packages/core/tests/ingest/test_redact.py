@@ -79,10 +79,7 @@ def test_camel_case_secret_keys_are_removed():
 
 
 def test_overlapping_spans_leave_no_tail():
-    r = (
-        red(extra_patterns=None)
-        if False
-        else Redactor(KEY, "c1", RedactionConfig((("id", r"AB\d{6}"), ("tail", r"\d{4}XY"))))
-    )
+    cfg = RedactionConfig((("id", r"AB\d{6}"), ("tail", r"\d{4}XY")))
+    r = Redactor(KEY, "c1", cfg)
     out = r.redact_text("ref AB123456XY end")
     assert "XY" not in out and "3456" not in out
