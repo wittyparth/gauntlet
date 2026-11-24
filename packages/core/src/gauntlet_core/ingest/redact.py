@@ -25,6 +25,14 @@ SECRET_KEYS = re.compile(
 )
 
 
+_CAMEL = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
+
+
+def is_secret_key(key: str) -> bool:
+    """`accessToken` and `clientSecret` count as well as `access_token`."""
+    return bool(SECRET_KEYS.search(_CAMEL.sub("_", key)))
+
+
 @dataclass(frozen=True)
 class RedactionConfig:
     extra_patterns: Sequence[tuple[str, str]] = ()  # (label, regex)
@@ -55,7 +63,9 @@ class Redactor:
         merged: list[tuple[int, int, str]] = []
         for s in spans:
             if merged and s[0] < merged[-1][1]:
-                continue  # overlaps an earlier, longer or earlier-starting span
+                if s[1] > merged[-1][1]:  # it runs past the earlier span: cover the tail too
+                    merged[-1] = (merged[-1][0], s[1], merged[-1][2])
+                continue
             merged.append(s)
         return merged
 
@@ -75,7 +85,7 @@ class Redactor:
         if isinstance(value, dict):
             out: dict[str, Any] = {}
             for k, v in value.items():
-                if isinstance(k, str) and SECRET_KEYS.search(k):
+                if isinstance(k, str) and is_secret_key(k):
                     self.counts["secret_key"] += 1
                     continue  # secret-named keys are removed, not masked
                 out[self.redact_text(k) if isinstance(k, str) else k] = self.redact_json(v)

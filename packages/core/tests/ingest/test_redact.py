@@ -68,3 +68,21 @@ def test_planted_values_gone_from_converted_events():
     for s in SECRETS:
         assert s not in blob, s
     assert "authorization" not in blob
+
+
+def test_camel_case_secret_keys_are_removed():
+    r = red()
+    out = r.redact_json(
+        {"accessToken": "abc", "clientSecret": "d", "sessionCookie": "e", "userName": "ok"}
+    )
+    assert out == {"userName": "ok"}
+
+
+def test_overlapping_spans_leave_no_tail():
+    r = (
+        red(extra_patterns=None)
+        if False
+        else Redactor(KEY, "c1", RedactionConfig((("id", r"AB\d{6}"), ("tail", r"\d{4}XY"))))
+    )
+    out = r.redact_text("ref AB123456XY end")
+    assert "XY" not in out and "3456" not in out
