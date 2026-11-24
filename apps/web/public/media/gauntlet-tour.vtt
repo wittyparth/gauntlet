@@ -1,0 +1,125 @@
+WEBVTT
+
+1
+00:00:02.600 --> 00:00:08.950
+Gauntlet tests, attacks and guards your AI agents. Here is every feature.
+
+2
+00:00:09.000 --> 00:00:14.617
+Simulated customers, with personas and goals, talk to your agent.
+
+3
+00:00:14.667 --> 00:00:19.583
+The report shows the pass rate, and the failing conversation.
+
+4
+00:00:19.633 --> 00:00:23.850
+Every verdict cites the exact event as evidence.
+
+5
+00:00:23.900 --> 00:00:26.850
+Each role has its own model.
+
+6
+00:00:26.900 --> 00:00:33.350
+Compare against a baseline: flips show what got better or worse.
+
+7
+00:00:33.400 --> 00:00:41.717
+Reliability shows how often it passes every time. Failures cluster.
+
+8
+00:00:41.767 --> 00:00:46.217
+Replay a failing episode against a new version.
+
+9
+00:00:46.267 --> 00:00:53.617
+The migration report compares versions.
+
+10
+00:00:53.667 --> 00:00:57.117
+Reviewers label episodes blind.
+
+11
+00:00:57.167 --> 00:01:03.283
+Labels calibrate rubrics. Until then, a rubric cannot gate a release.
+
+12
+00:01:03.333 --> 00:01:06.250
+A campaign attacks the agent.
+
+13
+00:01:06.300 --> 00:01:12.017
+It found a critical hole, with evidence and SARIF export.
+
+14
+00:01:12.067 --> 00:01:16.283
+Posture shows what was tested.
+
+15
+00:01:16.333 --> 00:01:22.083
+Scan MCP servers and lint agent code, right in the terminal.
+
+16
+00:01:22.133 --> 00:01:25.717
+A suggested rule, tested offline.
+
+17
+00:01:25.767 --> 00:01:31.017
+Enforce it, then verify the attacks now fail.
+
+18
+00:01:31.067 --> 00:01:36.283
+The gateway logs decisions. Risky calls wait for approval.
+
+19
+00:01:36.333 --> 00:01:40.650
+Pinning catches an MCP rug pull instantly.
+
+20
+00:01:40.700 --> 00:01:44.017
+In CI, the gate fails the build.
+
+21
+00:01:44.067 --> 00:01:49.917
+Results land as a pull request comment, plus a badge.
+
+22
+00:01:49.967 --> 00:01:55.883
+Ingest production traces. Personal data is redacted on arrival.
+
+23
+00:01:55.933 --> 00:02:00.950
+Failure mining drafts new scenarios from real failures.
+
+24
+00:02:01.000 --> 00:02:07.717
+Packs: enterprise access probes, banking, tau-bench and AgentDojo importers.
+
+25
+00:02:07.767 --> 00:02:12.083
+SLOs, schedules, alerts, and change impact.
+
+26
+00:02:12.133 --> 00:02:17.183
+Readiness gives a go or no-go, with a signed evidence pack.
+
+27
+00:02:17.233 --> 00:02:24.150
+Claude Code drives Gauntlet over MCP: list agents, start a small, capped run.
+
+28
+00:02:24.200 --> 00:02:28.517
+It polls until the run finishes.
+
+29
+00:02:28.567 --> 00:02:34.517
+Then it summarises the results, and the cost.
+
+30
+00:02:34.567 --> 00:02:40.850
+The public arena: attack a hardened agent.
+
+31
+00:02:40.900 --> 00:02:45.517
+Benchmarks publish our own numbers, good or bad.
