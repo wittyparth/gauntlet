@@ -10,6 +10,7 @@ function envelope(status: number, code: string, message: string) {
 
 async function forward(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   const { path } = await ctx.params;
+  if (path.some((seg) => seg === "." || seg === ".." || /[\\/]/.test(seg))) return envelope(404, "not_found", "Unknown path.");
   if (path[0] !== "arena" || path[1] !== "v1") return envelope(404, "not_found", "Unknown path.");
   const headers: Record<string, string> = {};
   const ct = req.headers.get("content-type");

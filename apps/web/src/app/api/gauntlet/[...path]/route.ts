@@ -9,6 +9,7 @@ function envelope(status: number, code: string, message: string) {
 
 async function forward(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   const { path } = await ctx.params;
+  if (path.some((seg) => seg === "." || seg === ".." || /[\\/]/.test(seg))) return envelope(404, "not_found", "Unknown path.");
   if (path[0] !== "v1") return envelope(404, "not_found", "Unknown path.");
   // The public benchmarks page reads this one route without signing in.
   const isPublic = req.method === "GET" && path.join("/") === "v1/meta/benchmarks";
