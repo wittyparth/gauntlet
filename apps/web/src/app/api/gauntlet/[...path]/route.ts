@@ -10,11 +10,13 @@ function envelope(status: number, code: string, message: string) {
 async function forward(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   const { path } = await ctx.params;
   if (path[0] !== "v1") return envelope(404, "not_found", "Unknown path.");
+  // The public benchmarks page reads this one route without signing in.
+  const isPublic = req.method === "GET" && path.join("/") === "v1/meta/benchmarks";
   const key = (await cookies()).get("gauntlet_key")?.value;
-  if (!key) return envelope(401, "unauthorized", "Sign in to continue.");
+  if (!key && !isPublic) return envelope(401, "unauthorized", "Sign in to continue.");
 
   const url = `${API}/${path.join("/")}${req.nextUrl.search}`;
-  const headers: Record<string, string> = { Authorization: `Bearer ${key}` };
+  const headers: Record<string, string> = key ? { Authorization: `Bearer ${key}` } : {};
   const accept = req.headers.get("accept");
   if (accept) headers.Accept = accept;
   const ct = req.headers.get("content-type");
