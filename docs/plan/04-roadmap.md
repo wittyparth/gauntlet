@@ -97,7 +97,7 @@ Definition of done: an attack suite against DVA produces findings with determini
 | P5-5 | DONE | Meta-evaluation studies and benchmark page: DVA recall, judge agreement, reproducibility, cost per 1,000 episodes |
 | P5-6 | DONE | MCP server for the platform; docs site; public challenge arena (one defended agent, levels, leaderboard) |
 | P5-7 | DONE | SLOs, change-impact analysis, launch readiness review, compliance evidence pack export |
-| L-R5 | LEAD | Final review, launch checklist |
+| L-R5 | DONE | Final review, launch checklist (docs/deploy/LAUNCH_CHECKLIST.md) |
 
 Phase 5 tasks are specified to the level of the other phases only when Phase 4 is done, because what gets built there should follow what real users of Phases 1 to 4 ask for.
 
