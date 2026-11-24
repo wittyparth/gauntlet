@@ -35,7 +35,6 @@ export function Hero() {
         </Blur>
         <Blur initialBlur={10} delay={260}>
           <p className="lp-abstract">
-            <span className="lp-fig-label">Abstract</span>
             Gauntlet simulates customers, red-teams your agent with 297 real attacks, turns each confirmed hole into a
             policy rule, then replays the attack to prove the rule holds. This page shows one real run, and the
             benchmarks that did not flatter us.
@@ -59,9 +58,9 @@ export function Hero() {
           <div className="lp-fig1-frame">
             <video
               ref={video}
-              controls
+              controls={playing}
               preload="none"
-              poster="/media/thumb.png"
+              poster="/media/poster.jpg"
               playsInline
               onPlay={() => setPlaying(true)}
               aria-label="Gauntlet product film, 2 minutes 49 seconds"
@@ -77,14 +76,12 @@ export function Hero() {
                 </span>
               </button>
             )}
-            <svg className="lp-fig1-axes" aria-hidden viewBox="0 0 100 100" preserveAspectRatio="none" style={{ inset: 0 }}>
-              <rect x="0" y="0" width="100" height="100" fill="none" stroke="var(--rule)" vectorEffect="non-scaling-stroke" />
-            </svg>
+            <span className="lp-fig1-rule" aria-hidden />
             <svg
               aria-hidden
               viewBox="0 0 100 10"
               preserveAspectRatio="none"
-              style={{ position: "absolute", left: 0, top: "100%", width: "100%", height: 12, marginTop: 6 }}
+              style={{ position: "absolute", left: 0, top: "100%", width: "100%", height: 12, marginTop: 12 }}
               className="lp-fig1-axes"
             >
               {Array.from({ length: 41 }, (_, i) => (
@@ -95,7 +92,7 @@ export function Hero() {
               aria-hidden
               viewBox="0 0 10 100"
               preserveAspectRatio="none"
-              style={{ position: "absolute", right: "100%", top: 0, width: 12, height: "100%", marginRight: 6 }}
+              style={{ position: "absolute", right: "100%", top: 0, width: 12, height: "100%", marginRight: 12 }}
               className="lp-fig1-axes"
             >
               {Array.from({ length: 19 }, (_, i) => (
@@ -106,13 +103,13 @@ export function Hero() {
               <span
                 key={t}
                 className="lp-fig1-tick"
-                style={{ left: `${t * 100}%`, top: "calc(100% + 22px)", transform: `translateX(-${t * 100}%)` }}
+                style={{ left: `${t * 100}%`, top: "calc(100% + 30px)", transform: `translateX(-${t * 100}%)` }}
               >
                 {clock(DURATION * t)}
               </span>
             ))}
           </div>
-          <figcaption id="fig1-cap" className="lp-cap" style={{ marginTop: "2.4rem" }}>
+          <figcaption id="fig1-cap" className="lp-cap" style={{ marginTop: "3.4rem" }}>
             <b>Fig. 1.</b> One real run, end to end. Live model spend: <span className="mono">$0.11</span>.
           </figcaption>
         </figure>

@@ -1,0 +1,29 @@
+/* frame, annotations, terminal, stack, rhythm */
+.lp-fig1-rule { position: absolute; inset: -6px; border: 1px solid var(--ink-dim); pointer-events: none; }
+.lp-fig1 { padding: 0 0 2.4rem 2.4rem; }
+.lp-panel svg text.an { font-size: 11px; fill: var(--r-green); }
+.lp-panel svg text.an.fail { fill: var(--fail); }
+.lp-rel-annot { display: flex; flex-wrap: wrap; gap: 0.4rem 1.5rem; font-size: 0.875rem; color: var(--ink); margin-bottom: 1rem; }
+.lp-rel-annot > span { display: inline-flex; align-items: baseline; gap: 0; white-space: pre; }
+.lp-stackfig svg text { paint-order: stroke; stroke: var(--plate); stroke-width: 4px; stroke-linejoin: round; }
+.lp-rel-annot > span:first-child { color: var(--r-yellow); }
+.lp-rel-txt { margin-top: 1.5rem; max-width: 44ch; color: var(--ink-dim); }
+.lp-band { background: var(--plate-deep); border-block: 1px solid var(--rule); }
+.lp-band .lp-sec { border-top: 0; }
+.lp-h2-xl { font-size: clamp(2.4rem, 5.6vw, 5.2rem); letter-spacing: -0.045em; }
+.lp-plates { display: grid; gap: 2.5rem; }
+.lp-term-plate { position: relative; display: flex; gap: 0.9rem; border-block: 1px solid var(--ink-dim); padding: 1rem 3.4rem 1rem 0; background: var(--plate-deep); }
+.lp-term-ticks { display: grid; align-content: start; width: 0.7rem; border-right: 1px solid var(--ink-dim); }
+.lp-term-ticks i { display: block; height: 1.75em; position: relative; font-size: 0.8125rem; }
+.lp-term-ticks i::after { content: ""; position: absolute; right: 0; top: 50%; width: 0.45rem; border-top: 1px solid var(--ink-dim); }
+.lp-term { margin: 0; border: 0; padding: 0; flex: 1; min-width: 0; font-family: var(--f-mono); font-size: 0.8125rem; line-height: 1.75; color: var(--ink); overflow-x: auto; white-space: pre; }
+.lp-term .c { color: var(--ink-dim); }
+.lp-caret { display: inline-block; width: 0.55em; height: 1.05em; margin-left: 2px; vertical-align: text-bottom; background: var(--r-yellow); animation: lp-blink 1.05s steps(1) infinite; }
+@keyframes lp-blink { 50% { opacity: 0; } }
+.lp-copy { position: absolute; top: 0.6rem; right: 0.6rem; display: grid; place-items: center; width: 2.2rem; height: 2.2rem; background: transparent; border: 1px solid var(--rule); color: var(--ink); cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+.lp-copy:hover { border-color: var(--r-yellow); color: var(--r-yellow); }
+.lp-stackfig svg { width: 100%; height: auto; display: block; overflow: visible; }
+.lp-stackfig svg text { font-family: var(--f-mono); font-size: 9.5px; fill: var(--ink-dim); }
+.lp-stackfig svg text.nm { font-size: 11px; fill: var(--ink); }
+.lp-cap code { font-family: var(--f-mono); font-size: 0.85em; color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .lp-caret { animation: none; } }

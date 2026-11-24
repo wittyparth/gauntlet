@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Hero } from "./hero";
 import { Panels } from "./panels";
 import { Reliability } from "./reliability";
+import { Stack, Terminal } from "./terminal";
 
 const RUNS = [
   { run: "Run 1", what: "library attacks, three agents", hits: 4, of: 12, recall: "4/12", fp: "20", fpTone: "bad", cost: "$0.24", note: "297-attack library, live models. The control was not clean: echo and decode objectives fired on a fixed world." },
@@ -26,7 +27,7 @@ export default function LandingPage() {
       <header className="lp-wrap">
         <div className="lp-mast">
           <Link href="/landing" className="lp-mast-name">
-            Gauntlet<span>Plate 1, results</span>
+            Gauntlet
           </Link>
           <nav className="lp-nav" aria-label="Primary">
             <a href="#film">Film</a>
@@ -58,6 +59,7 @@ export default function LandingPage() {
           <Reliability />
         </section>
 
+        <div className="lp-band">
         <section className="lp-wrap lp-sec" id="results" aria-labelledby="results-h">
           <div className="lp-sec-head">
             <h2 className="lp-h2" id="results-h">
@@ -115,6 +117,7 @@ export default function LandingPage() {
             </Link>
           </div>
         </section>
+        </div>
 
         <section className="lp-wrap lp-sec" aria-labelledby="where-h">
           <div className="lp-sec-head">
@@ -165,16 +168,9 @@ export default function LandingPage() {
                 Open source. The repository and licence are published with the first release.
               </p>
             </div>
-            <div>
-              <div className="lp-fig-label" style={{ marginBottom: "0.8rem" }}>
-                <b>Fig. 4</b> self-host quick start
-              </div>
-              <pre className="lp-term" aria-label="Self-host commands">
-                <span className="c"># any Ubuntu or Debian VPS, 4 GB RAM or more{"\n"}</span>
-                git clone &lt;repo-url&gt; /opt/gauntlet &amp;&amp; cd /opt/gauntlet{"\n"}
-                sudo ./deploy/bootstrap.sh --domain gauntlet.example.com{"\n"}
-                <span className="c"># prints the admin key once; open the site and paste it</span>
-              </pre>
+            <div className="lp-plates">
+              <Terminal />
+              <Stack />
             </div>
           </div>
         </section>
@@ -182,7 +178,7 @@ export default function LandingPage() {
         <section className="lp-wrap lp-sec" aria-labelledby="close-h">
           <div className="lp-close">
             <div>
-              <h2 className="lp-h2" id="close-h">
+              <h2 className="lp-h2 lp-h2-xl" id="close-h">
                 Read the figures, then break something.
               </h2>
               <p className="lp-prose lp-prose-dim" style={{ marginTop: "1.5rem" }}>

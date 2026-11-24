@@ -3,6 +3,7 @@ import { Fragment_Mono, Host_Grotesk } from "next/font/google";
 import type { ReactNode } from "react";
 
 import "./landing.css";
+import "./landing-figures.css";
 
 const display = Host_Grotesk({ variable: "--font-lp-display", subsets: ["latin"], display: "swap" });
 const mono = Fragment_Mono({ variable: "--font-lp-mono", subsets: ["latin"], weight: "400", display: "swap" });
