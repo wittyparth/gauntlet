@@ -43,7 +43,10 @@ export function seededHelpers(request: APIRequest) {
     },
     /** The first finding of the seeded DVA SQL campaign. */
     async finding(): Promise<{ id: string; title: string; agent_version_id: string }> {
-      const found = await items("/v1/findings?limit=200");
+      // Prefer the seeded DVA SQL agent's findings (they carry reproducers and evidence).
+      const sql = await this.sqlAgentVersion().catch(() => null);
+      const scoped = sql ? await items(`/v1/findings?limit=200&agent_version_id=${sql.agent_version_id}`) : [];
+      const found = scoped.length > 0 ? scoped : await items("/v1/findings?limit=200");
       if (found.length === 0) {
         throw new Error("no findings: start compose with the dva profile (DVA_BRAIN=scripted) and re-run e2e");
       }

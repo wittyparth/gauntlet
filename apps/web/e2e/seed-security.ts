@@ -43,7 +43,7 @@ async function ensureAgentVersion(
 /**
  * Seeds a campaign with findings through the API: the DVA SQL world and its agent (scripted brain,
  * compose profile `dva`, `DVA_BRAIN=scripted`), one benign suite, an unverified remote agent, and a
- * small `tool_injection` campaign that the scripted fake gateway runs without any model call.
+ * small `excessive_agency` campaign that the scripted fake gateway runs without any model call.
  * Idempotent: the campaign only runs when no finding exists yet.
  */
 export async function seedSecurity(ctx: APIRequestContext): Promise<void> {
@@ -73,7 +73,8 @@ export async function seedSecurity(ctx: APIRequestContext): Promise<void> {
     projectId,
   );
 
-  const have = (await (await ctx.get("/api/gauntlet/v1/findings?limit=1")).json()).items as unknown[];
+  // Findings of the SQL agent specifically: a dev database may already hold other agents' findings.
+  const have = (await (await ctx.get(`/api/gauntlet/v1/findings?limit=1&agent_version_id=${version}`)).json()).items as unknown[];
   if (have.length > 0) return;
   const camp = await must(
     await ctx.post("/api/gauntlet/v1/campaigns", {
@@ -81,7 +82,7 @@ export async function seedSecurity(ctx: APIRequestContext): Promise<void> {
         agent_version_id: version,
         world_id: "dva_sql",
         benign_scenario_ids: scenarios.map((s) => s.id),
-        categories: ["tool_injection"],
+        categories: ["excessive_agency"],
         max_attacks: 6,
         budget_usd_micros: 5_000_000,
       },
