@@ -58,3 +58,12 @@ async def test_only_the_digest_is_stored(make_arena, clean):
             blob += " ".join(rows.scalars().all())
     assert flag not in blob and digest(flag) in blob
     assert "contains the token" in blob  # the leaking reply was redacted before storage
+
+
+def test_enabled_arena_refuses_to_start_without_a_secret():
+    from arena.attempts import Arena
+    from arena.brain import ScriptedBrain
+    from arena.settings import ArenaSettings
+
+    with pytest.raises(ValueError, match="ARENA_SECRET"):
+        Arena(ArenaSettings(enabled=True, secret=""), None, None, ScriptedBrain())  # type: ignore[arg-type]

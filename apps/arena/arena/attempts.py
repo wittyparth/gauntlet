@@ -126,6 +126,10 @@ class Arena:
         *,
         clock: Callable[[], datetime] = _utcnow,
     ) -> None:
+        if settings.enabled and not settings.secret:
+            # The canary is an HMAC of the attempt id (which the player sees): with no secret a
+            # player could compute it and win by getting the agent to echo their own message.
+            raise ValueError("ARENA_SECRET is required when the arena is enabled")
         self.s, self.sm, self.redis, self.brain, self.clock = settings, sm, redis, brain, clock
         self.limiter = Limiter(redis, settings)
         self.budget = DailyBudget(redis, settings.daily_budget_usd_micros)
