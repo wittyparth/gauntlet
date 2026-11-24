@@ -16,6 +16,7 @@ import random
 import signal
 import socket
 import time
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 import httpx
@@ -28,9 +29,11 @@ from gauntlet_core.engine import (
 from gauntlet_core.ids import new_id
 from gauntlet_core.runner import MAX_ATTEMPTS, EpisodeOutcome, RunnerDeps, execute_with_attempts
 from gauntlet_core.schema import EventDraft
-from gauntlet_core.targets import UrlPolicy
+from gauntlet_core.targets import GuardedTransport, UrlPolicy
+from gauntlet_core.targets.safety import resolve_host
 from sqlalchemy import text
 
+from .config import Settings
 from .deps import AppState
 from .events import PublishingJournalStore
 from .facade import RemoteFacade
@@ -59,6 +62,20 @@ __all__ = ["Worker", "main"]
 log = logging.getLogger("gauntlet.worker")
 
 
+def target_transport(
+    s: Settings,
+    limiter: HostLimiter,
+    inner: httpx.AsyncBaseTransport | None = None,
+    resolver: Callable[[str], Awaitable[list[str]]] = resolve_host,
+) -> httpx.AsyncBaseTransport:
+    """The worker's client for remote targets: per-host limits over the SSRF guard. The guard
+    resolves every hostname at request time, so a verified host whose DNS later points at a
+    private address (metadata service, the stack's own services) is refused."""
+    policy = UrlPolicy(allow_private=s.allow_private_targets, local_hosts=s.local_target_hosts)
+    guarded = GuardedTransport(inner or httpx.AsyncHTTPTransport(), policy, resolver)
+    return LimitedTransport(guarded, limiter, s.local_target_hosts)
+
+
 class Worker:
     def __init__(
         self,
@@ -78,9 +95,9 @@ class Worker:
         self.poll_s = poll_interval_s if poll_interval_s is not None else s.poll_interval_s
         self._own_http: httpx.AsyncClient | None = None
         if http is None and state.redis is not None:
-            limiter = HostLimiter(state.redis)
-            transport = LimitedTransport(httpx.AsyncHTTPTransport(), limiter, s.local_target_hosts)
-            http = self._own_http = httpx.AsyncClient(transport=transport)
+            http = self._own_http = httpx.AsyncClient(
+                transport=target_transport(s, HostLimiter(state.redis))
+            )
         self.http = http or state.http
         # attack episodes in flight: episode id -> (run id, workspace id), for the kill switch
         self._attack_eps: dict[str, tuple[str, str]] = {}
