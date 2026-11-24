@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { hostCovered, isLoopback, targetHost } from "@/components/findings/finding-utils";
 import { LoaderCircle } from "@/components/animate-ui/icons/loader-circle";
+import { ChevronDown } from "@/components/animate-ui/icons/chevron-down";
 import { Rocket } from "@/components/animate-ui/icons/rocket";
 import { LiveNumber } from "@/components/shared/live-number";
 import { StatCard } from "@/components/shared/stat-card";
@@ -20,9 +21,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { useAttackList, useTaxonomy } from "@/lib/api/hooks/attacks";
 import { useScenarioList, useSuiteList } from "@/lib/api/hooks/read";
 import {
@@ -44,6 +47,8 @@ import {
   confirmationMatches,
   filterAttacks,
   isNarrowed,
+  parseAttackIds,
+  unknownAttackIds,
   type LibraryFilters,
 } from "./campaign-schema";
 import { versionLabel } from "./version-picker";
@@ -76,6 +81,8 @@ export function CampaignForm() {
   const [reps, setReps] = useState("1");
   const [maxAttacks, setMaxAttacks] = useState("50");
   const [budget, setBudget] = useState("2.00");
+  const [attackIdsRaw, setAttackIdsRaw] = useState("");
+  const [injectTarget, setInjectTarget] = useState("");
   const [confirming, setConfirming] = useState(false);
   const [typed, setTyped] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -136,9 +143,13 @@ export function CampaignForm() {
   const maxBudget = scope.data?.max_run_budget_usd_micros;
   const overScope = parsed.success && maxBudget !== undefined && budgetMicros(parsed.data.budget_dollars) > maxBudget;
   const engaged = kill.data?.engaged === true;
-  const attackCount = Math.min(matched.length, Number(maxAttacks) > 0 ? Number(maxAttacks) : matched.length);
-  const noMatches = parsed.success && matched.length === 0;
-  const canReview = parsed.success && !overScope && !engaged && !noMatches && !!suite && suite.scenarios.length > 0;
+  const explicitIds = useMemo(() => parseAttackIds(attackIdsRaw), [attackIdsRaw]);
+  const unknownIds = useMemo(() => unknownAttackIds(explicitIds, library.data ?? []), [explicitIds, library.data]);
+  const explicit = explicitIds.length > 0;
+  const available = explicit ? explicitIds.length - unknownIds.length : matched.length;
+  const attackCount = Math.min(available, Number(maxAttacks) > 0 ? Number(maxAttacks) : available);
+  const noMatches = parsed.success && available === 0;
+  const canReview = parsed.success && unknownIds.length === 0 && !overScope && !engaged && !noMatches && !!suite && suite.scenarios.length > 0;
   const agentName = selected?.item.agentName ?? "";
 
   async function launch() {
@@ -148,9 +159,12 @@ export function CampaignForm() {
         agent_version_id: selected.item.version.id,
         world_id: selected.item.version.world_id ?? "",
         benign_scenario_ids: suite.scenarios,
-        ...(isNarrowed(filters)
-          ? { attack_ids: matched.map((a) => a.id), categories: null }
-          : { categories: filters.categories, attack_ids: null }),
+        ...(explicit
+          ? { attack_ids: explicitIds, categories: null }
+          : isNarrowed(filters)
+            ? { attack_ids: matched.map((a) => a.id), categories: null }
+            : { categories: filters.categories, attack_ids: null }),
+        ...(injectTarget.trim() ? { inject_target: injectTarget.trim() } : {}),
         mode: adaptive ? "adaptive" : "static",
         mutations: [],
         seed: 0,
@@ -236,6 +250,38 @@ export function CampaignForm() {
           </Label>
         </div>
       ) : null}
+
+      <Collapsible className="flex flex-col gap-3" data-testid="advanced">
+        <CollapsibleTrigger className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-sm font-medium">
+          <ChevronDown size={14} animateOnHover />
+          Advanced
+        </CollapsibleTrigger>
+        <CollapsibleContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="camp-attack-ids">Attack ids</Label>
+            <Textarea
+              id="camp-attack-ids"
+              className="font-mono text-xs"
+              rows={2}
+              placeholder="atk_001, atk_002"
+              value={attackIdsRaw}
+              onChange={(e) => setAttackIdsRaw(e.target.value)}
+              aria-invalid={unknownIds.length > 0}
+            />
+            <p className="text-muted-foreground text-xs">
+              Comma separated ids from the attack library ({library.data?.length ?? 0} available). When set, these replace the category and filter selection.
+            </p>
+            {unknownIds.length > 0 ? (
+              <p role="alert" className="text-destructive text-xs">Not in the library: {unknownIds.slice(0, 5).join(", ")}{unknownIds.length > 5 ? ", ..." : ""}</p>
+            ) : null}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="camp-inject">Injection target</Label>
+            <Input id="camp-inject" className="font-mono text-xs" placeholder="orders/ord_1001/notes" value={injectTarget} onChange={(e) => setInjectTarget(e.target.value)} autoComplete="off" />
+            <p className="text-muted-foreground text-xs">A tool name or state path where tool-result attacks inject. Default: the first untrusted tool of the world.</p>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3" aria-live="polite">
         <StatCard name="attacks" label="Attacks selected" value={<LiveNumber value={attackCount} />} hint="Library attacks matching your filters, capped by Max attacks" />

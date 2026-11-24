@@ -54,3 +54,14 @@ export function benignSuites<T extends SuiteLike>(suites: T[], scenarios: Scenar
       (worldId === null || s.scenarios.every((id) => world.get(id) === worldId)),
   );
 }
+
+/** Advanced attack ids: comma, space or newline separated; blanks and repeats dropped. */
+export function parseAttackIds(raw: string): string[] {
+  return [...new Set(raw.split(/[\s,]+/).filter((x) => x !== ""))];
+}
+
+/** Ids that are not in the attack library. */
+export const unknownAttackIds = (ids: string[], library: Attack[]): string[] => {
+  const known = new Set(library.map((a) => a.id));
+  return ids.filter((id) => !known.has(id));
+};

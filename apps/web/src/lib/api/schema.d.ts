@@ -2395,6 +2395,8 @@ export interface components {
              * @default 0
              */
             seed: number;
+            /** Inject Target */
+            inject_target?: string | null;
         };
         /** CampaignOut */
         CampaignOut: {

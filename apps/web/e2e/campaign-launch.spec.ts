@@ -116,3 +116,30 @@ test("campaign launch: a real campaign produces findings", async ({ page, seeded
   await page.goto("/findings");
   await expect(page.getByTestId("finding-row").first()).toBeVisible();
 });
+
+test("campaign launch: advanced attack ids and inject target are sent (mocked POST)", async ({ page, seeded, consoleErrors }) => {
+  const f = await seeded.finding();
+  let body: Record<string, unknown> | null = null;
+  await page.route("**/api/gauntlet/v1/campaigns", async (route) => {
+    body = route.request().postDataJSON() as Record<string, unknown>;
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({ campaign_id: "run_mock_adv", run: { id: "run_mock_adv" }, attack_count: 1, skipped: [] }),
+    });
+  });
+  await page.goto(`/security/campaigns/new?version=${f.agent_version_id}`);
+  await expect(page.getByTestId("category-list")).toBeVisible();
+  await page.getByTestId("advanced").getByText("Advanced", { exact: true }).click();
+  await page.getByLabel("Attack ids").fill("atk_does_not_exist");
+  await expect(page.getByText(/Not in the library: atk_does_not_exist/)).toBeVisible();
+  await page.getByLabel("Attack ids").fill("");
+  await page.getByLabel("Injection target").fill("orders/ord_1001/notes");
+  await page.getByRole("button", { name: "Review and launch" }).click();
+  const dialog = page.getByRole("alertdialog");
+  await dialog.getByLabel(/Type/).fill((await dialog.locator("span.font-mono").first().innerText()).trim());
+  await dialog.getByRole("button", { name: "Launch campaign" }).click();
+  await expect(page).toHaveURL(/\/runs\/run_mock_adv/);
+  expect(body).toMatchObject({ inject_target: "orders/ord_1001/notes" });
+  consoleErrors.splice(0);
+});

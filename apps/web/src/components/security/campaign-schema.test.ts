@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Attack } from "@/lib/api/hooks/attacks";
 
-import { benignSuites, campaignSchema, confirmationMatches, filterAttacks, isNarrowed, sourceFamily } from "./campaign-schema";
+import { benignSuites, campaignSchema, confirmationMatches, filterAttacks, isNarrowed, parseAttackIds, sourceFamily, unknownAttackIds } from "./campaign-schema";
 
 const a = (id: string, category: string, vector: string, source: string, title = id) =>
   ({ id, category, vector, source, title, technique: "t" }) as unknown as Attack;
@@ -48,5 +48,15 @@ describe("campaign form helpers", () => {
     ];
     expect(benignSuites(suites, scenarios, "w1").map((s) => s.id)).toEqual(["a"]);
     expect(benignSuites(suites, scenarios, "w2").map((s) => s.id)).toEqual(["b"]);
+  });
+});
+
+describe("advanced attack ids", () => {
+  it("splits on commas and whitespace and dedupes", () => {
+    expect(parseAttackIds("a1, a2\na1  a3,")).toEqual(["a1", "a2", "a3"]);
+    expect(parseAttackIds("  ")).toEqual([]);
+  });
+  it("finds ids missing from the library", () => {
+    expect(unknownAttackIds(["a1", "zz"], [{ id: "a1" } as never])).toEqual(["zz"]);
   });
 });
