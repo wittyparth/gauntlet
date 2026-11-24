@@ -24,7 +24,12 @@ test("findings: shows seeded data", async ({ page, seeded, shot }) => {
 
 test("findings: filters by severity from the URL and searches", async ({ page, seeded }) => {
   await seeded.finding();
-  await page.goto("/findings?severity=critical");
+  // A severity no finding has, whatever the dev database already holds.
+  const all = (await (await page.request.get("/api/gauntlet/v1/findings?limit=200")).json()).items as { severity: string }[];
+  const present = new Set(all.map((f) => f.severity));
+  const absent = ["critical", "high", "medium", "low"].find((sev) => !present.has(sev));
+  test.skip(!absent, "every severity has a finding in this database");
+  await page.goto(`/findings?severity=${absent}`);
   await expect(page.getByTestId("empty-state")).toContainText("No findings match these filters");
   await page.goto("/findings");
   await page.getByLabel("Search findings").fill("zzz-no-such-finding");
