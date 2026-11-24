@@ -97,3 +97,22 @@ async def test_identical_versions_select_nothing_and_errors(client, sm):
         "/v1/impact", json={"from_version": "agv_demo", "to_version": same, "policy_from": "p"}
     )
     assert half.status_code == 422
+
+
+async def test_nested_target_prompt_change_is_a_prompt_change_not_unknown(client, sm):
+    """Stored configs nest model, prompt and tools under `target`; that must be classified."""
+    await seed(client)
+    async with sm() as s, s.begin():
+        await s.execute(
+            text(
+                "INSERT INTO agent_versions (id, workspace_id, agent_id, label, config, world_id) "
+                "SELECT 'agv_t6', workspace_id, agent_id, 'agv_t6', "
+                "jsonb_set(config, '{target,system_prompt}', '\"a different prompt\"'), world_id "
+                "FROM agent_versions WHERE id = 'agv_demo'"
+            )
+        )
+    out = (
+        await client.post("/v1/impact", json={"from_version": "agv_demo", "to_version": "agv_t6"})
+    ).json()
+    assert out["change"]["prompt"] and not out["full_run"]
+    assert 0 < len(out["scenario_ids"]) < out["total_scenarios"]

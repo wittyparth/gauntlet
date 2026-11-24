@@ -198,6 +198,15 @@ async def _flipped(s: AsyncSession, ws: str, agent_id: str) -> frozenset[str]:
     return frozenset(sid for sid, v in seen.items() if len(v) > 1)
 
 
+def _target_view(config: dict[str, Any]) -> dict[str, Any]:
+    """The fields `classify_change` compares: a stored config nests them under `target`
+    (model, system_prompt, tools, ...); the profile and other sections do not change what runs."""
+    nested = config.get("target")
+    if not isinstance(nested, dict):
+        return dict(config)
+    return nested | {k: v for k, v in config.items() if k not in ("target", "profile")}
+
+
 async def impact_for_versions(s: AsyncSession, ws: str, body: ImpactIn) -> ImpactOut:
     old, new = await _version(s, ws, body.from_version), await _version(s, ws, body.to_version)
     clauses = await _changed_clauses(s, ws, body.policy_from, body.policy_to)
@@ -205,7 +214,10 @@ async def impact_for_versions(s: AsyncSession, ws: str, body: ImpactIn) -> Impac
         {w for w in {old.world_id, new.world_id} if w} if old.world_id != new.world_id else set()
     )
     change = classify_change(
-        old.config, new.config, policy_clauses=frozenset(clauses), worlds=frozenset(worlds)
+        _target_view(old.config),
+        _target_view(new.config),
+        policy_clauses=frozenset(clauses),
+        worlds=frozenset(worlds),
     )
     history = await _history(s, ws, old)
     out = compute_impact(change, history, seed=f"{old.id}:{new.id}")
