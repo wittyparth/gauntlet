@@ -16,13 +16,39 @@ const r2 = (v: number) => Math.round(v * 100) / 100;
 const xOf = (k: number) => X0 + ((k - 0.5) * (X1 - X0)) / 8;
 const yOf = (v: number) => r2(Y0 - (Y0 - Y1) * v);
 
-/** 95% Wilson interval for a proportion p observed over n trials. */
-function wilson(p: number, n: number): [number, number] {
-  const z = 1.96;
+/** Wilson score interval, the product's fallback when a bootstrap collapses to a point. */
+function wilson(s: number, n: number): [number, number] {
+  const z = 1.959963984540054;
+  const p = s / n;
   const d = 1 + (z * z) / n;
   const c = (p + (z * z) / (2 * n)) / d;
   const h = (z * Math.sqrt((p * (1 - p)) / n + (z * z) / (4 * n * n))) / d;
   return [Math.max(0, c - h), Math.min(1, c + h)];
+}
+
+/**
+ * 95% interval as the product computes it (gauntlet_core.stats.passk): a percentile bootstrap over
+ * scenarios, widened to contain the point, with a Wilson fallback when it has zero width. The
+ * bootstrap distribution of s successes in n scenarios is Binomial(n, s/n); its quantiles are exact here.
+ */
+function interval(pk: number, n: number): [number, number] {
+  const s = Math.round(pk * n);
+  const q = s / n;
+  if (s === 0 || s === n) return wilson(s, n);
+  const lf = [0];
+  for (let i = 1; i <= n; i++) lf.push(lf[i - 1] + Math.log(i));
+  let cdf = 0;
+  let lo = -1;
+  let hi = n;
+  for (let x = 0; x <= n; x++) {
+    cdf += Math.exp(lf[n] - lf[x] - lf[n - x] + x * Math.log(q) + (n - x) * Math.log(1 - q));
+    if (lo < 0 && cdf >= 0.025) lo = x;
+    if (cdf >= 0.975) {
+      hi = x;
+      break;
+    }
+  }
+  return [Math.min(lo, s) / n, Math.max(hi, s) / n];
 }
 /** Episodes accumulated by step k: 10 at k=1 up to 160 at k=8. A function of k alone. */
 const episodesAt = (k: number) => Math.round(10 * Math.pow(16, (k - 1) / 7));
@@ -30,7 +56,7 @@ const spring = { type: "spring", stiffness: 140, damping: 22 } as const;
 
 function Bar({ k, active, n }: { k: number; active: boolean; n: number }) {
   const p = Math.pow(P, k);
-  const [lo, hi] = wilson(p, n);
+  const [lo, hi] = interval(p, n);
   const yHi = yOf(hi);
   const yLo = yOf(lo);
   const x = xOf(k);
@@ -57,7 +83,7 @@ export function Reliability() {
 
   const n = episodesAt(k);
   const p = Math.pow(P, k);
-  const [lo, hi] = wilson(p, n);
+  const [lo, hi] = interval(p, n);
   const pct = (v: number) => Math.round(v * 100);
 
   return (
@@ -109,7 +135,7 @@ export function Reliability() {
               </text>
             </svg>
             <figcaption className="lp-cap">
-              <b>Fig. 3.</b> pass<sup>k</sup> with 95% Wilson intervals for an agent that passes{" "}
+              <b>Fig. 3.</b> pass<sup>k</sup> with 95% bootstrap intervals, the product&apos;s method, for an agent that passes{" "}
               <span className="mono">90%</span> of single attempts: by k = 8 it passes all eight about{" "}
               <span className="mono">43%</span> of the time. <b>Illustrative:</b> the 90% is assumed, not measured. The
               product computes the real curve per agent (the demo agent&apos;s scorecard reads pass<sup>1</sup>{" "}

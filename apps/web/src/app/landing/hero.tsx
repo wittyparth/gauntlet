@@ -55,7 +55,7 @@ export function Hero() {
 
       <Blur initialBlur={18} delay={200}>
         <figure className="lp-fig1" aria-labelledby="fig1-cap">
-          <div className="lp-fig1-frame">
+          <div className="lp-fig1-frame" data-playing={playing ? "true" : "false"}>
             <video
               ref={video}
               controls={playing}
@@ -76,12 +76,11 @@ export function Hero() {
                 </span>
               </button>
             )}
-            <span className="lp-fig1-rule" aria-hidden />
             <svg
               aria-hidden
               viewBox="0 0 100 10"
               preserveAspectRatio="none"
-              style={{ position: "absolute", left: 0, top: "100%", width: "100%", height: 12, marginTop: 12 }}
+              style={{ position: "absolute", left: 0, top: "100%", width: "100%", height: 12, marginTop: 9 }}
               className="lp-fig1-axes"
             >
               {Array.from({ length: 41 }, (_, i) => (
@@ -92,7 +91,7 @@ export function Hero() {
               aria-hidden
               viewBox="0 0 10 100"
               preserveAspectRatio="none"
-              style={{ position: "absolute", right: "100%", top: 0, width: 12, height: "100%", marginRight: 12 }}
+              style={{ position: "absolute", left: "auto", bottom: "auto", right: "100%", top: 0, width: 12, height: "100%", marginRight: 9 }}
               className="lp-fig1-axes"
             >
               {Array.from({ length: 19 }, (_, i) => (
@@ -103,7 +102,7 @@ export function Hero() {
               <span
                 key={t}
                 className="lp-fig1-tick"
-                style={{ left: `${t * 100}%`, top: "calc(100% + 30px)", transform: `translateX(-${t * 100}%)` }}
+                style={{ left: `${t * 100}%`, top: "calc(100% + 26px)", transform: `translateX(-${t * 100}%)` }}
               >
                 {clock(DURATION * t)}
               </span>

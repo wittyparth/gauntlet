@@ -40,11 +40,6 @@ export function Terminal() {
   return (
     <figure ref={ref} className="lp-termfig">
       <div className="lp-term-plate">
-        <div className="lp-term-ticks" aria-hidden>
-          {LINES.map((_, i) => (
-            <i key={i} />
-          ))}
-        </div>
         <pre className="lp-term" aria-label="Self-host commands">
           {LINES.map((l, i) => {
             const take = Math.max(0, Math.min(l.t.length, shown - starts[i]));
@@ -72,51 +67,47 @@ export function Terminal() {
 }
 
 const NODES = [
-  { id: "caddy", x: 40, y: 80, sub: ":443, TLS" },
-  { id: "web", x: 190, y: 40, sub: "Next.js console" },
-  { id: "api", x: 190, y: 120, sub: "FastAPI, /v1" },
-  { id: "worker", x: 190, y: 200, sub: "runs, replays" },
-  { id: "postgres", x: 350, y: 40, sub: "pgvector" },
-  { id: "redis", x: 350, y: 120, sub: "queue" },
-  { id: "minio", x: 350, y: 200, sub: "artifacts" },
+  { id: "caddy", x: 40, y: 130, sub: ":443, TLS" },
+  { id: "web", x: 230, y: 50, sub: "Next.js console" },
+  { id: "api", x: 230, y: 130, sub: "FastAPI, /v1" },
+  { id: "worker", x: 230, y: 210, sub: "runs, replays" },
+  { id: "postgres", x: 450, y: 50, sub: "pgvector" },
+  { id: "redis", x: 450, y: 130, sub: "queue" },
+  { id: "minio", x: 450, y: 210, sub: "artifacts" },
 ] as const;
-const EDGES: [string, string][] = [
-  ["caddy", "web"],
-  ["caddy", "api"],
-  ["web", "api"],
-  ["api", "postgres"],
-  ["api", "redis"],
-  ["api", "minio"],
-  ["worker", "postgres"],
-  ["worker", "redis"],
-  ["worker", "minio"],
+
+/** Orthogonal routes only: each bus runs in a gutter between columns, so no wire crosses a label. */
+const WIRES = [
+  "M40 130 H130", // caddy to bus 1
+  "M130 50 V130 M130 50 H230 M130 130 H230", // bus 1 to web (pages) and api (/v1)
+  "M230 50 V130", // web to api
+  "M230 130 H450 M230 210 H450", // api and worker to the data column
+  "M380 50 V210 M380 50 H450 M380 210 H450", // data bus
 ];
 
 export function Stack() {
-  const at = (id: string) => NODES.find((n) => n.id === id)!;
   return (
     <figure className="lp-stackfig">
-      <svg viewBox="0 0 430 252" role="img" aria-label="Compose services: Caddy fronts web and api; api and worker use Postgres, Redis and MinIO.">
-        {[40, 190, 350].map((x, i) => (
+      <svg viewBox="0 0 560 276" role="img" aria-label="Compose services: Caddy fronts web and api; api and worker use Postgres, Redis and MinIO.">
+        <line x1="10" x2="550" y1="248" y2="248" stroke="var(--ink-dim)" />
+        {[40, 230, 450].map((x, i) => (
           <g key={x}>
-            <line x1={x} x2={x} y1="14" y2="226" stroke="var(--rule-faint)" />
-            <line x1={x} x2={x} y1="226" y2="232" stroke="var(--ink-dim)" />
-            <text x={x} y="246" textAnchor="middle">
+            <line x1={x} x2={x} y1="248" y2="254" stroke="var(--ink-dim)" />
+            <text x={x} y="270" textAnchor="middle" className="ax">
               {["edge", "app", "data"][i]}
             </text>
           </g>
         ))}
-        <line x1="10" x2="420" y1="226" y2="226" stroke="var(--ink-dim)" />
-        {EDGES.map(([a, b]) => (
-          <line key={a + b} x1={at(a).x} y1={at(a).y} x2={at(b).x} y2={at(b).y} stroke="var(--r-teal)" strokeWidth="1.2" opacity="0.75" />
+        {WIRES.map((d) => (
+          <path key={d} d={d} fill="none" stroke="var(--r-teal)" strokeWidth="1.4" />
         ))}
         {NODES.map((n) => (
           <g key={n.id}>
             <circle cx={n.x} cy={n.y} r="5.5" fill="var(--plate)" stroke="var(--r-green)" strokeWidth="2" />
-            <text x={n.x} y={n.y - 12} textAnchor="middle" className="nm">
+            <text x={n.x + 4} y={n.y - 12} className="nm">
               {n.id}
             </text>
-            <text x={n.x} y={n.y + 20} textAnchor="middle">
+            <text x={n.x + 4} y={n.y + 22}>
               {n.sub}
             </text>
           </g>
