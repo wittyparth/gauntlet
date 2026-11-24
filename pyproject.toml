@@ -5,13 +5,14 @@ requires-python = ">=3.12"
 dependencies = []
 
 [tool.uv.workspace]
-members = ["packages/*", "apps/dva"]
+members = ["packages/*", "apps/dva", "apps/arena"]
 
 [tool.uv.sources]
 gauntlet-core = { workspace = true }
 gauntlet-server = { workspace = true }
 gauntlet-cli = { workspace = true }
 gauntlet-dva = { workspace = true }
+gauntlet-arena = { workspace = true }
 gauntlet-mcp = { workspace = true }
 
 [dependency-groups]
@@ -28,6 +29,7 @@ dev = [
     "gauntlet-cli",
     "jsonschema>=4.26.0",
     "gauntlet-dva",
+    "gauntlet-arena",
     "gauntlet-mcp",
     "mkdocs>=1.6",
     "mkdocs-material>=9.5",

@@ -1,0 +1,4 @@
+id: arena
+title: Public challenge arena (support agent with fake secrets only)
+version: 1
+world: world.yaml

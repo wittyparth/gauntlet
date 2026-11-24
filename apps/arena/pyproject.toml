@@ -1,0 +1,23 @@
+[project]
+name = "gauntlet-arena"
+version = "0.1.0"
+description = "Public challenge arena: a defended support agent with fake secrets, five levels"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.165.0",
+    "gauntlet-core",
+    "gauntlet-server",
+    "redis>=5",
+    "uvicorn>=0.54.0",
+]
+
+[tool.uv.sources]
+gauntlet-core = { workspace = true }
+gauntlet-server = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["arena"]

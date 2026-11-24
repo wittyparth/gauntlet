@@ -73,7 +73,7 @@ class Event(EventDraft):
     seq: int
 
 
-EffectKind = Literal["llm", "target", "tool", "rng"]
+EffectKind = Literal["llm", "target", "tool", "rng", "human"]  # human: arena input (CQ-P4)
 
 
 class EffectRecord(Model):
