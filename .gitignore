@@ -16,3 +16,5 @@ infra/.env
 deploy/.env.prod
 deploy/backups/
 site/
+
+.omc/
