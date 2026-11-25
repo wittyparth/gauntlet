@@ -1,0 +1,309 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-25T02:26:06+00:00",
+  "title": "Design System: Gauntlet Landing (Figure Plate)",
+  "extensions": {
+    "colorMeta": {
+      "plate": {
+        "role": "neutral",
+        "displayName": "Plum Plate",
+        "canonical": "#1a1230",
+        "tonalRamp": [
+          "#0a0615",
+          "#120b24",
+          "#1a1230",
+          "#2a2048",
+          "#3d3366",
+          "#5a5086",
+          "#8a82ad",
+          "#c4bfd8"
+        ]
+      },
+      "plate-deep": {
+        "role": "neutral",
+        "displayName": "Deep Plate",
+        "canonical": "#120b24",
+        "tonalRamp": [
+          "#060310",
+          "#0c0719",
+          "#120b24",
+          "#1a1230",
+          "#2a2048",
+          "#3d3366",
+          "#5a5086",
+          "#8a82ad"
+        ]
+      },
+      "bone-ink": {
+        "role": "neutral",
+        "displayName": "Bone Ink",
+        "canonical": "#ece4d3",
+        "tonalRamp": [
+          "#4a4638",
+          "#6e6957",
+          "#908a76",
+          "#b0aa95",
+          "#c9c3ae",
+          "#ddd6c3",
+          "#ece4d3",
+          "#f6f2e8"
+        ]
+      },
+      "ink-dim": {
+        "role": "neutral",
+        "displayName": "Dim Ink",
+        "canonical": "#b9aec6",
+        "tonalRamp": [
+          "#3a3346",
+          "#554d66",
+          "#706785",
+          "#8a80a2",
+          "#a197b8",
+          "#b9aec6",
+          "#d0c8dc",
+          "#e8e3ee"
+        ]
+      },
+      "ramp-indigo": {
+        "role": "secondary",
+        "displayName": "Ramp Indigo",
+        "canonical": "#7a6ee0",
+        "tonalRamp": [
+          "#1d1850",
+          "#2f2784",
+          "#4338b5",
+          "#5a4fd0",
+          "#7a6ee0",
+          "#9a91ea",
+          "#bab4f2",
+          "#dedbf8"
+        ]
+      },
+      "ramp-teal": {
+        "role": "secondary",
+        "displayName": "Ramp Teal",
+        "canonical": "#2fb5a8",
+        "tonalRamp": [
+          "#0a2e2b",
+          "#0f4a45",
+          "#176862",
+          "#1f877f",
+          "#2fb5a8",
+          "#5fcbc0",
+          "#98ddd5",
+          "#d0f0ec"
+        ]
+      },
+      "ramp-green": {
+        "role": "secondary",
+        "displayName": "Ramp Green",
+        "canonical": "#5ec962",
+        "tonalRamp": [
+          "#0f2e12",
+          "#184a1c",
+          "#25702a",
+          "#3a9a40",
+          "#5ec962",
+          "#85d888",
+          "#aee6b0",
+          "#d8f4d9"
+        ]
+      },
+      "ramp-yellow": {
+        "role": "primary",
+        "displayName": "Sulphur Yellow",
+        "canonical": "#fde725",
+        "tonalRamp": [
+          "#4a4200",
+          "#7a6c00",
+          "#a89700",
+          "#d4bf00",
+          "#fde725",
+          "#fdee63",
+          "#fef39a",
+          "#fff9cf"
+        ]
+      },
+      "yellow-hover": {
+        "role": "primary",
+        "displayName": "Pale Yellow Hover",
+        "canonical": "#fff27a",
+        "tonalRamp": [
+          "#5a5200",
+          "#8a7d00",
+          "#b8a800",
+          "#e0cc20",
+          "#f5e040",
+          "#fff27a",
+          "#fff7aa",
+          "#fffbd4"
+        ]
+      },
+      "fail": {
+        "role": "tertiary",
+        "displayName": "Fail Coral",
+        "canonical": "#ff6a4a",
+        "tonalRamp": [
+          "#4a1308",
+          "#7a2410",
+          "#a8361c",
+          "#d24a2c",
+          "#ff6a4a",
+          "#ff8f76",
+          "#ffb4a3",
+          "#ffd9d0"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero title only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Small-multiple panel titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Prose, abstract, captions."
+      },
+      "readout": {
+        "displayName": "Readout",
+        "purpose": "Big mono numeral in a panel or Fig. 3."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Figure labels, axes, table headers, annotations."
+      }
+    },
+    "shadows": [
+      {
+        "name": "frame-ring",
+        "value": "0 0 0 1px #b9aec6",
+        "purpose": "Hairline ring drawing the Fig. 1 frame; the only shadow."
+      }
+    ],
+    "motion": [
+      {
+        "name": "hover-lift",
+        "value": "transform 0.2s, background 0.2s; translateY(-2px)",
+        "purpose": "Primary button hover."
+      },
+      {
+        "name": "caret-blink",
+        "value": "1.05s steps(1) infinite",
+        "purpose": "Terminal caret; disabled under reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "stack",
+        "value": "62rem"
+      },
+      {
+        "name": "compact",
+        "value": "40rem"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Sulphur-yellow square button with a play mark; the single primary action.",
+      "html": "<button class=\"ds-btn\"><svg viewBox=\"0 0 24 24\" width=\"19\" height=\"19\" fill=\"currentColor\"><path d=\"M6 4l14 8-14 8z\"/></svg>Watch the film (2:49)</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;gap:.7rem;font-weight:600;font-size:1.0625rem;background:#fde725;color:#120b24;border:0;border-radius:0;padding:.95rem 1.4rem .95rem 1.1rem;cursor:pointer;transition:background .2s,transform .2s}.ds-btn:hover{background:#fff27a;transform:translateY(-2px)}.ds-btn:active{transform:none}.ds-btn:focus-visible{outline:2px solid #fde725;outline-offset:3px}"
+    },
+    {
+      "name": "Secondary Link",
+      "kind": "custom",
+      "refersTo": "link-secondary",
+      "description": "Bone-ink link with a faint underline that turns yellow on hover.",
+      "html": "<a class=\"ds-link\" href=\"#\">Try the arena</a>",
+      "css": ".ds-link{color:#ece4d3;font-weight:560;text-decoration:underline;text-decoration-color:rgba(236,228,211,.28);text-underline-offset:.3em;text-decoration-thickness:1px;transition:text-decoration-color .2s}.ds-link:hover{text-decoration-color:#fde725}.ds-link:focus-visible{outline:2px solid #fde725;outline-offset:3px}"
+    },
+    {
+      "name": "Masthead Nav",
+      "kind": "nav",
+      "description": "Figure-label wordmark left, plain nav right, one hairline beneath.",
+      "html": "<div class=\"ds-mast\"><b>Gauntlet</b><nav class=\"ds-nav\"><a href=\"#\">Film</a><a href=\"#\">Method</a><a href=\"#\">Results</a></nav></div>",
+      "css": ".ds-mast{display:flex;justify-content:space-between;align-items:baseline;padding-block:1.25rem;border-bottom:1px solid rgba(236,228,211,.28);color:#ece4d3}.ds-nav{display:flex;gap:2rem;font-size:.9375rem}.ds-nav a{color:inherit;text-decoration:none;border-bottom:1px solid transparent;padding-block:.25rem}.ds-nav a:hover{border-bottom-color:#fde725}"
+    },
+    {
+      "name": "Small-Multiple Panel",
+      "kind": "card",
+      "description": "Title, mono readout, annotation and dt/dd list; repeats three times with no box.",
+      "html": "<div class=\"ds-panel\"><h3>Prove</h3><div class=\"ds-read\">0/5<small>attacks land</small></div><dl><dt>before</dt><dd>5/5 landed</dd><dt>after</dt><dd>0/5 landed</dd></dl></div>",
+      "css": ".ds-panel{display:flex;flex-direction:column;gap:.9rem;color:#ece4d3;font-family:sans-serif}.ds-panel h3{margin:0;font-size:1.6rem;letter-spacing:-.03em;font-weight:640}.ds-read{font-family:monospace;font-size:2.6rem;line-height:1;letter-spacing:-.04em;color:#fde725}.ds-read small{font-size:.8125rem;letter-spacing:0;color:#b9aec6;margin-left:.6rem}.ds-panel dl{display:grid;grid-template-columns:auto 1fr;gap:.35rem 1rem;margin:0;font-size:.9375rem}.ds-panel dt{font-family:monospace;font-size:.8125rem;color:#b9aec6}.ds-panel dd{margin:0}"
+    },
+    {
+      "name": "Table Row",
+      "kind": "custom",
+      "description": "Hairline-ruled row; mono numeral coloured by outcome.",
+      "html": "<table class=\"ds-table\"><thead><tr><th>suite</th><th>score</th></tr></thead><tbody><tr><th>Example A</th><td class=\"good\">0.92</td></tr><tr><th>Example B</th><td class=\"bad\">0.41</td></tr></tbody></table>",
+      "css": ".ds-table{border-collapse:collapse;width:100%;color:#ece4d3}.ds-table thead th{text-align:left;font-family:monospace;font-weight:400;font-size:.8125rem;color:#b9aec6;padding:.6rem 1.5rem .6rem 0;border-bottom:1px solid #b9aec6}.ds-table tbody th{text-align:left;font-weight:400;padding:1rem 1.5rem 1rem 0;border-bottom:1px solid rgba(236,228,211,.12)}.ds-table td{font-family:monospace;font-size:1.25rem;padding:1rem 0;border-bottom:1px solid rgba(236,228,211,.12)}.ds-table td.good{color:#5ec962}.ds-table td.bad{color:#ff6a4a}"
+    },
+    {
+      "name": "Terminal Plate",
+      "kind": "custom",
+      "refersTo": "term-plate",
+      "description": "Deep plate with rules, tick gutter, mono text and a yellow caret.",
+      "html": "<div class=\"ds-term\"><div class=\"ds-ticks\"></div><pre>$ gauntlet scan mcp<span class=\"ds-caret\"></span></pre></div>",
+      "css": ".ds-term{display:flex;gap:.9rem;border-block:1px solid #b9aec6;padding:1rem 1rem;background:#120b24;color:#ece4d3}.ds-ticks{width:.7rem;border-right:1px solid #b9aec6}.ds-term pre{margin:0;font-family:monospace;font-size:.8125rem;line-height:1.75}.ds-caret{display:inline-block;width:.55em;height:1.05em;margin-left:2px;vertical-align:text-bottom;background:#fde725;animation:ds-blink 1.05s steps(1) infinite}@keyframes ds-blink{50%{opacity:0}}@media(prefers-reduced-motion:reduce){.ds-caret{animation:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Figure Plate",
+    "overview": "The page is a results paper whose figures are live. One deep plum plate owns every region; data and emphasis run along a viridis colormap from indigo through teal and green to a sulphur-yellow hot end. Prose is bone ink. Failures are the only off-ramp hue. Structure comes from figure numbering (Fig. 1, Fig. 2a-c, Fig. 3, Table 1), hairline axis rules, tick marks and whitespace. It refuses the category default of a dark-neon shield hero, feature-card grid and logo strip.\n\nDensity is editorial and calm: wide gutters, large display type against small mono annotation. Honesty is part of the look: unflattering numbers are drawn in the same plate as flattering ones, with the fail hue marking them. Scope: public marketing surface only; the console under src/app/(app) keeps its own look.",
+    "keyCharacteristics": [
+      "One plum plate, no cream paper, no glow, no glass, no decorative gradient.",
+      "Viridis ramp carries meaning (hot yellow = the number that matters, green/teal = healthy data, indigo = the cold end).",
+      "Grotesk for prose and headings, mono for every figure label, axis, numeral and code.",
+      "Identical small-multiple panels are the page's ruler.",
+      "Hairline rules and ticks instead of boxes and cards."
+    ],
+    "rules": [
+      {
+        "name": "The Ramp Is Data Rule",
+        "body": "Ramp hues encode value or emphasis. A ramp colour never appears as pure decoration, and no colour outside the ramp, bone and fail appears at all.",
+        "section": "colors"
+      },
+      {
+        "name": "The Fail Is Off-Ramp Rule",
+        "body": "Only failures use the coral. Nothing good is ever coral and nothing bad is ever on-ramp.",
+        "section": "colors"
+      },
+      {
+        "name": "The Numerals Are Mono Rule",
+        "body": "Any measured value, axis, figure number or code is set in Fragment Mono with tabular figures. Prose numbers stay grotesk.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Plate Rule",
+        "body": "Hierarchy comes from tone, rules and whitespace. No blur, glow, glass or offset shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do number every figure and caption it in the form \"Fig. N.\" with mono labels.",
+      "Do draw failures in Fail Coral in the same plate as successes.",
+      "Do group with whitespace and 1px rules at 12% or 28% bone opacity.",
+      "Do keep radius at 0 and shadows to the 1px hairline ring.",
+      "Do keep sulphur yellow to the single most important element in view.",
+      "Do honour `prefers-reduced-motion` for every transition and animation."
+    ],
+    "donts": [
+      "Don't use cards, boxes with fill and radius, glassmorphism, glow, or gradient decoration on this surface.",
+      "Don't use cream paper, italic serif display, or neon.",
+      "Don't introduce a hue outside the viridis ramp, bone and fail coral.",
+      "Don't apply this world to the console under `src/app/(app)`.",
+      "Don't use invented customers, logos, testimonials or pricing as proof."
+    ]
+  }
+}
