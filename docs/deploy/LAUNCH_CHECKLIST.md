@@ -20,7 +20,7 @@ Files used: `deploy/docker-compose.prod.yml`, `deploy/Caddyfile`, `deploy/bootst
 
 `bootstrap.sh` creates `deploy/.env.prod` (mode 600) from `deploy/.env.prod.example` and fills only empty values, so re-running never rotates a secret.
 
-- [ ] `POSTGRES_PASSWORD`, `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`: generated, never left at `change-me`.
+- [ ] `POSTGRES_PASSWORD`, `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD` (names kept; they are the S3 key pair for SeaweedFS): generated, never left at `change-me`.
 - [ ] `GAUNTLET_SECRET_KEY` (Fernet key): generated. Back it up with the database; losing it makes stored secrets (alert webhooks, target keys) unreadable.
 - [ ] `GAUNTLET_ADMIN_API_KEY`: `gk_` plus at least 20 characters (the bootstrap refuses shorter). Printed once; put it in a password manager.
 - [ ] `OPENROUTER_API_KEY`: only if you want live model calls. Exported in the shell when running `sudo -E ./deploy/bootstrap.sh`, never on the command line, never committed.
@@ -35,7 +35,7 @@ Files used: `deploy/docker-compose.prod.yml`, `deploy/Caddyfile`, `deploy/bootst
 - [ ] `./deploy/bootstrap.sh --domain gauntlet.example.com` sets `DOMAIN` and `GAUNTLET_INSECURE_COOKIE=0`. With `DOMAIN` empty the site is plain HTTP and the cookie is insecure: for a throwaway demo only, the API key travels in clear text.
 - [ ] `curl -sI https://gauntlet.example.com/login` shows a valid certificate and `strict-transport-security`.
 - [ ] Coolify or Dokploy: remove `caddy` from `COMPOSE_PROFILES`, attach the domain to the `web` service port 3000 (and optionally `api` port 8000 for SDK and CLI clients on a separate domain or `/v1` path). Their proxy issues the certificate. Keep `GAUNTLET_INSECURE_COOKIE=0`.
-- [ ] Only 80 and 443 are public. Postgres, Redis, MinIO and the DVA services publish no host ports; confirm with `ss -tlnp` and an external port scan.
+- [ ] Only 80 and 443 are public. Postgres, Redis, SeaweedFS and the DVA services publish no host ports; confirm with `ss -tlnp` and an external port scan.
 
 ## 4. Budget cap
 
@@ -49,11 +49,11 @@ Model spend has three independent stops. Set all three.
 
 ## 5. Backups
 
-- [ ] Run `deploy/backup.sh -d /var/backups/gauntlet -k 14` once by hand and check the tarball holds `db.dump` and `minio/`.
+- [ ] Run `deploy/backup.sh -d /var/backups/gauntlet -k 14` once by hand and check the tarball holds `db.dump` and `s3/`.
 - [ ] Cron: `17 3 * * * /opt/gauntlet/deploy/backup.sh -d /var/backups/gauntlet -k 14`.
 - [ ] Copy that directory off the host (rsync, rclone, object storage). A dump on the same disk is not a backup.
 - [ ] Store `deploy/.env.prod` (especially `GAUNTLET_SECRET_KEY`) in the same off-host place, separately encrypted.
-- [ ] Restore rehearsal on a scratch host or project: `pg_restore --clean --if-exists -U gauntlet -d gauntlet < db.dump` inside the postgres container, `docker cp` the `minio/` directory back to `/data/gauntlet`, start the stack, run the smoke test. Do this before launch, not after an incident.
+- [ ] Restore rehearsal on a scratch host or project: `pg_restore --clean --if-exists -U gauntlet -d gauntlet < db.dump` inside the postgres container, stop seaweedfs, `docker cp` the `s3/` directory back to `/data`, start it, start the stack, run the smoke test. Do this before launch, not after an incident.
 
 ## 6. Smoke test
 

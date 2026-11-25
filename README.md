@@ -34,7 +34,7 @@ uv run gauntlet run docs/user/examples/tinyshop --target docs/user/examples/agen
 uv run gauntlet report runs/quickstart
 ```
 
-Local platform (Postgres, Redis, MinIO, API, worker) and web console; see `infra/README.md` for the env file step:
+Local platform (Postgres, Redis, SeaweedFS, API, worker) and web console; see `infra/README.md` for the env file step:
 
 ```sh
 docker compose -f infra/docker-compose.yml up -d --build --wait

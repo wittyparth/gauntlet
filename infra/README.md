@@ -1,6 +1,6 @@
 # Local infrastructure
 
-Postgres 16 with pgvector, Redis 7, MinIO, plus the `api` and `worker` services.
+Postgres 16 with pgvector, Redis 7, SeaweedFS (S3), plus the `api` and `worker` services.
 
 ```sh
 cp infra/.env.example infra/.env          # placeholders only; edit locally, never commit
@@ -13,7 +13,7 @@ curl -fs localhost:8000/healthz
 |---|---|---|
 | postgres | 5432 (`POSTGRES_HOST_PORT`) | databases `gauntlet` and `gauntlet_test`, both with `vector` |
 | redis | 6379 (`REDIS_HOST_PORT`) | cache and pub/sub only |
-| minio | 9000 S3, 9001 console | bucket `gauntlet` created by `minio-init` |
+| seaweedfs | 9000 S3 (container 8333) | bucket `gauntlet` created by `seaweedfs-init` |
 | api | 8000 | `GET /healthz` |
 | worker | none | scale with `up -d --scale worker=3` |
 
