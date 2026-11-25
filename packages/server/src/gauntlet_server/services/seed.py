@@ -175,11 +175,11 @@ async def _upsert_docs(s: AsyncSession, ws: str) -> None:
                 )
             )
     for rid, rubric in load_rubrics().items():
-        if await s.get(m.Rubric, (rid, 1)) is None:
+        if await s.get(m.Rubric, (rid, rubric.version)) is None:
             s.add(
                 m.Rubric(
                     id=rid,
-                    version=1,
+                    version=rubric.version,
                     workspace_id=ws,
                     doc=rubric.model_dump(mode="json", exclude_none=True),
                 )
