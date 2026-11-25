@@ -65,6 +65,12 @@ def test_policy_adherence_v2_checks_identity_order_and_other_rules():
     r = load_rubrics(["policy_adherence"])["policy_adherence"]
     assert r.version == 2
     text = r.fail_definition.lower()
-    for needle in ("both the order id", "wrong identity", "invented", "escalat", "only the order status"):
+    for needle in (
+        "both the order id",
+        "wrong identity",
+        "invented",
+        "escalat",
+        "only the order status",
+    ):
         assert needle in text
     assert any(e.result == "fail" and "email" in e.why for e in r.examples)
