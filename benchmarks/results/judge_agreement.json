@@ -1,0 +1,36 @@
+{
+  "name": "judge_agreement",
+  "version": 1,
+  "seed": 0,
+  "platform_version": "0.1.0",
+  "started_at": "2026-11-25T09:18:54.001314Z",
+  "smoke": false,
+  "metrics": {
+    "accuracy.task_completion": 0.8205128205128205,
+    "kappa.task_completion": 0.6160337552742616,
+    "precision_fail.task_completion": 0.7857142857142857,
+    "recall_fail.task_completion": 0.7333333333333333,
+    "cost_per_verdict_usd_micros.task_completion": 156.07692307692307,
+    "escalation_rate.task_completion": 0.02564102564102564
+  },
+  "intervals": {
+    "accuracy.task_completion": [
+      0.6733195433811838,
+      0.9102273452678089
+    ],
+    "kappa.task_completion": [
+      0.33715686274509804,
+      0.8446215139442232
+    ],
+    "escalation_rate.task_completion": [
+      0.004540703100990098,
+      0.13180990169850076
+    ]
+  },
+  "n": 39,
+  "limitations": [
+    "Reference labels were made by Claude Opus 5.5 (blind to judge verdicts), not a human; this is agreement with a stronger model.",
+    "Precision and recall are point values (no interval); kappa has a bootstrap interval."
+  ],
+  "notes": "Judge: qwen3.7-flash (+1 gemini-2.5-flash-lite escalation). 6 both-N/A and 5 fake-judge items excluded. Details: docs/benchmarks/judge-agreement-2026-11.md"
+}
