@@ -165,7 +165,11 @@ export default function LandingPage() {
                 </div>
               </dl>
               <p className="lp-prose lp-prose-dim" style={{ marginTop: "2rem", fontSize: "0.9375rem" }}>
-                Open source. The repository and licence are published with the first release.
+                Open source under Apache-2.0.{" "}
+                <a className="lp-link" href="https://github.com/wittyparth/gauntlet">
+                  Read the code on GitHub
+                </a>
+                .
               </p>
             </div>
             <div className="lp-plates">
