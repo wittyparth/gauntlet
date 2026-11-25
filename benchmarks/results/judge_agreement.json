@@ -3,9 +3,15 @@
   "version": 1,
   "seed": 0,
   "platform_version": "0.1.0",
-  "started_at": "2026-11-25T09:18:54.001314Z",
+  "started_at": "2026-11-25T09:28:25.779274Z",
   "smoke": false,
   "metrics": {
+    "accuracy.policy_adherence": 0.875,
+    "kappa.policy_adherence": 0.7142857142857143,
+    "precision_fail.policy_adherence": 1.0,
+    "recall_fail.policy_adherence": 0.6666666666666666,
+    "cost_per_verdict_usd_micros.policy_adherence": 444.525,
+    "escalation_rate.policy_adherence": 0.55,
     "accuracy.task_completion": 0.8205128205128205,
     "kappa.task_completion": 0.6160337552742616,
     "precision_fail.task_completion": 0.7857142857142857,
@@ -14,6 +20,18 @@
     "escalation_rate.task_completion": 0.02564102564102564
   },
   "intervals": {
+    "accuracy.policy_adherence": [
+      0.738878801611489,
+      0.945404997490546
+    ],
+    "kappa.policy_adherence": [
+      0.48094587884806356,
+      0.9354838709677419
+    ],
+    "escalation_rate.policy_adherence": [
+      0.39829091798932054,
+      0.6929469218909508
+    ],
     "accuracy.task_completion": [
       0.6733195433811838,
       0.9102273452678089
@@ -27,10 +45,10 @@
       0.13180990169850076
     ]
   },
-  "n": 39,
+  "n": 79,
   "limitations": [
     "Reference labels were made by Claude Opus 5.5 (blind to judge verdicts), not a human; this is agreement with a stronger model.",
     "Precision and recall are point values (no interval); kappa has a bootstrap interval."
   ],
-  "notes": "Judge: qwen3.7-flash (+1 gemini-2.5-flash-lite escalation). 6 both-N/A and 5 fake-judge items excluded. Details: docs/benchmarks/judge-agreement-2026-11.md"
+  "notes": "task_completion judge qwen3.7-flash; policy_adherence judge qwen3.7-flash with gemini-2.5-flash-lite escalation. N/A and fake-judge items excluded. Details: docs/benchmarks/judge-agreement-2026-11.md"
 }

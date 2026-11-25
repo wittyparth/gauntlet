@@ -1,0 +1,282 @@
+[
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 70,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 75,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 61,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 134,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 163,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 223,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 140,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": true,
+"cost_usd_micros": 896,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": true,
+"cost_usd_micros": 1096,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": true,
+"cost_usd_micros": 934,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": true,
+"cost_usd_micros": 1098,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": true,
+"cost_usd_micros": 696,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": true,
+"cost_usd_micros": 1065,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": true,
+"cost_usd_micros": 931,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": true,
+"cost_usd_micros": 1147,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": true,
+"cost_usd_micros": 767,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 577,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 83,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 96,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": false,
+"cost_usd_micros": 517,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": false,
+"cost_usd_micros": 496,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 109,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 127,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 91,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 80,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": false,
+"cost_usd_micros": 436,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": true,
+"cost_usd_micros": 479,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": false,
+"cost_usd_micros": 1045,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 404,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": true,
+"judge_fail": false,
+"cost_usd_micros": 399,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 498,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 321,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 688,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 275,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 685,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 370,
+"escalated": true
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 108,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 97,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 161,
+"escalated": false
+},
+{
+"rubric": "policy_adherence",
+"human_fail": false,
+"judge_fail": false,
+"cost_usd_micros": 143,
+"escalated": false
+}
+]
