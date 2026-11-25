@@ -54,6 +54,8 @@ The agent version is created beforehand (for example by your deploy step through
 | `comment` | `true` | upsert the pull request comment |
 | `sarif` | `false` | export findings to code scanning |
 | `cli-version` | `0.1.0` | pinned `gauntlet-cli` version |
+| `cli-spec` | empty | pip requirement(s) installed instead of the PyPI CLI, e.g. git URLs |
+| `setup-python` | `true` | `false` on self-hosted runners with Python 3.12 on PATH |
 | `timeout-min` | `30` | wait limit; the run keeps going on the server after it |
 | `web-url` | empty | web app url when it is not the API host |
 
@@ -109,3 +111,29 @@ uv run pytest tests/integrations
 2. Create a throwaway repository with the workflow above and the tunnel url as `api-url`.
 3. Open a pull request: one `<!-- gauntlet-report -->` comment appears. Push again: the same comment
    is edited. Lower a gate threshold below the run's results to see the job fail.
+
+## Verified end to end (2026-11-25)
+
+Tested against a real repository, [wittyparth/gauntlet-pr-test](https://github.com/wittyparth/gauntlet-pr-test)
+([PR #1](https://github.com/wittyparth/gauntlet-pr-test/pull/1)), with a self-hosted macOS runner
+reaching a local stack:
+
+- the first run posted one comment, `Gauntlet: PASS` (3 episodes, about $0.003);
+- the next push updated the same comment instead of adding a second one;
+- a gates file the agent could not meet (`latency.max_p95_ms: 100`, `cost.max_usd_per_episode:
+  0.0001`) turned the comment into `Gauntlet: FAIL` and failed the job;
+- `GET /badge/<token>.svg` rendered through Caddy (the route was missing from the Caddyfile and is
+  now proxied to the API).
+
+Until `gauntlet-cli` is published to PyPI, install it from git with `cli-spec`. On a self-hosted
+runner that already has Python 3.12 on `PATH`, set `setup-python: "false"`:
+
+```yaml
+      - uses: wittyparth/gauntlet/integrations/github-action@main
+        with:
+          # ...
+          setup-python: "false"
+          cli-spec: >-
+            gauntlet-core @ git+https://github.com/wittyparth/gauntlet@main#subdirectory=packages/core
+            gauntlet-cli @ git+https://github.com/wittyparth/gauntlet@main#subdirectory=packages/cli
+```
