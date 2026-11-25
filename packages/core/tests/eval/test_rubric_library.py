@@ -33,7 +33,7 @@ def test_seven_files_load_and_ids_match_file_names():
 
 def test_examples_cover_pass_and_fail_and_are_short():
     for r in load_rubrics().values():
-        assert 3 <= len(r.examples) <= 4, r.id
+        assert 3 <= len(r.examples) <= 5, r.id
         results = {e.result for e in r.examples}
         assert {"pass", "fail"} <= results, r.id
         assert r.na_definition and "na" in results, r.id
@@ -59,3 +59,12 @@ def test_no_forbidden_model_vendor_ids_in_library():
     for p in Path(pkg.__file__).parent.glob("*.yaml"):
         text = p.read_text()
         assert "openai/" not in text and "anthropic/" not in text
+
+
+def test_policy_adherence_v2_checks_identity_order_and_other_rules():
+    r = load_rubrics(["policy_adherence"])["policy_adherence"]
+    assert r.version == 2
+    text = r.fail_definition.lower()
+    for needle in ("both the order id", "wrong identity", "invented", "escalat", "only the order status"):
+        assert needle in text
+    assert any(e.result == "fail" and "email" in e.why for e in r.examples)
