@@ -15,10 +15,10 @@
 		-Server
 	}
 
-	# SDK, CLI and ingest clients speak to the API directly (API-key authenticated; the dev
+	# SDK, CLI and ingest clients (and public badge SVGs) speak to the API directly (API-key authenticated; the dev
 	# routes and /openapi.json do not exist when GAUNTLET_ENV=prod). The console uses its own
 	# same-origin proxy (/api/gauntlet), so no CORS is needed anywhere.
-	@api path /v1/* /healthz
+	@api path /v1/* /healthz /badge/*
 	handle @api {
 		reverse_proxy api:8000 {
 			flush_interval -1   # server-sent events
