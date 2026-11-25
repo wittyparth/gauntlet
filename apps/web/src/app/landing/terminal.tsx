@@ -73,7 +73,7 @@ const NODES = [
   { id: "worker", x: 230, y: 210, sub: "runs, replays" },
   { id: "postgres", x: 450, y: 50, sub: "pgvector" },
   { id: "redis", x: 450, y: 130, sub: "queue" },
-  { id: "minio", x: 450, y: 210, sub: "artifacts" },
+  { id: "seaweedfs", x: 450, y: 210, sub: "artifacts" },
 ] as const;
 
 /** Orthogonal routes only: each bus runs in a gutter between columns, so no wire crosses a label. */
@@ -88,7 +88,7 @@ const WIRES = [
 export function Stack() {
   return (
     <figure className="lp-stackfig">
-      <svg viewBox="0 0 560 276" role="img" aria-label="Compose services: Caddy fronts web and api; api and worker use Postgres, Redis and MinIO.">
+      <svg viewBox="0 0 560 276" role="img" aria-label="Compose services: Caddy fronts web and api; api and worker use Postgres, Redis and SeaweedFS.">
         <line x1="10" x2="550" y1="248" y2="248" stroke="var(--ink-dim)" />
         {[40, 230, 450].map((x, i) => (
           <g key={x}>

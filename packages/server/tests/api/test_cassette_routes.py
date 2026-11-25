@@ -108,7 +108,7 @@ async def test_import_rejects_oversize_and_malformed_lines(client):
     assert (await client.post("/v1/cassettes", content="\n".join(gap))).status_code == 422
 
 
-async def test_archive_to_compose_minio_returns_a_presigned_url(client, state):
+async def test_archive_to_compose_s3_returns_a_presigned_url(client, state):
     import os
 
     from gauntlet_core.objectstore import S3ObjectStore

@@ -72,12 +72,15 @@ jobs:
         run: >-
           docker exec "$(docker ps -q --filter ancestor=pgvector/pgvector:pg16)"
           psql -U gauntlet -d gauntlet_test -c 'CREATE EXTENSION IF NOT EXISTS vector'
-      - name: start minio
-        # Service containers cannot pass command arguments, so MinIO is started here.
+      - name: start seaweedfs
+        # Service containers cannot pass command arguments, so SeaweedFS (S3 on 8333) is started here.
         run: |
-          docker run -d --name minio -p 9000:9000 \
-            -e MINIO_ROOT_USER=minio-dev -e MINIO_ROOT_PASSWORD=minio-dev-secret \
-            minio/minio:RELEASE.2025-09-07T16-13-09Z server /data
+          docker run -d --name seaweedfs -p 9000:8333 \
+            -e AWS_ACCESS_KEY_ID=minio-dev -e AWS_SECRET_ACCESS_KEY=minio-dev-secret \
+            --entrypoint weed chrislusf/seaweedfs:4.55 \
+            server -dir=/data -s3 -master.volumeSizeLimitMB=256 -volume.max=0 -ip.bind=0.0.0.0
+          for i in $(seq 1 30); do curl -fsS http://localhost:9000/healthz && break; sleep 2; done
+          echo "s3.bucket.create -name gauntlet" | docker exec -i seaweedfs weed shell -master=localhost:9333
       - name: migrate
         if: hashFiles('packages/server/alembic.ini') != ''
         env:

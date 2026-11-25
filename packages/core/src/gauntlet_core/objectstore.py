@@ -1,4 +1,4 @@
-"""Object storage for exported cassettes (P3-3): S3 compatible (MinIO in compose) and a plain
+"""Object storage for exported cassettes (P3-3): S3 compatible (SeaweedFS in compose) and a plain
 directory for the CLI and tests. Keys look like `cassettes/<workspace_id>/<episode_id>.jsonl`."""
 
 from __future__ import annotations

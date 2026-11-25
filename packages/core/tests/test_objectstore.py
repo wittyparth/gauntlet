@@ -17,7 +17,7 @@ async def test_local_fs_put_get_url_and_key_escape(tmp_path):
 
 
 @pytest.mark.integration
-async def test_s3_round_trip_against_compose_minio():
+async def test_s3_round_trip_against_compose_s3():
     store = S3ObjectStore(
         os.environ.get("TEST_S3_BUCKET", "gauntlet"),
         endpoint_url=os.environ.get("TEST_S3_ENDPOINT", "http://localhost:9000"),

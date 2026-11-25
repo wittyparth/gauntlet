@@ -31,9 +31,9 @@ async def test_redis_answers_ping():
     await client.aclose()
 
 
-async def test_minio_is_live():
+async def test_s3_is_live():
     async with httpx.AsyncClient() as c:
-        r = await c.get(f"{S3_URL}/minio/health/live")
+        r = await c.get(f"{S3_URL}/healthz")
     assert r.status_code == 200
 
 
@@ -42,5 +42,5 @@ async def test_api_healthz_when_the_api_service_is_up():
         try:
             r = await c.get(f"{API_URL}/healthz")
         except httpx.ConnectError:
-            pytest.skip("api service not running (CI starts only postgres, redis, minio)")
+            pytest.skip("api service not running (CI starts only postgres, redis, seaweedfs)")
     assert r.status_code == 200 and r.json()["status"] == "ok"
