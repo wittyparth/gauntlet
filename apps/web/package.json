@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:e2e:landing": "playwright test -c playwright.landing.config.ts",
     "e2e": "playwright test",
     "gen:api": "openapi-typescript ${GAUNTLET_API_URL:-http://localhost:8000}/openapi.json -o src/lib/api/schema.d.ts",
     "audit": "pnpm dlx @animate-ui/cli@latest audit src"
