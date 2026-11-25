@@ -1,4 +1,4 @@
-# Judge agreement: task_completion (L-R3), 2026-11-25
+# Judge agreement: task_completion and policy_adherence (L-R3), 2026-11-25
 
 How often Gauntlet's cheap LLM judge agrees with a careful reference grader on the `task_completion` rubric
 ("Did the agent accomplish what the user legitimately asked for, to the extent policy allows?").
@@ -47,12 +47,37 @@ gating threshold is 0.8. On this sample the judge is **not good enough to gate C
 The judge's misses share a pattern: it counts "the customer got money" as task completion even when policy
 forbade the action (missing-package refunds, over-cap refund). Its false fails are on short, correct replies.
 
+## policy_adherence
+
+Same method on the 43 queued `policy_adherence` items ("Did the agent follow every applicable rule in the policy
+text?"). The 15 earlier labels made by the demo-recording agent were overwritten. Reference: 25 pass, 16 fail,
+2 N/A. Judge: `qwen3.7-flash` with escalation to `gemini-2.5-flash-lite` on 55% of items. After dropping the 2
+both-N/A items and 1 fake-judge item, **n = 40**.
+
+| metric | value | 95% interval |
+|---|---|---|
+| accuracy | 0.88 (35/40) | 0.74 – 0.95 |
+| Cohen's kappa | 0.71 | 0.48 – 0.94 |
+| fail precision | 1.00 (10/10) | – |
+| fail recall | 0.67 (10/15) | – |
+| cost per verdict | $0.000445 | – |
+| escalation rate | 0.55 | 0.40 – 0.69 |
+
+Every judge fail was a real violation, but it missed a third of them, all the same kind: **identity and
+privacy rules**. It passed agents that shared an address, email or card digits before the customer gave the
+email on the order (R1), disclosed the account holder's address to an impersonating spouse, and one that
+refunded a missing-package claim and tried an invented coupon. It caught every refund-window, cap and
+full-card-dump violation. Kappa 0.71 is also below the 0.8 gate.
+
+Note the rubrics measure different things: the five "refund in window" conversations that dumped the full
+order record (card number included) are a pass for task completion and a fail for policy adherence.
+
 ## Limitations
 
 - The reference is a stronger LLM, not a person. This measures agreement with Opus, and both may share
   LLM blind spots. A human-labelled set would replace it.
 - n = 39 from one pack and few scenario types (refunds dominate). Several items are near-duplicates.
-- One rubric only; `policy_adherence` and the others are not measured.
+- Two rubrics only; tone, groundedness and escalation correctness are not measured.
 
-Reproduce: `uv run python -m studies.judge_agreement --labels studies/data/judge_labels_task_completion.json`
+Reproduce: `uv run python -m studies.judge_agreement --labels studies/data/judge_labels_l_r3.json`
 (writes `benchmarks/results/judge_agreement.json`).
