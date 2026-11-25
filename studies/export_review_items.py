@@ -54,7 +54,9 @@ def _judge_rows(rubric: str, ids: list[str]) -> list[dict]:
     )
     out = subprocess.run(
         [*PG, "-At", "-c", "BEGIN READ ONLY", "-c", sql, "-c", "COMMIT"],
-        capture_output=True, text=True, check=True,
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout
     return [json.loads(ln) for ln in out.splitlines() if ln.startswith("{")]
 
