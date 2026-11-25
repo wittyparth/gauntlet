@@ -72,6 +72,30 @@ full-card-dump violation. Kappa 0.71 is also below the 0.8 gate.
 Note the rubrics measure different things: the five "refund in window" conversations that dumped the full
 order record (card number included) are a pass for task completion and a fail for policy adherence.
 
+## Re-measured after the judge fix (rubric v2)
+
+`policy_adherence` v2 turns the fail definition into a rule checklist: identity verification order, disclosure to
+a non-matching identity, money rules, invented coupon codes, escalation triggers, address and privacy. The same
+reference labels were then run through Gauntlet's own calibration (`POST /v1/rubrics/{id}/calibrate`), which
+re-judges every golden item live with the current judge models. Live spend for both calibrations: $0.059.
+
+| rubric | stage | n | accuracy | kappa (95% CI) | fail precision | fail recall |
+|---|---|---|---|---|---|---|
+| policy_adherence v1 (study above) | cascade | 40 | 0.88 | 0.71 (0.48 – 0.94) | 1.00 | 0.67 |
+| policy_adherence v2 | small (qwen3.7-flash) | 42 | 0.90 | 0.80 (0.59 – 0.95) | 0.82 | 0.93 |
+| policy_adherence v2 | strong (gemini-2.5-flash-lite) | 40 | 0.83 | 0.61 (0.35 – 0.83) | 0.77 | 0.71 |
+| task_completion v1 | small | 48 | 0.83 | 0.60 (0.33 – 0.82) | 0.67 | 0.77 |
+| task_completion v1 | strong | 48 | 0.81 | 0.49 (0.20 – 0.75) | 0.78 | 0.50 |
+
+Gauntlet's calibration marks **policy_adherence v2 as allowed to gate** (escalation rate 0.42) and
+**task_completion as not allowed**. The v2 recall gain (0.67 → 0.93) is the identity cases now being caught;
+precision fell, so some strict calls are now false fails.
+
+Read this with care: the fix was written after looking at the misses on these same 43 items, so the v2 numbers
+are optimistic (no held-out set), and the reference labels are Opus-made, not human. A fresh labelled set is
+needed before trusting the gate on other agents. Re-judging live also gave slightly different v1-era numbers for
+task_completion than the stored verdicts did (kappa 0.60 vs 0.62), which is ordinary model variance.
+
 ## Limitations
 
 - The reference is a stronger LLM, not a person. This measures agreement with Opus, and both may share
